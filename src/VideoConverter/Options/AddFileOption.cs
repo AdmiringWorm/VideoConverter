@@ -1,0 +1,47 @@
+namespace VideoConverter.Options
+{
+    using System.ComponentModel;
+    using Spectre.Cli;
+
+    public class AddFileOption : CommandSettings
+    {
+        [CommandArgument(0, "<FILE_PATH>")]
+        [Description("The path to the file to add to the queue. [bold]Multiple paths can be used[/]")]
+        public string[] Files { get; set; } = new string[0];
+
+        [CommandOption("-o|--output <OUTPUT_PATH>")]
+        [Description("The path to the location where the encoded file will be located")]
+        public string? OutputPath { get; set; }
+
+        [CommandOption("-d|--dir <OUTPUT_DIRECTORY>")]
+        [Description("The base directory where outputs will be located.\n[italic]Directories for TV Series/Movie and a Season directory will be relative to this path![/]")]
+        public string? OutputDir { get; set; }
+
+        [CommandOption("--vcodec <CODEC>")]
+        [Description("The video codec to use for the added files, useful to override global configuration.")]
+        public string? VideoCodec { get; set; }
+
+        [CommandOption("--acodec <CODEC>")]
+        [Description("The audio codec to use for the added files, useful to override global configuration.")]
+        public string? AudioCodec { get; set; }
+
+        [CommandOption("--scodec <CODEC>")]
+        [Description("The subtitle codec to use for the added files, useful to override global configuration.")]
+        public string? SubtitleCodec { get; set; }
+
+        public override ValidationResult Validate()
+        {
+            if (string.IsNullOrEmpty(OutputPath) && string.IsNullOrEmpty(OutputDir))
+            {
+                return ValidationResult.Error("A output path, or an output directory is required!");
+            }
+
+            if (Files.Length > 1 && !string.IsNullOrEmpty(OutputPath))
+            {
+                return ValidationResult.Error("A output path can not be used with several files!");
+            }
+
+            return base.Validate();
+        }
+    }
+}
