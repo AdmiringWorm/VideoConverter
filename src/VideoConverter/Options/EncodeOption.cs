@@ -12,5 +12,9 @@ namespace VideoConverter.Options
         [CommandOption("--id|--ids")]
         [Description("Only encode the following indexes")]
         public int[] Indexes { get; set; } = new int[0];
+
+        [CommandOption("-r|--remove|--remove-file|--remove-old")]
+        [Description("Remove any old file when there is a successful encoding")]
+        public bool RemoveOldFiles { get; set; }
     }
 }

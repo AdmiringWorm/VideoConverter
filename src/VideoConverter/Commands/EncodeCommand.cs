@@ -95,7 +95,11 @@ namespace VideoConverter.Commands
 
                 var newFileName = Path.GetFileNameWithoutExtension(queue.OutputPath);
 
-                using var stepChild = pbMain.Spawn(4, "Collecting information", childOptions);
+                int maxSteps = 4;
+                if (settings.RemoveOldFiles)
+                    maxSteps = 5;
+
+                using var stepChild = pbMain.Spawn(maxSteps, "Collecting information", childOptions);
 
 
                 try
@@ -171,6 +175,14 @@ namespace VideoConverter.Commands
                                 encodingPb.Tick(encodingPb.MaxTicks, "Completed");
                                 stepChild.Tick($"Moving encoded file to new location '{newFileName}'");
                                 File.Move(tempWorkPath, queue.OutputPath);
+
+                                if (settings.RemoveOldFiles)
+                                {
+                                    stepChild.Tick($"Removing old encoded file '{Path.GetFileNameWithoutExtension(queue.Path)}");
+                                    if (queue.Path != queue.OutputPath && File.Exists(queue.Path))
+                                        File.Delete(queue.Path);
+                                }
+
                                 stepChild.ForegroundColor = ConsoleColor.DarkGreen;
                                 stepChild.Tick($"Encoding completed for '{newFileName}'");
                             }
