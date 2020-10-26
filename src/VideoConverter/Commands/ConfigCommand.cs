@@ -47,6 +47,13 @@ namespace VideoConverter.Commands
             {
                 this.console.MarkupLine("[yellow on black] WARNING: No change in configuration value. Ignoring...[/]");
             }
+            else if (property.PropertyType == typeof(bool))
+            {
+                var value = bool.Parse(settings.Value);
+                property.SetValue(config, value);
+                repository.SaveConfiguration(config);
+                this.console.WriteLine("Configuration Updated!", Style.Plain);
+            }
             else if (string.Equals(property.Name, "MapperDatabase", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(config.MapperDatabase) && File.Exists(config.MapperDatabase))
             {
                 this.console.Markup("[yellow on black] WARNING: We found an existing database in the previous location. Do you want to move this to the new location? (y/N)[/]");

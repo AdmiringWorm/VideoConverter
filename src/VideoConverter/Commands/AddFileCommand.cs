@@ -401,6 +401,9 @@ namespace VideoConverter.Commands
                 episodeData.SeasonNumber = 1;
 
             episodeData.Container = "Matroska"; // TODO: Make Configurable
+
+            if (!config.IncludeFansubber)
+                episodeData.Fansubber = null;
         }
     }
 }
