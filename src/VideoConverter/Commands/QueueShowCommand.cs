@@ -68,7 +68,7 @@ namespace VideoConverter.Commands
 
             if (!string.IsNullOrEmpty(item.StatusMessage))
             {
-                var panel = new Panel(item.StatusMessage)
+                var panel = new Panel(item.StatusMessage.EscapeMarkup())
                     .NoBorder();
                 panel.Header("Status Message", new Style(Color.Aqua), Justify.Center);
                 this.console.Render(panel);
