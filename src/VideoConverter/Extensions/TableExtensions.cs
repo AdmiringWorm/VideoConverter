@@ -11,7 +11,9 @@ namespace VideoConverter.Extensions
     public static class TableExtensions
     {
         public static Table SetDefaults(this Table table)
-            => table.SetBorderColor(Color.Silver).DoubleEdgeBorder();
+            => table
+                .BorderColor(Color.Silver)
+                .DoubleEdgeBorder();
 
         public static Table AddColorRow(this Table table, params object?[] columns)
         {
@@ -35,7 +37,7 @@ namespace VideoConverter.Extensions
                 _ => Color.Olive,
             };
 
-            return new Text(status.ToString()!, Style.WithForeground(color));
+            return new Text(status.ToString()!, new Style(color));
         }
 
         public static Text GetAnsiText(this object? value)
@@ -54,21 +56,21 @@ namespace VideoConverter.Extensions
                 _ => (value.ToString()!, Color.Fuchsia)
             };
 
-            return new Text(textValue, Style.WithForeground(color));
+            return new Text(textValue, new Style(color));
         }
 
         public static Text GetAnsiText(this object? value, Color color)
         {
             if (value is null)
-                return new Text(string.Empty, Style.Plain);
+                return new Text(string.Empty);
 
-            return new Text(value.ToString()!, Style.WithForeground(color));
+            return new Text(value.ToString()!, new Style(color));
         }
 
         public static void RenderTable(this IAnsiConsole console, Table table, string header)
         {
             var panel = new Panel(table)
-                .SetHeader(header, Style.WithForeground(Color.Teal).WithDecoration(Decoration.Bold | Decoration.Underline), Justify.Center)
+                .Header(header, new Style(Color.Teal, decoration: Decoration.Bold | Decoration.Underline), Justify.Center)
                 .NoBorder();
 
             console.Render(panel);

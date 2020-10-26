@@ -53,7 +53,7 @@ namespace VideoConverter.Commands
 
                 if (!File.Exists(file))
                 {
-                    this.console.MarkupLine("[red on black] ERROR: The file '[fuchsia]{0}[/]' do not exist.[/]", file.SafeMarkup());
+                    this.console.MarkupLine("[red on black] ERROR: The file '[fuchsia]{0}[/]' do not exist.[/]", file.EscapeMarkup());
                     return 1;
                 }
 
@@ -67,7 +67,7 @@ namespace VideoConverter.Commands
                     episodeData = FileParser.ParseEpisode(file);
                     if (episodeData is null)
                     {
-                        this.console.MarkupLine("[yellow on black] WARNING: We were unable to extract necessary information from '[fuchsia]{0}[/]'. Ignoring...[/]", file.SafeMarkup());
+                        this.console.MarkupLine("[yellow on black] WARNING: We were unable to extract necessary information from '[fuchsia]{0}[/]'. Ignoring...[/]", file.EscapeMarkup());
                         break;
                     }
 
@@ -257,12 +257,12 @@ namespace VideoConverter.Commands
                 if (queueRepository.AddToQueue(file.Normalize(), outputPath, settings.VideoCodec, settings.AudioCodec, settings.SubtitleCodec, streams.ToArray()))
                 {
                     this.queueRepository.SaveChanges();
-                    this.console.MarkupLine("Added or updated '[fuchsia]{0}[/]' to the encoding queue!", file.SafeMarkup());
+                    this.console.MarkupLine("Added or updated '[fuchsia]{0}[/]' to the encoding queue!", file.EscapeMarkup());
                 }
                 else
                 {
                     this.queueRepository.AbortChanges();
-                    this.console.MarkupLine("[yellow on black] WARNING: Unable to update '{0}'. Encoding have already started on the file![/]", file.SafeMarkup());
+                    this.console.MarkupLine("[yellow on black] WARNING: Unable to update '{0}'. Encoding have already started on the file![/]", file.EscapeMarkup());
                 }
             }
 

@@ -213,11 +213,11 @@ namespace VideoConverter
         // {
         //     console.MarkupLine(
         //                     "File: [invert]{0}[/]\nSeries: [invert]{1}[/]\nSeason: [invert]{2:D2}[/]\nEpisode: [invert]{3:D2}[/]\nNew File: [invert]{4}[/]",
-        //                     episodeData.FileName.SafeMarkup(),
+        //                     episodeData.FileName.EscapeMarkup(),
         //                     episodeData.Series,
         //                     episodeData.SeasonNumber!,
         //                     episodeData.EpisodeNumber,
-        //                     RemoveInvalidChars(episodeData.ToString()).SafeMarkup());
+        //                     RemoveInvalidChars(episodeData.ToString()).EscapeMarkup());
         // }
 
         // private static string RemoveInvalidChars(string text)

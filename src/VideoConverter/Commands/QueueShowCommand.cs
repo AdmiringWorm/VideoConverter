@@ -49,8 +49,8 @@ namespace VideoConverter.Commands
             if (relative.Length < oldDir.Length)
                 oldDir = relative;
 
-            table.AddRow("Old Name".GetAnsiText(Color.Silver), oldName.SafeMarkup().GetAnsiText(Color.DarkCyan));
-            table.AddRow("Old Dir".GetAnsiText(Color.Silver), oldDir.SafeMarkup().GetAnsiText(Color.DarkCyan));
+            table.AddRow("Old Name".GetAnsiText(Color.Silver), oldName.EscapeMarkup().GetAnsiText(Color.DarkCyan));
+            table.AddRow("Old Dir".GetAnsiText(Color.Silver), oldDir.EscapeMarkup().GetAnsiText(Color.DarkCyan));
 
             var newName = Path.GetFileName(item.OutputPath);
             var newDir = Path.GetDirectoryName(item.OutputPath);
@@ -60,8 +60,8 @@ namespace VideoConverter.Commands
             if (relative.Length < newDir.Length)
                 newDir = relative;
 
-            table.AddRow("New Name".GetAnsiText(Color.Silver), newName.SafeMarkup().GetAnsiText(Color.DarkCyan));
-            table.AddRow("New Path".GetAnsiText(Color.Silver), newDir.SafeMarkup().GetAnsiText(Color.DarkCyan));
+            table.AddRow("New Name".GetAnsiText(Color.Silver), newName.EscapeMarkup().GetAnsiText(Color.DarkCyan));
+            table.AddRow("New Path".GetAnsiText(Color.Silver), newDir.EscapeMarkup().GetAnsiText(Color.DarkCyan));
             table.AddRow("Status".GetAnsiText(Color.Silver), item.Status.GetAnsiText());
 
             this.console.RenderTable(table, string.Empty);
@@ -70,7 +70,7 @@ namespace VideoConverter.Commands
             {
                 var panel = new Panel(item.StatusMessage)
                     .NoBorder();
-                panel.SetHeader("Status Message", Style.WithForeground(Color.Aqua), Justify.Center);
+                panel.Header("Status Message", new Style(Color.Aqua), Justify.Center);
                 this.console.Render(panel);
             }
 

@@ -83,7 +83,7 @@ namespace VideoConverter.Commands
         private void ListConfigurations(Configuration config)
         {
             var table = new Table()
-                .SetBorderStyle(Style.WithForeground(Color.Olive))
+                .BorderStyle(new Style(Color.Olive))
                 .DoubleEdgeBorder()
                 .AddColumns(new TableColumn("Name").RightAligned(), new TableColumn("Value").LeftAligned());
 
@@ -99,7 +99,7 @@ namespace VideoConverter.Commands
 
             var panel = new Panel(table)
                 .NoBorder()
-                .SetHeader("Available Configurations", Style.WithForeground(Color.Aqua), Justify.Center);
+                .Header("Available Configurations", new Style(Color.Aqua), Justify.Center);
 
             console.Render(panel);
         }
