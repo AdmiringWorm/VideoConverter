@@ -40,6 +40,7 @@ namespace VideoConverter.Commands
 
         public override async Task<int> ExecuteAsync(CommandContext context, EncodeOption settings)
         {
+            Console.Clear();
             var failed = false;
             if (settings.IncludeFailing)
             {
