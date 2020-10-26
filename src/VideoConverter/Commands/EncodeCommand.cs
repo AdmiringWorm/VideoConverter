@@ -1,13 +1,12 @@
-using System;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Runtime.InteropServices;
-using System.Linq;
 namespace VideoConverter.Commands
 {
     using System;
+    using System.Threading;
+    using System.Runtime.InteropServices;
     using System.IO;
+    using System.Linq;
     using System.Threading.Tasks;
+    using Humanizer;
     using ShellProgressBar;
     using Spectre.Cli;
     using VideoConverter.Options;
@@ -145,6 +144,7 @@ namespace VideoConverter.Commands
 
                         try
                         {
+                            var initialSize = new FileInfo(queue.Path).Length;
                             await conversion.Start(cancellationToken);
                             if (cancellationToken.IsCancellationRequested)
                             {
@@ -157,7 +157,16 @@ namespace VideoConverter.Commands
                             }
                             else
                             {
-                                this.queueRepo.UpdateQueueStatus(queue.Id, QueueStatus.Completed);
+                                var newSize = new FileInfo(tempWorkPath).Length;
+
+                                var statusMessage = string.Empty;
+                                if (newSize > initialSize)
+                                    statusMessage = $"Lost {(newSize - initialSize).Bytes().Humanize("#.##")}";
+                                else if (newSize < initialSize)
+                                    statusMessage = $"Saved {(initialSize - newSize).Bytes().Humanize("#.##")}";
+                                else
+                                    statusMessage = $"No loss or gain in size";
+                                this.queueRepo.UpdateQueueStatus(queue.Id, QueueStatus.Completed, statusMessage);
                                 encodingPb.Tick(encodingPb.MaxTicks, "Completed");
                                 stepChild.Tick($"Moving encoded file to new location '{newFileName}'");
                                 File.Move(tempWorkPath, queue.OutputPath);
