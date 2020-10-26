@@ -1,3 +1,4 @@
+using System.Drawing;
 namespace VideoConverter.Commands
 {
     using System.Globalization;
@@ -44,218 +45,239 @@ namespace VideoConverter.Commands
 
         public override async Task<int> ExecuteAsync(CommandContext context, AddFileOption settings)
         {
-            Console.CancelKeyPress += CancelProcessing;
-
-            foreach (var file in settings.Files.Select(f => Path.GetFullPath(f)))
+            try
             {
-                if (this.cancel)
-                    break;
+                Console.CancelKeyPress += CancelProcessing;
 
-                if (!File.Exists(file))
+                foreach (var file in settings.Files.Select(f => Path.GetFullPath(f)))
                 {
-                    this.console.MarkupLine("[red on black] ERROR: The file '[fuchsia]{0}[/]' do not exist.[/]", file.EscapeMarkup());
-                    return 1;
-                }
-
-                var mediaInfoTask = FFmpeg.GetMediaInfo(file);
-
-                bool isAccepted = false;
-                EpisodeData? episodeData = null;
-
-                while (!this.cancel && string.IsNullOrEmpty(settings.OutputPath) && !isAccepted)
-                {
-                    episodeData = FileParser.ParseEpisode(file);
-                    if (settings.ReEncode)
+                    if (this.cancel)
                         break;
-                    if (episodeData is null)
+
+                    if (!File.Exists(file))
                     {
-                        this.console.MarkupLine("[yellow on black] WARNING: We were unable to extract necessary information from '[fuchsia]{0}[/]'. Ignoring...[/]", file.EscapeMarkup());
-                        break;
+                        this.console.MarkupLine("[red on black] ERROR: The file '[fuchsia]{0}[/]' do not exist.[/]", file.EscapeMarkup());
+                        return 1;
                     }
 
-                    if (this.cancel)
-                        break;
+                    var mediaInfoTask = FFmpeg.GetMediaInfo(file);
 
-                    UpdateEpisodeData(episodeData);
+                    bool isAccepted = false;
+                    EpisodeData? episodeData = null;
 
-                    if (this.cancel)
-                        break;
-
-                    isAccepted = AskAcceptable(context, episodeData);
-                }
-
-                if (this.cancel)
-                    break;
-
-                if ((episodeData is null && string.IsNullOrEmpty(settings.OutputPath) && !settings.ReEncode) ||
-                    (episodeData is not null && episodeData.Series == "SKIP"))
-                    continue;
-
-                var mediaInfo = await mediaInfoTask;
-                var videoStreams = mediaInfo.VideoStreams.ToList();
-                var audioStreams = mediaInfo.AudioStreams.ToList();
-                var subtitleStreams = mediaInfo.SubtitleStreams.ToList();
-
-                if (this.cancel)
-                    break;
-
-                var streams = new List<int>();
-
-                if (videoStreams.Count > 1)
-                {
-                    var table = new Table()
-                        .SetDefaults()
-                        .AddColumns(
-                            new TableColumn("Index").RightAligned(),
-                            new TableColumn("Codec").Centered(),
-                            new TableColumn("Framerate").Centered(),
-                            new TableColumn("Duration").Centered()
-                        );
-
-                    foreach (var stream in videoStreams)
+                    while (!this.cancel && string.IsNullOrEmpty(settings.OutputPath) && !isAccepted)
                     {
-                        table.AddColorRow(
-                            stream.Index,
-                            stream.Codec,
-                            stream.Framerate + "fps",
-                            stream.Duration
-                        );
-                    }
-
-                    this.console.RenderTable(table, "VIDEO STREAMS");
-
-                    streams.AddRange(AskAndSelectStreams(videoStreams, "video streams"));
-
-                    if (this.cancel)
-                        break;
-                }
-                else
-                {
-                    streams.AddRange(videoStreams.Select(i => i.Index));
-                }
-
-                if (audioStreams.Count > 1)
-                {
-                    var table = new Table()
-                        .SetDefaults()
-                        .AddColumns(
-                            new TableColumn("Index").RightAligned(),
-                            new TableColumn("Language").Centered(),
-                            new TableColumn("Codec").Centered(),
-                            new TableColumn("Channels").Centered(),
-                            new TableColumn("Sample Rate").Centered()
-                        );
-
-                    foreach (var stream in audioStreams)
-                    {
-                        CultureInfo? ci = null;
                         try
                         {
-                            ci = new CultureInfo(stream.Language);
+                            episodeData = FileParser.ParseEpisode(file);
                         }
-                        catch
+                        catch (Exception ex)
                         {
-                            // Ignore any excetpion on purpose
+                            this.console.WriteException(ex);
+                            return 1;
+                        }
+                        if (settings.ReEncode)
+                            break;
+                        if (episodeData is null)
+                        {
+                            this.console.MarkupLine("[yellow on black] WARNING: We were unable to extract necessary information from '[fuchsia]{0}[/]'. Ignoring...[/]", file.EscapeMarkup());
+                            break;
                         }
 
-                        table.AddColorRow(
-                            stream.Index,
-                            ci?.EnglishName ?? stream.Language,
-                            stream.Codec,
-                            stream.Channels,
-                            stream.SampleRate + " Hz"
-                        );
+                        if (this.cancel)
+                            break;
+
+                        UpdateEpisodeData(episodeData);
+
+                        if (this.cancel)
+                            break;
+
+                        isAccepted = AskAcceptable(context, episodeData);
                     }
-
-                    this.console.RenderTable(table, "AUDIO STREAMS");
-
-                    streams.AddRange(AskAndSelectStreams(audioStreams, "audio streams"));
 
                     if (this.cancel)
                         break;
-                }
-                else
-                {
-                    streams.AddRange(audioStreams.Select(a => a.Index));
-                }
 
-                if (subtitleStreams.Count > 1)
-                {
-                    var table = new Table()
-                        .SetDefaults()
-                        .AddColumns(
-                            new TableColumn("Index").RightAligned(),
-                            new TableColumn("Language").Centered(),
-                            new TableColumn("Title").Centered(),
-                            new TableColumn("Codec").Centered()
-                    );
+                    if ((episodeData is null && string.IsNullOrEmpty(settings.OutputPath) && !settings.ReEncode) ||
+                        (episodeData is not null && episodeData.Series == "SKIP"))
+                        continue;
 
-                    foreach (var stream in subtitleStreams)
-                    {
-                        CultureInfo? ci = null;
-                        try
-                        {
-                            ci = new CultureInfo(stream.Language);
-                        }
-                        catch
-                        {
-                            // Ignore any excetpion on purpose
-                        }
-                        table.AddColorRow(
-                            stream.Index,
-                            ci?.EnglishName ?? stream.Language,
-                            stream.Title,
-                            stream.Codec
-                        );
-                    }
-
-                    this.console.RenderTable(table, "SUBTITLE STREAMS");
-
-                    streams.AddRange(AskAndSelectStreams(subtitleStreams, "subtitle streams"));
+                    var mediaInfo = await mediaInfoTask;
+                    var videoStreams = mediaInfo.VideoStreams.ToList();
+                    var audioStreams = mediaInfo.AudioStreams.ToList();
+                    var subtitleStreams = mediaInfo.SubtitleStreams.ToList();
 
                     if (this.cancel)
                         break;
-                }
-                else
-                {
-                    streams.AddRange(subtitleStreams.Select(s => s.Index));
-                }
 
-                if (this.cancel)
-                    break;
+                    var streams = new List<int>();
 
-                string outputPath = string.Empty;
-                if (!string.IsNullOrEmpty(settings.OutputPath))
-                {
-                    outputPath = Path.GetFullPath(settings.OutputPath);
-                }
-                else if (!string.IsNullOrEmpty(settings.OutputDir))
-                {
-                    string rootDir = Path.GetFullPath(settings.OutputDir!);
-                    if (!Directory.Exists(rootDir))
-                        Directory.CreateDirectory(rootDir);
-                    string directory = rootDir;
-                    if (episodeData is not null)
+                    if (videoStreams.Count > 1)
                     {
-                        var seriesName = RemoveInvalidChars(episodeData.Series);
-                        directory = Path.Combine(directory, seriesName);
+                        var table = new Table()
+                            .SetDefaults()
+                            .AddColumns(
+                                new TableColumn("Index").RightAligned(),
+                                new TableColumn("Codec").Centered(),
+                                new TableColumn("Framerate").Centered(),
+                                new TableColumn("Duration").Centered()
+                            );
 
-                        if (!Directory.Exists(directory))
+                        foreach (var stream in videoStreams)
                         {
-                            var yearDir = Directory.EnumerateDirectories(rootDir, seriesName + " (*)").FirstOrDefault();
-                            if (yearDir is not null)
-                                directory = yearDir;
+                            table.AddColorRow(
+                                stream.Index,
+                                stream.Codec,
+                                stream.Framerate + "fps",
+                                stream.Duration
+                            );
                         }
 
-                        if (episodeData.SeasonNumber is not null)
-                            directory = Path.Combine(directory, "Season " + episodeData.SeasonNumber);
+                        this.console.RenderTable(table, "VIDEO STREAMS");
 
-                        outputPath = Path.Combine(directory, RemoveInvalidChars(episodeData.ToString()));
+                        streams.AddRange(AskAndSelectStreams(videoStreams, "video streams"));
+
+                        if (this.cancel)
+                            break;
+                    }
+                    else
+                    {
+                        streams.AddRange(videoStreams.Select(i => i.Index));
+                    }
+
+                    if (audioStreams.Count > 1)
+                    {
+                        var table = new Table()
+                            .SetDefaults()
+                            .AddColumns(
+                                new TableColumn("Index").RightAligned(),
+                                new TableColumn("Language").Centered(),
+                                new TableColumn("Codec").Centered(),
+                                new TableColumn("Channels").Centered(),
+                                new TableColumn("Sample Rate").Centered()
+                            );
+
+                        foreach (var stream in audioStreams)
+                        {
+                            CultureInfo? ci = null;
+                            try
+                            {
+                                ci = new CultureInfo(stream.Language);
+                            }
+                            catch
+                            {
+                                // Ignore any excetpion on purpose
+                            }
+
+                            table.AddColorRow(
+                                stream.Index,
+                                ci?.EnglishName ?? stream.Language,
+                                stream.Codec,
+                                stream.Channels,
+                                stream.SampleRate + " Hz"
+                            );
+                        }
+
+                        this.console.RenderTable(table, "AUDIO STREAMS");
+
+                        streams.AddRange(AskAndSelectStreams(audioStreams, "audio streams"));
+
+                        if (this.cancel)
+                            break;
+                    }
+                    else
+                    {
+                        streams.AddRange(audioStreams.Select(a => a.Index));
+                    }
+
+                    if (subtitleStreams.Count > 1)
+                    {
+                        var table = new Table()
+                            .SetDefaults()
+                            .AddColumns(
+                                new TableColumn("Index").RightAligned(),
+                                new TableColumn("Language").Centered(),
+                                new TableColumn("Title").Centered(),
+                                new TableColumn("Codec").Centered()
+                        );
+
+                        foreach (var stream in subtitleStreams)
+                        {
+                            CultureInfo? ci = null;
+                            try
+                            {
+                                ci = new CultureInfo(stream.Language);
+                            }
+                            catch
+                            {
+                                // Ignore any excetpion on purpose
+                            }
+                            table.AddColorRow(
+                                stream.Index,
+                                ci?.EnglishName ?? stream.Language,
+                                stream.Title,
+                                stream.Codec
+                            );
+                        }
+
+                        this.console.RenderTable(table, "SUBTITLE STREAMS");
+
+                        streams.AddRange(AskAndSelectStreams(subtitleStreams, "subtitle streams"));
+
+                        if (this.cancel)
+                            break;
+                    }
+                    else
+                    {
+                        streams.AddRange(subtitleStreams.Select(s => s.Index));
+                    }
+
+                    if (this.cancel)
+                        break;
+
+                    string outputPath = string.Empty;
+                    if (!string.IsNullOrEmpty(settings.OutputPath))
+                    {
+                        outputPath = Path.GetFullPath(settings.OutputPath);
+                    }
+                    else if (!string.IsNullOrEmpty(settings.OutputDir))
+                    {
+                        string rootDir = Path.GetFullPath(settings.OutputDir!);
+                        if (!Directory.Exists(rootDir))
+                            Directory.CreateDirectory(rootDir);
+                        string directory = rootDir;
+                        if (episodeData is not null)
+                        {
+                            var seriesName = RemoveInvalidChars(episodeData.Series);
+                            directory = Path.Combine(directory, seriesName);
+
+                            if (!Directory.Exists(directory))
+                            {
+                                var yearDir = Directory.EnumerateDirectories(rootDir, seriesName + " (*)").FirstOrDefault();
+                                if (yearDir is not null)
+                                    directory = yearDir;
+                            }
+
+                            if (episodeData.SeasonNumber is not null)
+                                directory = Path.Combine(directory, "Season " + episodeData.SeasonNumber);
+
+                            outputPath = Path.Combine(directory, RemoveInvalidChars(episodeData.ToString()));
+                        }
+                        else if (settings.ReEncode)
+                        {
+                            outputPath = Path.Combine(directory, Path.GetFileName(file));
+                            outputPath = Path.ChangeExtension(outputPath, ".mkv");
+                        }
+                        else
+                        {
+                            this.console.MarkupLine("[yellow on black] ERROR: No information was found in the data, and no output path is specified. This should not happen, please report this error to the developers.[/]");
+                            this.queueRepository.AbortChanges();
+                            return 1;
+                        }
                     }
                     else if (settings.ReEncode)
                     {
-                        outputPath = Path.Combine(directory, Path.GetFileName(file));
-                        outputPath = Path.ChangeExtension(outputPath, ".mkv");
+                        outputPath = Path.ChangeExtension(file, ".mkv");
                     }
                     else
                     {
@@ -263,28 +285,31 @@ namespace VideoConverter.Commands
                         this.queueRepository.AbortChanges();
                         return 1;
                     }
-                }
-                else if (settings.ReEncode)
-                {
-                    outputPath = Path.ChangeExtension(file, ".mkv");
-                }
-                else
-                {
-                    this.console.MarkupLine("[yellow on black] ERROR: No information was found in the data, and no output path is specified. This should not happen, please report this error to the developers.[/]");
-                    this.queueRepository.AbortChanges();
-                    return 1;
+
+                    if (queueRepository.AddToQueue(file.Normalize(), outputPath, settings.VideoCodec, settings.AudioCodec, settings.SubtitleCodec, streams.ToArray()))
+                    {
+                        this.queueRepository.SaveChanges();
+                        try
+                        {
+                            this.console.MarkupLine("Added or updated '[fuchsia]{0}[/]' to the encoding queue!", file.EscapeMarkup());
+                        }
+                        catch
+                        {
+                            this.console.WriteLine($"Adder or updated '{file}' to the encoding queue!", new Style(Color.Fuchsia));
+                        }
+                    }
+                    else
+                    {
+                        this.queueRepository.AbortChanges();
+                        this.console.WriteLine($"WARNING: Unable to update '{file}'. Encoding have already started on the file!", new Style(Color.Yellow, Color.Black));
+                    }
                 }
 
-                if (queueRepository.AddToQueue(file.Normalize(), outputPath, settings.VideoCodec, settings.AudioCodec, settings.SubtitleCodec, streams.ToArray()))
-                {
-                    this.queueRepository.SaveChanges();
-                    this.console.MarkupLine("Added or updated '[fuchsia]{0}[/]' to the encoding queue!", file.EscapeMarkup());
-                }
-                else
-                {
-                    this.queueRepository.AbortChanges();
-                    this.console.MarkupLine("[yellow on black] WARNING: Unable to update '{0}'. Encoding have already started on the file![/]", file.EscapeMarkup());
-                }
+            }
+            catch (Exception ex)
+            {
+                this.console.WriteException(ex);
+                this.cancel = true;
             }
 
             return this.cancel ? 1 : 0;

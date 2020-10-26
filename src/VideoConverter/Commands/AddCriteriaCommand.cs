@@ -23,7 +23,16 @@ namespace VideoConverter.Commands
 
         public override int Execute(CommandContext context, AddCriteriaOption settings)
         {
-            var episodeData = FileParser.ParseEpisode(settings.FilePath);
+			EpisodeData? episodeData;
+            try
+            {
+                episodeData = FileParser.ParseEpisode(settings.FilePath);
+            }
+            catch (Exception ex)
+            {
+                this.console.WriteException(ex);
+                return 1;
+            }
 
             if (episodeData is null)
             {
