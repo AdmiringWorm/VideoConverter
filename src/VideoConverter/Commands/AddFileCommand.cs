@@ -65,6 +65,8 @@ namespace VideoConverter.Commands
                 while (!this.cancel && string.IsNullOrEmpty(settings.OutputPath) && !isAccepted)
                 {
                     episodeData = FileParser.ParseEpisode(file);
+                    if (settings.ReEncode)
+                        break;
                     if (episodeData is null)
                     {
                         this.console.MarkupLine("[yellow on black] WARNING: We were unable to extract necessary information from '[fuchsia]{0}[/]'. Ignoring...[/]", file.EscapeMarkup());
@@ -85,7 +87,7 @@ namespace VideoConverter.Commands
                 if (this.cancel)
                     break;
 
-                if ((episodeData is null && string.IsNullOrEmpty(settings.OutputPath)) ||
+                if ((episodeData is null && string.IsNullOrEmpty(settings.OutputPath) && !settings.ReEncode) ||
                     (episodeData is not null && episodeData.Series == "SKIP"))
                     continue;
 
@@ -227,31 +229,50 @@ namespace VideoConverter.Commands
                 {
                     outputPath = Path.GetFullPath(settings.OutputPath);
                 }
-                else if (episodeData is null)
+                else if (!string.IsNullOrEmpty(settings.OutputDir))
+                {
+                    string rootDir = Path.GetFullPath(settings.OutputDir!);
+                    if (!Directory.Exists(rootDir))
+                        Directory.CreateDirectory(rootDir);
+                    string directory = rootDir;
+                    if (episodeData is not null)
+                    {
+                        var seriesName = RemoveInvalidChars(episodeData.Series);
+                        directory = Path.Combine(directory, seriesName);
+
+                        if (!Directory.Exists(directory))
+                        {
+                            var yearDir = Directory.EnumerateDirectories(rootDir, seriesName + " (*)").FirstOrDefault();
+                            if (yearDir is not null)
+                                directory = yearDir;
+                        }
+
+                        if (episodeData.SeasonNumber is not null)
+                            directory = Path.Combine(directory, "Season " + episodeData.SeasonNumber);
+
+                        outputPath = Path.Combine(directory, RemoveInvalidChars(episodeData.ToString()));
+                    }
+                    else if (settings.ReEncode)
+                    {
+                        outputPath = Path.Combine(directory, Path.GetFileName(file));
+                        outputPath = Path.ChangeExtension(outputPath, ".mkv");
+                    }
+                    else
+                    {
+                        this.console.MarkupLine("[yellow on black] ERROR: No information was found in the data, and no output path is specified. This should not happen, please report this error to the developers.[/]");
+                        this.queueRepository.AbortChanges();
+                        return 1;
+                    }
+                }
+                else if (settings.ReEncode)
+                {
+                    outputPath = Path.ChangeExtension(file, ".mkv");
+                }
+                else
                 {
                     this.console.MarkupLine("[yellow on black] ERROR: No information was found in the data, and no output path is specified. This should not happen, please report this error to the developers.[/]");
                     this.queueRepository.AbortChanges();
                     return 1;
-                }
-                else
-                {
-                    var rootDir = Path.GetFullPath(settings.OutputDir!);
-                    if (!Directory.Exists(rootDir))
-                        Directory.CreateDirectory(rootDir);
-                    var seriesName = RemoveInvalidChars(episodeData.Series);
-                    var directory = Path.Combine(rootDir, seriesName);
-
-                    if (!Directory.Exists(directory))
-                    {
-                        var yearDir = Directory.EnumerateDirectories(rootDir, seriesName + " (*)").FirstOrDefault();
-                        if (yearDir is not null)
-                            directory = yearDir;
-                    }
-
-                    if (episodeData.SeasonNumber is not null)
-                        directory = Path.Combine(directory, "Season " + episodeData.SeasonNumber);
-
-                    outputPath = Path.Combine(directory, RemoveInvalidChars(episodeData.ToString()));
                 }
 
                 if (queueRepository.AddToQueue(file.Normalize(), outputPath, settings.VideoCodec, settings.AudioCodec, settings.SubtitleCodec, streams.ToArray()))

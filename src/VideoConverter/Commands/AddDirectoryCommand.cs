@@ -26,9 +26,10 @@ namespace VideoConverter.Commands
             {
                 Files = files.ToArray(),
                 OutputDir = settings.OutputDirectory,
-				VideoCodec = settings.VideoCodec,
-				AudioCodec = settings.AudioCodec,
-				SubtitleCodec = settings.SubtitleCodec,
+                VideoCodec = settings.VideoCodec,
+                AudioCodec = settings.AudioCodec,
+                SubtitleCodec = settings.SubtitleCodec,
+                ReEncode = settings.ReEncode,
             };
 
             return fileCommand.ExecuteAsync(context, fileSettings);

@@ -29,14 +29,18 @@ namespace VideoConverter.Options
         [Description("The subtitle codec to use for the added files, useful to override global configuration.")]
         public string? SubtitleCodec { get; set; }
 
+        [CommandOption("--re-encode|--reencode")]
+        [Description("Pure re-encode of the of the file name (allows re-using the same filename, without a output directory)")]
+        public bool ReEncode { get; set; }
+
         public override ValidationResult Validate()
         {
-            if (string.IsNullOrEmpty(OutputPath) && string.IsNullOrEmpty(OutputDir))
+            if (string.IsNullOrEmpty(OutputPath) && string.IsNullOrEmpty(OutputDir) && !ReEncode)
             {
                 return ValidationResult.Error("A output path, or an output directory is required!");
             }
 
-            if (Files.Length > 1 && !string.IsNullOrEmpty(OutputPath))
+            if (Files.Length > 1 && !string.IsNullOrEmpty(OutputPath) && !ReEncode)
             {
                 return ValidationResult.Error("A output path can not be used with several files!");
             }
