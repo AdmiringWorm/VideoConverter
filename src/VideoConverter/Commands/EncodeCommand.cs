@@ -182,7 +182,7 @@ namespace VideoConverter.Commands
                                     }
                                 }
 
-                                if (!settings.IgnoreDuplicates)
+                                if (!isDuplicate || !settings.IgnoreDuplicates)
                                 {
                                     var newSize = new FileInfo(tempWorkPath).Length;
                                     if (newSize > initialSize)
@@ -200,6 +200,8 @@ namespace VideoConverter.Commands
                                 if (!settings.IgnoreDuplicates)
                                 {
                                     stepChild.Tick($"Moving encoded file to new location '{newFileName}'");
+                                    if (File.Exists(queue.OutputPath))
+                                        File.Delete(queue.OutputPath);
                                     File.Move(tempWorkPath, queue.OutputPath);
                                     stepChild.ForegroundColor = ConsoleColor.DarkGreen;
                                 }
