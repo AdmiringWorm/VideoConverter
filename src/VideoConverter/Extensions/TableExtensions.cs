@@ -59,6 +59,17 @@ namespace VideoConverter.Extensions
             return new Text(textValue, new Style(color));
         }
 
+        public static string GetAnsiTextString(this QueueStatus status)
+        {
+            return status switch
+            {
+                QueueStatus.Completed => $"[grey]{status}[/]",
+                QueueStatus.Failed => $"[darkred]{status}[/]",
+                QueueStatus.Encoding => $"[teal]{status}[/]",
+                _ => $"[olive]{status}[/]",
+            };
+        }
+
         public static Text GetAnsiText(this object? value, Color color)
         {
             if (value is null)

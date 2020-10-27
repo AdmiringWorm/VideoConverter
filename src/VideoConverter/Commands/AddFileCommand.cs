@@ -353,20 +353,20 @@ namespace VideoConverter.Commands
             return this.cancel ? 1 : 0;
         }
 
-        private async Task<string> GetSha512(string file, CancellationToken cancellationToken)
+        private Task<string> GetSha512(string file, CancellationToken cancellationToken)
         {
             using var algo = SHA512.Create();
             using var stream = File.OpenRead(file);
             var sb = new StringBuilder();
 
-            var hashBytes = await algo.ComputeHashAsync(stream, cancellationToken).ConfigureAwait(false);
+            var hashBytes = algo.ComputeHash(stream);
 
             foreach (var b in hashBytes)
             {
                 sb.AppendFormat("{0:x2}", b);
             }
 
-            return sb.ToString();
+            return Task.FromResult(sb.ToString());
         }
 
         private void CancelProcessing(object? sender, ConsoleCancelEventArgs e)

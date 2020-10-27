@@ -44,20 +44,11 @@ namespace VideoConverter.Commands
                 {
                     var items = this.queueRepo.GetQueueItems(settings.Status).ToList();
 
-                    var table = new Table()
-                        .SetDefaults()
-                        .AddColumns(
-                            new TableColumn("ID").RightAligned(),
-                            new TableColumn("Status").Centered(),
-                            new TableColumn("New Name")
-                        );
-
                     foreach (var item in items)
                     {
-                        var statusMessage = item.StatusMessage?.Length > 20 ? item.StatusMessage.Substring(0, 20) : item.StatusMessage;
-                        table.AddColorRow(item.Id, item.Status, Path.GetFileName(item.OutputPath).EscapeMarkup());
+                        this.console.Markup("[fuchsia] {0}>[/] ({1})", item.Id, item.Status.GetAnsiTextString());
+                        this.console.WriteLine(Path.GetFileName(item.OutputPath), new Style(Color.DarkCyan));
                     }
-                    this.console.RenderTable(table, $"Found {"item".ToQuantity(items.Count)}");
                 }
                 catch (Exception ex)
                 {
