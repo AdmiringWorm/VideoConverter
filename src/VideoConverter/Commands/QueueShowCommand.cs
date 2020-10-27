@@ -51,6 +51,7 @@ namespace VideoConverter.Commands
 
             table.AddRow("Old Name".GetAnsiText(Color.Silver), oldName.EscapeMarkup().GetAnsiText(Color.DarkCyan));
             table.AddRow("Old Dir".GetAnsiText(Color.Silver), oldDir.EscapeMarkup().GetAnsiText(Color.DarkCyan));
+            table.AddRow("Old Hash".GetAnsiText(Color.Silver), item.OldHash.GetAnsiText(Color.DarkKhaki));
 
             var newName = Path.GetFileName(item.OutputPath);
             var newDir = Path.GetDirectoryName(item.OutputPath);
@@ -62,6 +63,7 @@ namespace VideoConverter.Commands
 
             table.AddRow("New Name".GetAnsiText(Color.Silver), newName.EscapeMarkup().GetAnsiText(Color.DarkCyan));
             table.AddRow("New Path".GetAnsiText(Color.Silver), newDir.EscapeMarkup().GetAnsiText(Color.DarkCyan));
+            table.AddRow("New Hash".GetAnsiText(Color.Silver), item.NewHash.GetAnsiText(Color.DarkKhaki));
             table.AddRow("Status".GetAnsiText(Color.Silver), item.Status.GetAnsiText());
 
             this.console.RenderTable(table, string.Empty);
