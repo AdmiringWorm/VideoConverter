@@ -22,23 +22,39 @@ namespace VideoConverter.Commands
 
         public override int Execute(CommandContext context, QueueListOption settings)
         {
-            var items = this.queueRepo.GetQueueItems(settings.Status).ToList();
-
-            var table = new Table()
-                .SetDefaults()
-                .AddColumns(
-                    new TableColumn("ID").RightAligned(),
-                    new TableColumn("Status").Centered(),
-                    new TableColumn("New Name")
-                );
-
-            foreach (var item in items)
+            if (settings.CountOnly)
             {
-                var statusMessage = item.StatusMessage?.Length > 20 ? item.StatusMessage.Substring(0, 20) : item.StatusMessage;
-                table.AddColorRow(item.Id, item.Status, Path.GetFileName(item.OutputPath));
-            }
+                var itemCount = this.queueRepo.GetQueueItemCount(settings.Status);
 
-            this.console.RenderTable(table, $"Found {"item".ToQuantity(items.Count)}");
+                if (settings.Status is null)
+                {
+                    this.console.MarkupLine("[aqua]There are {0} items in total in the queue![/]", itemCount);
+                }
+                else
+                {
+                    this.console.MarkupLine("[aqua]There are {0} items in the {1} queue![/]", itemCount, settings.Status);
+                }
+            }
+            else
+            {
+                var items = this.queueRepo.GetQueueItems(settings.Status).ToList();
+
+                var table = new Table()
+                    .SetDefaults()
+                    .AddColumns(
+                        new TableColumn("ID").RightAligned(),
+                        new TableColumn("Status").Centered(),
+                        new TableColumn("New Name")
+                    );
+
+                foreach (var item in items)
+                {
+                    var statusMessage = item.StatusMessage?.Length > 20 ? item.StatusMessage.Substring(0, 20) : item.StatusMessage;
+                    table.AddColorRow(item.Id, item.Status, Path.GetFileName(item.OutputPath));
+                }
+
+                this.console.RenderTable(table, $"Found {"item".ToQuantity(items.Count)}");
+            }
 
             return 0;
         }
