@@ -1,5 +1,6 @@
 namespace VideoConverter.Storage.Models
 {
+    using System;
     using System.Collections.Generic;
 
     public sealed class FileQueue
@@ -17,5 +18,7 @@ namespace VideoConverter.Storage.Models
 
         public string? OldHash { get; set; }
         public string? NewHash { get; set; }
+
+        public Exception? Exception { get; set; }
     }
 }

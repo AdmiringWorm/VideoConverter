@@ -46,7 +46,7 @@ namespace VideoConverter.Commands
 
                     foreach (var item in items)
                     {
-                        this.console.Markup("[fuchsia] {0}>[/] ({1})", item.Id, item.Status.GetAnsiTextString());
+                        this.console.Markup("[fuchsia] {0}>[/] ({1})  ", item.Id, item.Status.GetAnsiTextString());
                         this.console.WriteLine(Path.GetFileName(item.OutputPath), new Style(Color.DarkCyan));
                     }
                 }

@@ -96,6 +96,7 @@ namespace VideoConverter.Storage.Repositories
             {
                 file.Status = QueueStatus.Pending;
                 file.StatusMessage = null;
+                file.Exception = null;
                 queueCol.Update(file);
                 this.dbFactory.CreateCheckpoint();
             }
@@ -110,8 +111,24 @@ namespace VideoConverter.Storage.Repositories
                 this.dbFactory.EnsureTransaction();
                 queueItem.Status = status;
                 queueItem.StatusMessage = statusMessage;
+                queueItem.Exception = null;
 
                 queueCol.Update(queueItem);
+
+                this.dbFactory.CreateCheckpoint();
+            }
+        }
+
+        public void UpdateQueueStatus(string path, QueueStatus status, Exception exception)
+        {
+            var queueCol = this.dbFactory.GetCollection<FileQueue>(TABLE_NAME);
+            var queueItem = queueCol.Find(q => q.Path == path).FirstOrDefault();
+            if (queueItem is not null)
+            {
+                this.dbFactory.EnsureTransaction();
+                queueItem.Status = status;
+                queueItem.StatusMessage = null;
+                queueItem.Exception = exception;
 
                 this.dbFactory.CreateCheckpoint();
             }
@@ -126,13 +143,28 @@ namespace VideoConverter.Storage.Repositories
 
             queueItem.Status = status;
             queueItem.StatusMessage = statusMessage;
+            queueItem.Exception = null;
 
             queueCol.Update(queueItem);
 
             this.dbFactory.CreateCheckpoint();
         }
 
+        public void UpdateQueueStatus(int id, QueueStatus status, Exception exception)
+        {
+            var queueCol = this.dbFactory.GetCollection<FileQueue>(TABLE_NAME);
+            var queueItem = queueCol.FindById(id);
 
+            this.dbFactory.EnsureTransaction();
+
+            queueItem.Status = status;
+            queueItem.StatusMessage = null;
+            queueItem.Exception = exception;
+
+            queueCol.Update(queueItem);
+
+            this.dbFactory.CreateCheckpoint();
+        }
 
         public int GetPendingQueueCount()
         {

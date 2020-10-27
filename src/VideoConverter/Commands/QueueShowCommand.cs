@@ -76,6 +76,12 @@ namespace VideoConverter.Commands
                 this.console.Render(panel);
             }
 
+            if (item.Exception is not null)
+            {
+                this.console.WriteLine();
+                this.console.WriteException(item.Exception);
+            }
+
             return 0;
         }
     }

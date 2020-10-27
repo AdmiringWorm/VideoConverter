@@ -156,7 +156,7 @@ namespace VideoConverter.Commands
                             if (cancellationToken.IsCancellationRequested)
                             {
                                 failed = true;
-                                this.queueRepo.UpdateQueueStatus(queue.Id, QueueStatus.Pending);
+                                this.queueRepo.UpdateQueueStatus(queue.Id, QueueStatus.Pending, "Progress was cancelled by user");
                                 stepChild.ForegroundColor = ConsoleColor.DarkGray;
                                 stepChild.Tick(stepChild.CurrentTick, $"Encoding Cancelled for '{newFileName}'");
                                 if (File.Exists(tempWorkPath))
@@ -222,14 +222,14 @@ namespace VideoConverter.Commands
                             failed = true;
                             if (cancellationToken.IsCancellationRequested)
                             {
-                                this.queueRepo.UpdateQueueStatus(queue.Id, QueueStatus.Pending);
+                                this.queueRepo.UpdateQueueStatus(queue.Id, QueueStatus.Pending, "Progress was cancelled by user");
                                 stepChild.ForegroundColor = ConsoleColor.DarkGray;
                                 stepChild.Tick(stepChild.CurrentTick, $"Encoding Cancelled for '{newFileName}'");
                             }
                             else
                             {
                                 stepChild.ForegroundColor = ConsoleColor.DarkRed;
-                                this.queueRepo.UpdateQueueStatus(queue.Id, QueueStatus.Failed, ex.Message);
+                                this.queueRepo.UpdateQueueStatus(queue.Id, QueueStatus.Failed, ex);
                                 stepChild.Tick(stepChild.CurrentTick, $"Encoding failed for '{newFileName}'");
                             }
 
@@ -242,7 +242,7 @@ namespace VideoConverter.Commands
                 catch (Exception ex)
                 {
                     stepChild.ForegroundColor = ConsoleColor.DarkRed;
-                    this.queueRepo.UpdateQueueStatus(queue.Id, QueueStatus.Failed, ex.Message);
+                    this.queueRepo.UpdateQueueStatus(queue.Id, QueueStatus.Failed, ex);
                     stepChild.Tick(stepChild.CurrentTick, $"Encoding failed for '{newFileName}'");
                     failed = true;
                 }
