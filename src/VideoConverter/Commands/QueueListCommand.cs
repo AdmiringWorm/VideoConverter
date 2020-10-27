@@ -1,6 +1,7 @@
-using System.IO;
 namespace VideoConverter.Commands
 {
+    using System;
+    using System.IO;
     using System.Linq;
     using Humanizer;
     using Spectre.Cli;
@@ -37,23 +38,31 @@ namespace VideoConverter.Commands
             }
             else
             {
-                var items = this.queueRepo.GetQueueItems(settings.Status).ToList();
 
-                var table = new Table()
-                    .SetDefaults()
-                    .AddColumns(
-                        new TableColumn("ID").RightAligned(),
-                        new TableColumn("Status").Centered(),
-                        new TableColumn("New Name")
-                    );
 
-                foreach (var item in items)
+                try
                 {
-                    var statusMessage = item.StatusMessage?.Length > 20 ? item.StatusMessage.Substring(0, 20) : item.StatusMessage;
-                    table.AddColorRow(item.Id, item.Status, Path.GetFileName(item.OutputPath));
-                }
+                    var items = this.queueRepo.GetQueueItems(settings.Status).ToList();
 
-                this.console.RenderTable(table, $"Found {"item".ToQuantity(items.Count)}");
+                    var table = new Table()
+                        .SetDefaults()
+                        .AddColumns(
+                            new TableColumn("ID").RightAligned(),
+                            new TableColumn("Status").Centered(),
+                            new TableColumn("New Name")
+                        );
+
+                    foreach (var item in items)
+                    {
+                        var statusMessage = item.StatusMessage?.Length > 20 ? item.StatusMessage.Substring(0, 20) : item.StatusMessage;
+                        table.AddColorRow(item.Id, item.Status, Path.GetFileName(item.OutputPath).EscapeMarkup());
+                    }
+                    this.console.RenderTable(table, $"Found {"item".ToQuantity(items.Count)}");
+                }
+                catch (Exception ex)
+                {
+                    this.console.WriteException(ex);
+                }
             }
 
             return 0;
