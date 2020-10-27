@@ -29,8 +29,7 @@ namespace VideoConverter.Commands
         private readonly AddCriteriaCommand criteriaCommand;
         private readonly EpisodeCriteriaRepository criteriaRepo;
         private readonly QueueRepository queueRepository;
-
-        private bool cancel = false;
+        private readonly CancellationTokenSource tokenSource;
 
         public AddFileCommand(Configuration config,
                               IAnsiConsole console,
@@ -43,6 +42,7 @@ namespace VideoConverter.Commands
             this.criteriaCommand = criteriaCommand;
             this.criteriaRepo = criteriaRepo;
             this.queueRepository = queueRepository;
+            tokenSource = new CancellationTokenSource();
         }
 
         public override async Task<int> ExecuteAsync(CommandContext context, AddFileOption settings)
@@ -53,7 +53,7 @@ namespace VideoConverter.Commands
 
                 foreach (var file in settings.Files.Select(f => Path.GetFullPath(f)))
                 {
-                    if (this.cancel)
+                    if (this.tokenSource.IsCancellationRequested)
                         break;
 
                     if (!File.Exists(file))
@@ -62,14 +62,14 @@ namespace VideoConverter.Commands
                         return 1;
                     }
 
-                    var hashTask = GetSHA1Async(file, CancellationToken.None);
+                    var hashTask = GetSHA1Async(file, this.tokenSource.Token);
 
-                    var mediaInfoTask = FFmpeg.GetMediaInfo(file);
+                    var mediaInfoTask = FFmpeg.GetMediaInfo(file, this.tokenSource.Token);
 
                     bool isAccepted = false;
                     EpisodeData? episodeData = null;
 
-                    while (!this.cancel && string.IsNullOrEmpty(settings.OutputPath) && !isAccepted)
+                    while (!this.tokenSource.Token.IsCancellationRequested && string.IsNullOrEmpty(settings.OutputPath) && !isAccepted)
                     {
                         try
                         {
@@ -88,18 +88,18 @@ namespace VideoConverter.Commands
                             break;
                         }
 
-                        if (this.cancel)
+                        if (this.tokenSource.Token.IsCancellationRequested)
                             break;
 
                         UpdateEpisodeData(episodeData);
 
-                        if (this.cancel)
+                        if (this.tokenSource.Token.IsCancellationRequested)
                             break;
 
                         isAccepted = AskAcceptable(context, episodeData);
                     }
 
-                    if (this.cancel)
+                    if (this.tokenSource.Token.IsCancellationRequested)
                         break;
 
                     if ((episodeData is null && string.IsNullOrEmpty(settings.OutputPath) && !settings.ReEncode) ||
@@ -111,7 +111,7 @@ namespace VideoConverter.Commands
                     var audioStreams = mediaInfo.AudioStreams.ToList();
                     var subtitleStreams = mediaInfo.SubtitleStreams.ToList();
 
-                    if (this.cancel)
+                    if (this.tokenSource.Token.IsCancellationRequested)
                         break;
 
                     var streams = new List<int>();
@@ -141,7 +141,7 @@ namespace VideoConverter.Commands
 
                         streams.AddRange(AskAndSelectStreams(videoStreams, "video streams"));
 
-                        if (this.cancel)
+                        if (this.tokenSource.IsCancellationRequested)
                             break;
                     }
                     else
@@ -186,7 +186,7 @@ namespace VideoConverter.Commands
 
                         streams.AddRange(AskAndSelectStreams(audioStreams, "audio streams"));
 
-                        if (this.cancel)
+                        if (this.tokenSource.Token.IsCancellationRequested)
                             break;
                     }
                     else
@@ -228,7 +228,7 @@ namespace VideoConverter.Commands
 
                         streams.AddRange(AskAndSelectStreams(subtitleStreams, "subtitle streams"));
 
-                        if (this.cancel)
+                        if (this.tokenSource.IsCancellationRequested)
                             break;
                     }
                     else
@@ -236,7 +236,7 @@ namespace VideoConverter.Commands
                         streams.AddRange(subtitleStreams.Select(s => s.Index));
                     }
 
-                    if (this.cancel)
+                    if (this.tokenSource.IsCancellationRequested)
                         break;
 
                     var hash = await hashTask.ConfigureAwait(false);
@@ -348,10 +348,10 @@ namespace VideoConverter.Commands
             catch (Exception ex)
             {
                 this.console.WriteException(ex);
-                this.cancel = true;
+                this.tokenSource.Cancel();
             }
 
-            return this.cancel ? 1 : 0;
+            return this.tokenSource.Token.IsCancellationRequested ? 1 : 0;
         }
 
         private async Task<string> GetSHA1Async(string file, CancellationToken cancellationToken)
@@ -361,6 +361,9 @@ namespace VideoConverter.Commands
             var sb = new StringBuilder();
 
             var hashBytes = await algo.ComputeHashAsync(stream, cancellationToken);
+
+            if (cancellationToken.IsCancellationRequested)
+                return string.Empty;
 
             foreach (var b in hashBytes)
             {
@@ -377,7 +380,7 @@ namespace VideoConverter.Commands
                 this.console.MarkupLine("We are cancelling all processing, please wait for cleanup to be complete!");
 
                 e.Cancel = true;
-                this.cancel = true;
+                this.tokenSource.Cancel();
             }
         }
 
