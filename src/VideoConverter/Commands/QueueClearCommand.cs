@@ -21,9 +21,6 @@ namespace VideoConverter.Commands
 
         public override int Execute(CommandContext context, QueueClearOption settings)
         {
-            if (settings.Status is not null && settings.Status == QueueStatus.Encoding)
-                throw new Exception("It is not possible to remove files already being encoded!");
-
             var statusCount = this.queueRepo.RemoveQueueItems(settings.Status);
 
             this.queueRepo.SaveChanges();
