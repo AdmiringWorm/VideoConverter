@@ -1,3 +1,5 @@
+using System.Threading;
+using System.Security.Cryptography;
 using System.Drawing;
 namespace VideoConverter.Commands
 {
@@ -58,6 +60,29 @@ namespace VideoConverter.Commands
                     {
                         this.console.MarkupLine("[red on black] ERROR: The file '[fuchsia]{0}[/]' do not exist.[/]", file.EscapeMarkup());
                         return 1;
+                    }
+
+                    var hash = await GetSha512(file, CancellationToken.None);
+
+                    var fileExist = this.queueRepository.FileExists(file.Normalize(), hash);
+
+                    if (fileExist)
+                    {
+                        if (settings.RemoveDuplicates)
+                        {
+                            this.console.WriteLine($"The file '{file}' is a duplicate of an existing file. Removing...", new Style(Color.Green));
+                            File.Delete(file);
+                            continue;
+                        }
+                        else if (settings.IgnoreDuplicates)
+                        {
+                            this.console.WriteLine($"WARNING: The file '{file}' is a duplicate of an existing file. Ignoring...", new Style(Color.Yellow));
+                            continue;
+                        }
+                        else
+                        {
+                            this.console.MarkupLine("[yellow]WARNING: Found duplicate file, ignoring or removing duplicates have not been specified. Continuing[/]");
+                        }
                     }
 
                     var mediaInfoTask = FFmpeg.GetMediaInfo(file);
@@ -286,7 +311,20 @@ namespace VideoConverter.Commands
                         return 1;
                     }
 
-                    if (queueRepository.AddToQueue(file.Normalize(), outputPath, settings.VideoCodec, settings.AudioCodec, settings.SubtitleCodec, streams.ToArray()))
+                    var queueItem = new FileQueue
+                    {
+                        AudioCodec = settings.AudioCodec ?? this.config.AudioCodec,
+                        OldHash = hash,
+                        OutputPath = outputPath,
+                        Path = file.Normalize(),
+                        Status = QueueStatus.Pending,
+                        StatusMessage = string.Empty,
+                        Streams = streams,
+                        SubtitleCodec = settings.SubtitleCodec ?? this.config.SubtitleCodec,
+                        VideoCodec = settings.VideoCodec ?? this.config.VideoCodec,
+                    };
+
+                    if (queueRepository.AddToQueue(queueItem))
                     {
                         this.queueRepository.SaveChanges();
                         try
@@ -313,6 +351,22 @@ namespace VideoConverter.Commands
             }
 
             return this.cancel ? 1 : 0;
+        }
+
+        private async Task<string> GetSha512(string file, CancellationToken cancellationToken)
+        {
+            using var algo = SHA512.Create();
+            using var stream = File.OpenRead(file);
+            var sb = new StringBuilder();
+
+            var hashBytes = await algo.ComputeHashAsync(stream, cancellationToken).ConfigureAwait(false);
+
+            foreach (var b in hashBytes)
+            {
+                sb.AppendFormat("{0:x2}", b);
+            }
+
+            return sb.ToString();
         }
 
         private void CancelProcessing(object? sender, ConsoleCancelEventArgs e)

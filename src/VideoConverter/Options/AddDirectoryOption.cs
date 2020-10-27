@@ -33,6 +33,14 @@ namespace VideoConverter.Options
         [Description("Pure re-encode of the of the file name (allows re-using the same filename, without a output directory)")]
         public bool ReEncode { get; set; }
 
+        [CommandOption("--remove-duplicates")]
+        [Description("Remove any duplicate files that have already been added to the queue")]
+        public bool RemoveDuplicates { get; set; }
+
+        [CommandOption("--ignore-duplicates")]
+        [Description("Ignore any duplicate files that have already been added to the queue")]
+        public bool IgnoreDuplicates { get; set; }
+
         public override ValidationResult Validate()
         {
             if (string.IsNullOrEmpty(OutputDirectory) && !ReEncode)

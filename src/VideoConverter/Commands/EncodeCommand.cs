@@ -13,6 +13,8 @@ namespace VideoConverter.Commands
     using VideoConverter.Storage.Models;
     using VideoConverter.Storage.Repositories;
     using Xabe.FFmpeg;
+    using System.Security.Cryptography;
+    using System.Text;
 
     public class EncodeCommand : AsyncCommand<EncodeOption>
     {
@@ -95,9 +97,9 @@ namespace VideoConverter.Commands
 
                 var newFileName = Path.GetFileNameWithoutExtension(queue.OutputPath);
 
-                int maxSteps = 4;
+                int maxSteps = 5;
                 if (settings.RemoveOldFiles)
-                    maxSteps = 5;
+                    maxSteps++;
 
                 using var stepChild = pbMain.Spawn(maxSteps, "Collecting information", childOptions);
 
@@ -162,19 +164,45 @@ namespace VideoConverter.Commands
                             }
                             else
                             {
-                                var newSize = new FileInfo(tempWorkPath).Length;
+                                stepChild.Tick($"Calculating new hash for '{newFileName}'");
+                                var newHash = await GetSha512(tempWorkPath, CancellationToken.None);
+                                queue.NewHash = newHash;
 
-                                var statusMessage = string.Empty;
-                                if (newSize > initialSize)
-                                    statusMessage = $"Lost {(newSize - initialSize).Bytes().Humanize("#.##")}";
-                                else if (newSize < initialSize)
-                                    statusMessage = $"Saved {(initialSize - newSize).Bytes().Humanize("#.##")}";
-                                else
-                                    statusMessage = $"No loss or gain in size";
-                                this.queueRepo.UpdateQueueStatus(queue.Id, QueueStatus.Completed, statusMessage);
+                                var isDuplicate = this.queueRepo.FileExists(queue.Path, newHash);
+                                queue.Status = QueueStatus.Completed;
+
+                                if (isDuplicate)
+                                {
+                                    queue.StatusMessage = "Duplicate file...";
+                                    if (settings.IgnoreDuplicates)
+                                    {
+                                        stepChild.Tick($"Removing duplicate file...");
+                                        File.Delete(tempWorkPath);
+                                        stepChild.ForegroundColor = ConsoleColor.DarkGray;
+                                    }
+                                }
+
+                                if (!settings.IgnoreDuplicates)
+                                {
+                                    var newSize = new FileInfo(tempWorkPath).Length;
+                                    if (newSize > initialSize)
+                                        queue.StatusMessage = $"Lost {(newSize - initialSize).Bytes().Humanize("#.##")}";
+                                    else if (newSize < initialSize)
+                                        queue.StatusMessage = $"Saved {(initialSize - newSize).Bytes().Humanize("#.##")}";
+                                    else
+                                        queue.StatusMessage = $"No loss or gain in size";
+                                }
+
+                                this.queueRepo.UpdateQueue(queue);
+
+                                //this.queueRepo.UpdateQueueStatus(queue.Id, QueueStatus.Completed, statusMessage);
                                 encodingPb.Tick(encodingPb.MaxTicks, "Completed");
-                                stepChild.Tick($"Moving encoded file to new location '{newFileName}'");
-                                File.Move(tempWorkPath, queue.OutputPath);
+                                if (!settings.IgnoreDuplicates)
+                                {
+                                    stepChild.Tick($"Moving encoded file to new location '{newFileName}'");
+                                    File.Move(tempWorkPath, queue.OutputPath);
+                                    stepChild.ForegroundColor = ConsoleColor.DarkGreen;
+                                }
 
                                 if (settings.RemoveOldFiles)
                                 {
@@ -183,7 +211,7 @@ namespace VideoConverter.Commands
                                         File.Delete(queue.Path);
                                 }
 
-                                stepChild.ForegroundColor = ConsoleColor.DarkGreen;
+
                                 stepChild.Tick($"Encoding completed for '{newFileName}'");
                             }
                         }
@@ -264,6 +292,22 @@ namespace VideoConverter.Commands
             }
 
             return queue;
+        }
+
+        private async Task<string> GetSha512(string file, CancellationToken cancellationToken)
+        {
+            using var algo = SHA512.Create();
+            using var stream = File.OpenRead(file);
+            var sb = new StringBuilder();
+
+            var hashBytes = await algo.ComputeHashAsync(stream, cancellationToken).ConfigureAwait(false);
+
+            foreach (var b in hashBytes)
+            {
+                sb.AppendFormat("{0:x2}", b);
+            }
+
+            return sb.ToString();
         }
     }
 }

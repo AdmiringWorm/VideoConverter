@@ -16,5 +16,9 @@ namespace VideoConverter.Options
         [CommandOption("-r|--remove|--remove-file|--remove-old")]
         [Description("Remove any old file when there is a successful encoding")]
         public bool RemoveOldFiles { get; set; }
+
+        [CommandOption("--ignore-duplicates|--skip-duplicates")]
+        [Description("Ignore any duplicate entries found after encoding")]
+        public bool IgnoreDuplicates { get; set; }
     }
 }

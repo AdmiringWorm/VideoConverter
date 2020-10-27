@@ -30,6 +30,8 @@ namespace VideoConverter.Commands
                 AudioCodec = settings.AudioCodec,
                 SubtitleCodec = settings.SubtitleCodec,
                 ReEncode = settings.ReEncode,
+                RemoveDuplicates = settings.RemoveDuplicates,
+                IgnoreDuplicates = settings.IgnoreDuplicates,
             };
 
             return fileCommand.ExecuteAsync(context, fileSettings);

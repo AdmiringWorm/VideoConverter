@@ -59,43 +59,30 @@ namespace VideoConverter.Storage.Repositories
                 return col.LongCount(c => c.Status == status);
         }
 
-        public bool AddToQueue(string path, string output, params int[] streams)
-        {
-            return AddToQueue(path, output, null, null, null, streams);
-        }
-
-        public bool AddToQueue(string path, string output, string? vcodec, string? acodec, string? scodec, params int[] streams)
+        public bool AddToQueue(FileQueue queueItem)
         {
             var queueCol = this.dbFactory.GetCollection<FileQueue>(TABLE_NAME);
-            var nextQueue = queueCol.Find(q => q.Path == path).FirstOrDefault();
-
+            var nextQueue = queueCol.Find(q => q.Path == queueItem.Path).FirstOrDefault();
             this.dbFactory.EnsureTransaction();
 
-            if (nextQueue is null)
+            if (nextQueue is not null)
             {
-                nextQueue = new FileQueue
-                {
-                    Path = path,
-                };
-            }
-            else if (nextQueue.Status == QueueStatus.Encoding)
-            {
-                return false;
+                if (nextQueue.Status == QueueStatus.Encoding)
+                    return false;
+                queueItem.Id = nextQueue.Id;
             }
 
-            nextQueue.AudioCodec = acodec ?? config.AudioCodec;
-            nextQueue.OutputPath = output;
-            nextQueue.Status = QueueStatus.Pending;
-            nextQueue.StatusMessage = null;
-            nextQueue.Streams.Clear();
-            nextQueue.Streams.AddRange(streams);
-            nextQueue.SubtitleCodec = scodec ?? config.SubtitleCodec;
-            nextQueue.VideoCodec = vcodec ?? config.VideoCodec;
-
-            queueCol.Upsert(nextQueue);
+            queueCol.Upsert(queueItem);
             this.dbFactory.CreateCheckpoint();
 
             return true;
+        }
+
+        public bool FileExists(string path, string hash)
+        {
+            var col = this.dbFactory.GetCollection<FileQueue>(TABLE_NAME);
+
+            return col.Count(c => c.Path != path && (c.OldHash == hash || c.NewHash == hash)) > 0;
         }
 
         public void ResetFailedQueue()
@@ -188,6 +175,17 @@ namespace VideoConverter.Storage.Repositories
         public void AbortChanges()
         {
             this.dbFactory.RollbackTransaction();
+        }
+
+        public void UpdateQueue(FileQueue queue)
+        {
+            var col = this.dbFactory.GetCollection<FileQueue>(TABLE_NAME);
+
+            this.dbFactory.EnsureTransaction();
+
+            col.Update(queue);
+
+            this.dbFactory.CreateCheckpoint();
         }
     }
 }

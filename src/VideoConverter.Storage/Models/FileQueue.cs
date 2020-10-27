@@ -13,6 +13,9 @@ namespace VideoConverter.Storage.Models
         public string OutputPath { get; set; } = string.Empty;
 
         public QueueStatus Status { get; set; }
-		public string? StatusMessage { get; set; }
+        public string? StatusMessage { get; set; }
+
+        public string? OldHash { get; set; }
+        public string? NewHash { get; set; }
     }
 }
