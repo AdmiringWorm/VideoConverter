@@ -165,7 +165,7 @@ namespace VideoConverter.Commands
                             else
                             {
                                 stepChild.Tick($"Calculating new hash for '{newFileName}'");
-                                var newHash = await GetSHA1(tempWorkPath, CancellationToken.None);
+                                var newHash = await GetSHA1Async(tempWorkPath, CancellationToken.None);
                                 queue.NewHash = newHash;
 
                                 var isDuplicate = this.queueRepo.FileExists(queue.Path, newHash);
@@ -296,20 +296,20 @@ namespace VideoConverter.Commands
             return queue;
         }
 
-        private Task<string> GetSHA1(string file, CancellationToken cancellationToken)
+        private async Task<string> GetSHA1Async(string file, CancellationToken cancellationToken)
         {
             using var algo = SHA1.Create();
             using var stream = File.OpenRead(file);
             var sb = new StringBuilder();
 
-            var hashBytes = algo.ComputeHash(stream);
+            var hashBytes = await algo.ComputeHashAsync(stream, cancellationToken);
 
             foreach (var b in hashBytes)
             {
                 sb.AppendFormat("{0:x2}", b);
             }
 
-            return Task.FromResult(sb.ToString());
+            return sb.ToString();
         }
     }
 }

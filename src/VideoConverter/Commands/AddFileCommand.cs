@@ -62,28 +62,7 @@ namespace VideoConverter.Commands
                         return 1;
                     }
 
-                    var hash = await GetSHA1(file, CancellationToken.None);
-
-                    var fileExist = this.queueRepository.FileExists(file.Normalize(), hash);
-
-                    if (fileExist)
-                    {
-                        if (settings.RemoveDuplicates)
-                        {
-                            this.console.WriteLine($"The file '{file}' is a duplicate of an existing file. Removing...", new Style(Color.Green));
-                            File.Delete(file);
-                            continue;
-                        }
-                        else if (settings.IgnoreDuplicates)
-                        {
-                            this.console.WriteLine($"WARNING: The file '{file}' is a duplicate of an existing file. Ignoring...", new Style(Color.Yellow));
-                            continue;
-                        }
-                        else
-                        {
-                            this.console.MarkupLine("[yellow]WARNING: Found duplicate file, ignoring or removing duplicates have not been specified. Continuing[/]");
-                        }
-                    }
+                    var hashTask = GetSHA1Async(file, CancellationToken.None);
 
                     var mediaInfoTask = FFmpeg.GetMediaInfo(file);
 
@@ -260,6 +239,28 @@ namespace VideoConverter.Commands
                     if (this.cancel)
                         break;
 
+                    var hash = await hashTask.ConfigureAwait(false);
+                    var fileExist = this.queueRepository.FileExists(file.Normalize(), hash);
+
+                    if (fileExist)
+                    {
+                        if (settings.RemoveDuplicates)
+                        {
+                            this.console.WriteLine($"The file '{file}' is a duplicate of an existing file. Removing...", new Style(Color.Green));
+                            File.Delete(file);
+                            continue;
+                        }
+                        else if (settings.IgnoreDuplicates)
+                        {
+                            this.console.WriteLine($"WARNING: The file '{file}' is a duplicate of an existing file. Ignoring...", new Style(Color.Yellow));
+                            continue;
+                        }
+                        else
+                        {
+                            this.console.MarkupLine("[yellow]WARNING: Found duplicate file, ignoring or removing duplicates have not been specified. Continuing[/]");
+                        }
+                    }
+
                     string outputPath = string.Empty;
                     if (!string.IsNullOrEmpty(settings.OutputPath))
                     {
@@ -353,20 +354,20 @@ namespace VideoConverter.Commands
             return this.cancel ? 1 : 0;
         }
 
-        private Task<string> GetSHA1(string file, CancellationToken cancellationToken)
+        private async Task<string> GetSHA1Async(string file, CancellationToken cancellationToken)
         {
             using var algo = SHA1.Create();
             using var stream = File.OpenRead(file);
             var sb = new StringBuilder();
 
-            var hashBytes = algo.ComputeHash(stream);
+            var hashBytes = await algo.ComputeHashAsync(stream, cancellationToken);
 
             foreach (var b in hashBytes)
             {
                 sb.AppendFormat("{0:x2}", b);
             }
 
-            return Task.FromResult(sb.ToString());
+            return sb.ToString();
         }
 
         private void CancelProcessing(object? sender, ConsoleCancelEventArgs e)

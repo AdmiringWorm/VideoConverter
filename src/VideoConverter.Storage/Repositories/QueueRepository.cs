@@ -82,7 +82,7 @@ namespace VideoConverter.Storage.Repositories
         {
             var col = this.dbFactory.GetCollection<FileQueue>(TABLE_NAME);
 
-            return col.Count(c => c.Path != path && (c.OldHash == hash || c.NewHash == hash)) > 0;
+            return col.Count(c => (c.Path != path && c.OldHash == hash) || c.NewHash == hash) > 0;
         }
 
         public void ResetFailedQueue()
