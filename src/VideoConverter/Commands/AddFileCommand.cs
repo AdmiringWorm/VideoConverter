@@ -62,7 +62,7 @@ namespace VideoConverter.Commands
                         return 1;
                     }
 
-                    var hash = await GetSha512(file, CancellationToken.None);
+                    var hash = await GetSHA1(file, CancellationToken.None);
 
                     var fileExist = this.queueRepository.FileExists(file.Normalize(), hash);
 
@@ -353,9 +353,9 @@ namespace VideoConverter.Commands
             return this.cancel ? 1 : 0;
         }
 
-        private Task<string> GetSha512(string file, CancellationToken cancellationToken)
+        private Task<string> GetSHA1(string file, CancellationToken cancellationToken)
         {
-            using var algo = SHA512.Create();
+            using var algo = SHA1.Create();
             using var stream = File.OpenRead(file);
             var sb = new StringBuilder();
 

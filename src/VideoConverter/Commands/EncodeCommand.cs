@@ -165,7 +165,7 @@ namespace VideoConverter.Commands
                             else
                             {
                                 stepChild.Tick($"Calculating new hash for '{newFileName}'");
-                                var newHash = await GetSha512(tempWorkPath, CancellationToken.None);
+                                var newHash = await GetSHA1(tempWorkPath, CancellationToken.None);
                                 queue.NewHash = newHash;
 
                                 var isDuplicate = this.queueRepo.FileExists(queue.Path, newHash);
@@ -197,7 +197,7 @@ namespace VideoConverter.Commands
 
                                 //this.queueRepo.UpdateQueueStatus(queue.Id, QueueStatus.Completed, statusMessage);
                                 encodingPb.Tick(encodingPb.MaxTicks, "Completed");
-                                if (!settings.IgnoreDuplicates)
+                                if (!isDuplicate || !settings.IgnoreDuplicates)
                                 {
                                     stepChild.Tick($"Moving encoded file to new location '{newFileName}'");
                                     if (File.Exists(queue.OutputPath))
@@ -296,9 +296,9 @@ namespace VideoConverter.Commands
             return queue;
         }
 
-        private Task<string> GetSha512(string file, CancellationToken cancellationToken)
+        private Task<string> GetSHA1(string file, CancellationToken cancellationToken)
         {
-            using var algo = SHA512.Create();
+            using var algo = SHA1.Create();
             using var stream = File.OpenRead(file);
             var sb = new StringBuilder();
 
