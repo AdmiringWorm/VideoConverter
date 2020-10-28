@@ -62,7 +62,14 @@ namespace VideoConverter.Commands
                         return 1;
                     }
 
-                    var hashTask = GetSHA1Async(file, this.tokenSource.Token);
+                    var existingFile = this.queueRepository.GetQueueItem(file);
+
+                    Task<string> hashTask;
+
+                    if (string.IsNullOrEmpty(existingFile?.OldHash))
+                        hashTask = GetSHA1Async(file, this.tokenSource.Token);
+                    else
+                        hashTask = Task.FromResult(existingFile.OldHash);
 
                     var mediaInfoTask = FFmpeg.GetMediaInfo(file, this.tokenSource.Token);
 

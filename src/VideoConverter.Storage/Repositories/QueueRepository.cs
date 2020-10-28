@@ -23,7 +23,16 @@ namespace VideoConverter.Storage.Repositories
         {
             var col = this.dbFactory.GetCollection<FileQueue>(TABLE_NAME);
 
-            return ReplacePrefixes(col.FindById(identifier));
+            return ReplacePrefixes(col.FindById(identifier))!;
+        }
+
+        public FileQueue? GetQueueItem(string path)
+        {
+            var col = this.dbFactory.GetCollection<FileQueue>(TABLE_NAME);
+
+            var prefixedPath = ReplaceWithPrefix(path);
+
+            return ReplacePrefixes(col.Query().Where(q => q.Path == prefixedPath).FirstOrDefault());
         }
 
         public int RemoveQueueItems(QueueStatus? status)
@@ -209,9 +218,9 @@ namespace VideoConverter.Storage.Repositories
             var queueCol = this.dbFactory.GetCollection<FileQueue>(TABLE_NAME);
 
             if (status is null)
-                return queueCol.FindAll().Select(f => ReplacePrefixes(f));
+                return queueCol.FindAll().Select(f => ReplacePrefixes(f)!);
             else
-                return queueCol.Find(q => q.Status == status).Select(f => ReplacePrefixes(f));
+                return queueCol.Find(q => q.Status == status).Select(f => ReplacePrefixes(f)!);
         }
 
         public void SaveChanges()
@@ -248,8 +257,11 @@ namespace VideoConverter.Storage.Repositories
             this.dbFactory.CreateCheckpoint();
         }
 
-        private FileQueue ReplacePrefixes(FileQueue fileQueue)
+        private FileQueue? ReplacePrefixes(FileQueue? fileQueue)
         {
+            if (fileQueue is null)
+                return null;
+
             fileQueue.Path = ReplacePrefixes(fileQueue.Path);
             fileQueue.OutputPath = ReplacePrefixes(fileQueue.OutputPath);
             return fileQueue;
