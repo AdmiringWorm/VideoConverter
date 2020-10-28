@@ -21,7 +21,7 @@ namespace VideoConverter
             Console.InputEncoding = Encoding.UTF8;
             var container = CreateContainer();
 
-            //var console = container.Resolve<IAnsiConsole>();
+            var console = container.Resolve<IAnsiConsole>();
 
             var registrar = new TypeRegistrar(container);
 
@@ -72,6 +72,11 @@ namespace VideoConverter
                 });
 
                 return await app.RunAsync(args);
+            }
+            catch (Exception ex)
+            {
+                console.WriteException(ex);
+                return 1;
             }
             finally
             {

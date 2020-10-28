@@ -15,14 +15,16 @@ namespace VideoConverter.Commands
     using Xabe.FFmpeg;
     using System.Security.Cryptography;
     using System.Text;
+    using Spectre.Console;
 
     public class EncodeCommand : AsyncCommand<EncodeOption>
     {
         private readonly QueueRepository queueRepo;
         private readonly Configuration config;
         private readonly CancellationToken cancellationToken;
+        private readonly IAnsiConsole console;
 
-        public EncodeCommand(QueueRepository queueRepo, Configuration config)
+        public EncodeCommand(QueueRepository queueRepo, Configuration config, IAnsiConsole console)
         {
             this.queueRepo = queueRepo;
             this.config = config;
@@ -38,6 +40,7 @@ namespace VideoConverter.Commands
                     e.Cancel = true;
                 }
             };
+            this.console = console;
         }
 
         public override async Task<int> ExecuteAsync(CommandContext context, EncodeOption settings)
@@ -86,7 +89,15 @@ namespace VideoConverter.Commands
 
             while (queue != null)
             {
-                this.queueRepo.SaveChanges();
+                try
+                {
+                    this.queueRepo.SaveChanges();
+                }
+                catch (Exception ex)
+                {
+                    this.console.WriteException(ex);
+                    return 1;
+                }
 
                 if (cancellationToken.IsCancellationRequested)
                 {
@@ -247,22 +258,30 @@ namespace VideoConverter.Commands
                     failed = true;
                 }
 
-
-                this.queueRepo.SaveChanges();
-
-                pbMain.Tick($"Completed file {pbMain.CurrentTick + 1} / {pbMain.MaxTicks}");
-
-                if (!cancellationToken.IsCancellationRequested)
+                try
                 {
-                    var newCount = GetPendingCount(pbMain.CurrentTick, settings.Indexes);
+                    this.queueRepo.SaveChanges();
 
-                    if (newCount != count)
+                    pbMain.Tick($"Completed file {pbMain.CurrentTick + 1} / {pbMain.MaxTicks}");
+
+                    if (!cancellationToken.IsCancellationRequested)
                     {
-                        count = newCount;
-                        pbMain.MaxTicks = count;
-                    }
+                        var newCount = GetPendingCount(pbMain.CurrentTick, settings.Indexes);
 
-                    queue = GetNextQueueItem(settings.Indexes, ref indexCount);
+                        if (newCount != count)
+                        {
+                            count = newCount;
+                            pbMain.MaxTicks = count;
+                        }
+
+
+                        queue = GetNextQueueItem(settings.Indexes, ref indexCount);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    this.console.WriteException(ex);
+                    return 1;
                 }
             }
 
