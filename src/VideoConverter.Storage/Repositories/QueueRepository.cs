@@ -77,7 +77,6 @@ namespace VideoConverter.Storage.Repositories
             }
 
             nextQueue.AudioCodec = queueItem.AudioCodec;
-            nextQueue.Exception = queueItem.Exception;
             nextQueue.NewHash = queueItem.NewHash;
             nextQueue.OldHash = queueItem.OldHash;
             nextQueue.OutputPath = ReplaceWithPrefix(queueItem.OutputPath);
@@ -113,7 +112,6 @@ namespace VideoConverter.Storage.Repositories
             {
                 file.Status = QueueStatus.Pending;
                 file.StatusMessage = null;
-                file.Exception = null;
                 queueCol.Update(file);
                 this.dbFactory.CreateCheckpoint();
             }
@@ -129,7 +127,6 @@ namespace VideoConverter.Storage.Repositories
                 this.dbFactory.EnsureTransaction();
                 queueItem.Status = status;
                 queueItem.StatusMessage = statusMessage;
-                queueItem.Exception = null;
 
                 queueCol.Update(queueItem);
 
@@ -146,8 +143,7 @@ namespace VideoConverter.Storage.Repositories
             {
                 this.dbFactory.EnsureTransaction();
                 queueItem.Status = status;
-                queueItem.StatusMessage = null;
-                queueItem.Exception = exception;
+                queueItem.StatusMessage = exception.Message + "\n\n" + exception.StackTrace;
 
                 this.dbFactory.CreateCheckpoint();
             }
@@ -162,7 +158,6 @@ namespace VideoConverter.Storage.Repositories
 
             queueItem.Status = status;
             queueItem.StatusMessage = statusMessage;
-            queueItem.Exception = null;
 
             queueCol.Update(queueItem);
 
@@ -177,8 +172,7 @@ namespace VideoConverter.Storage.Repositories
             this.dbFactory.EnsureTransaction();
 
             queueItem.Status = status;
-            queueItem.StatusMessage = null;
-            queueItem.Exception = exception;
+            queueItem.StatusMessage = exception.Message + "\n\n" + exception.StackTrace;
 
             queueCol.Update(queueItem);
 
@@ -239,7 +233,6 @@ namespace VideoConverter.Storage.Repositories
             var foundQueue = col.FindById(queue.Id);
 
             foundQueue.AudioCodec = queue.AudioCodec;
-            foundQueue.Exception = queue.Exception;
             foundQueue.NewHash = queue.NewHash;
             foundQueue.OldHash = queue.OldHash;
             foundQueue.OutputPath = ReplaceWithPrefix(foundQueue.OutputPath);
@@ -269,10 +262,10 @@ namespace VideoConverter.Storage.Repositories
 
             foreach (var prefix in this.config.Prefixes)
             {
-                if (prefixedPath.StartsWith($"{{{prefix.Prefix}}}", StringComparison.OrdinalIgnoreCase))
+                if (prefixedPath.StartsWith($"{{{prefix.Prefix.TrimEnd('/')}}}", StringComparison.OrdinalIgnoreCase))
 
                 {
-                    var path = prefixedPath.Replace($"{{{prefix.Prefix}}}", prefix.Path, StringComparison.OrdinalIgnoreCase);
+                    var path = prefixedPath.Replace($"{{{prefix.Prefix.TrimEnd('/')}}}", prefix.Path, StringComparison.OrdinalIgnoreCase);
                     return path;
                 }
             }
@@ -291,7 +284,7 @@ namespace VideoConverter.Storage.Repositories
             {
                 if (path.StartsWith(prefix.Path, StringComparison.OrdinalIgnoreCase))
                 {
-                    foundPaths.Add(path.Replace(prefix.Path, $"{{{prefix.Prefix}}}", StringComparison.OrdinalIgnoreCase));
+                    foundPaths.Add(path.Replace(prefix.Path, $"{{{prefix.Prefix.TrimEnd('/')}}}", StringComparison.OrdinalIgnoreCase));
                 }
             }
 

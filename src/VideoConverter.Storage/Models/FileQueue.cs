@@ -18,7 +18,5 @@ namespace VideoConverter.Storage.Models
 
         public string? OldHash { get; set; }
         public string? NewHash { get; set; }
-
-        public Exception? Exception { get; set; }
     }
 }
