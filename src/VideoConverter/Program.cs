@@ -50,6 +50,8 @@ namespace VideoConverter
                         add.AddCommand<AddCriteriaCommand>("criteria")
                             .WithAlias("criterias")
                             .WithDescription("Adds or updates a new criteria to existing criterias.");
+
+                        add.AddCommand<AddPrefixCommand>("prefix");
                     });
 
                     config.AddCommand<EncodeCommand>("encode")

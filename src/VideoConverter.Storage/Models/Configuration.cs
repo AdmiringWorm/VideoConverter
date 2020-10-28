@@ -1,14 +1,19 @@
 namespace VideoConverter.Storage.Models
 {
-    using System.IO;
     using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
 
     [Serializable]
     public class Configuration
     {
+        private List<PrefixConfiguration> prefixes;
+
         public Configuration()
         {
             WorkDirectory = Path.GetTempPath();
+            prefixes = new List<PrefixConfiguration>();
         }
 
         public bool IncludeFansubber { get; set; } = true;
@@ -20,5 +25,15 @@ namespace VideoConverter.Storage.Models
         public string? MapperDatabase { get; set; }
 
         public string WorkDirectory { get; set; }
+
+        public List<PrefixConfiguration> Prefixes
+        {
+            get => prefixes;
+            set
+            {
+                prefixes.Clear();
+                prefixes.AddRange(value.OrderBy(v => v.Prefix));
+            }
+        }
     }
 }
