@@ -92,7 +92,7 @@ namespace VideoConverter.Storage.Repositories
                 else
                 {
                     actualCriteria.NewEpisode = criteria.NewEpisode;
-                    actualCriteria.NewName = criteria.NewSeries;
+                    actualCriteria.NewName = criteria.NewSeries ?? actualCriteria.NewName;
                     actualCriteria.NewSeason = criteria.NewSeason;
                     actualCriteria.OldEpisode = criteria.Episode;
                     actualCriteria.OldSeason = criteria.Season;
