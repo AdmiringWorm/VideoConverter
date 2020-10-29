@@ -23,7 +23,7 @@ namespace VideoConverter.Commands
 
         public override int Execute(CommandContext context, AddCriteriaOption settings)
         {
-			EpisodeData? episodeData;
+            EpisodeData? episodeData;
             try
             {
                 episodeData = FileParser.ParseEpisode(settings.FilePath);
@@ -78,7 +78,7 @@ namespace VideoConverter.Commands
                     newEpisode = settings.EpisodeNumber.Value;
                 }
 
-                if (episodeNum != episodeData.EpisodeNumber || newEpisode != settings.EpisodeNumber)
+                if (episodeNum != newEpisode || episodeNum != episodeData.EpisodeNumber || newEpisode != settings.EpisodeNumber)
                 {
                     newCriteria.Episode = episodeNum;
                     newCriteria.NewEpisode = newEpisode;
