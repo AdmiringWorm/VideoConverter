@@ -32,7 +32,7 @@ namespace VideoConverter.Storage.Repositories
 
             var prefixedPath = ReplaceWithPrefix(path);
 
-            return ReplacePrefixes(col.Query().Where(q => q.Path == prefixedPath).FirstOrDefault());
+            return ReplacePrefixes(col.Query().Where(q => q.Path == prefixedPath || q.OutputPath == prefixedPath).FirstOrDefault());
         }
 
         public int RemoveQueueItems(QueueStatus? status)
