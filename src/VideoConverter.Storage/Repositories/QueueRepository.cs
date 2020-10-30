@@ -72,7 +72,7 @@ namespace VideoConverter.Storage.Repositories
         {
             var queueCol = this.dbFactory.GetCollection<FileQueue>(TABLE_NAME);
             string path = ReplaceWithPrefix(queueItem.Path);
-            var nextQueue = queueCol.Find(q => q.Path == queueItem.Path).FirstOrDefault();
+            var nextQueue = queueCol.Find(q => q.Path == path).FirstOrDefault();
             this.dbFactory.EnsureTransaction();
 
             if (nextQueue is not null)

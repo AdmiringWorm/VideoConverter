@@ -319,18 +319,29 @@ namespace VideoConverter.Commands
                         return 1;
                     }
 
-                    var queueItem = new FileQueue
+                    FileQueue queueItem;
+
+                    if (existingFile is not null)
                     {
-                        AudioCodec = settings.AudioCodec ?? this.config.AudioCodec,
-                        OldHash = hash,
-                        OutputPath = outputPath,
-                        Path = file.Normalize(),
-                        Status = QueueStatus.Pending,
-                        StatusMessage = string.Empty,
-                        Streams = streams,
-                        SubtitleCodec = settings.SubtitleCodec ?? this.config.SubtitleCodec,
-                        VideoCodec = settings.VideoCodec ?? this.config.VideoCodec,
-                    };
+                        queueItem = existingFile;
+                    }
+                    else
+                    {
+                        queueItem = new FileQueue
+                        {
+                            Path = file.Normalize()
+                        };
+                    }
+
+                    queueItem.AudioCodec = settings.AudioCodec ?? this.config.AudioCodec;
+                    queueItem.OutputPath = outputPath;
+                    queueItem.OldHash = hash;
+                    queueItem.NewHash = string.Empty;
+                    queueItem.Status = QueueStatus.Pending;
+                    queueItem.StatusMessage = string.Empty;
+                    queueItem.Streams = streams;
+                    queueItem.SubtitleCodec = settings.SubtitleCodec ?? this.config.SubtitleCodec;
+                    queueItem.VideoCodec = settings.VideoCodec ?? this.config.VideoCodec;
 
                     if (queueRepository.AddToQueue(queueItem))
                     {
