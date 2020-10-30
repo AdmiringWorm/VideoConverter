@@ -64,6 +64,12 @@ namespace VideoConverter.Commands
 
                     var existingFile = this.queueRepository.GetQueueItem(file);
 
+                    if (existingFile is not null && settings.IgnoreStatuses.Contains(existingFile.Status))
+                    {
+                        this.console.MarkupLine("[yellow]WARNING: [fuchsia]'{0}'[/] exists with status [aqua]{1}[/]. Ignoring...[/]", file.EscapeMarkup(), existingFile.Status);
+                        continue;
+                    }
+
                     Task<string> hashTask;
 
                     if (string.IsNullOrEmpty(existingFile?.OldHash))

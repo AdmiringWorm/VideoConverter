@@ -2,6 +2,7 @@ namespace VideoConverter.Options
 {
     using System.ComponentModel;
     using Spectre.Cli;
+    using VideoConverter.Storage.Models;
 
     public class AddFileOption : CommandSettings
     {
@@ -40,6 +41,10 @@ namespace VideoConverter.Options
         [CommandOption("--ignore-duplicates")]
         [Description("Ignore any duplicate files that have already been added to the queue")]
         public bool IgnoreDuplicates { get; set; }
+
+        [CommandOption("--ignore")]
+        [Description("The statuses that should be ignored when adding new queue items")]
+        public QueueStatus[] IgnoreStatuses { get; set; } = new[] { QueueStatus.Encoding };
 
         public override ValidationResult Validate()
         {
