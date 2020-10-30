@@ -26,6 +26,8 @@ namespace VideoConverter.Storage.Models
 
         public string WorkDirectory { get; set; }
 
+        public string FileType { get; set; } = "Matroska";
+
         public List<PrefixConfiguration> Prefixes
         {
             get => prefixes;

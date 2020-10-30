@@ -46,6 +46,10 @@ namespace VideoConverter.Options
         [Description("The statuses that should be ignored when adding new queue items")]
         public QueueStatus[] IgnoreStatuses { get; set; } = new[] { QueueStatus.Encoding };
 
+        [CommandOption("--extension")]
+        [Description("The file extension to use when encoding files")]
+        public string? FileExtension { get; set; }
+
         public override ValidationResult Validate()
         {
             if (string.IsNullOrEmpty(OutputDirectory) && !ReEncode)

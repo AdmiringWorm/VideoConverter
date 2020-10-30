@@ -47,6 +47,9 @@ namespace VideoConverter.Commands
 
         public override async Task<int> ExecuteAsync(CommandContext context, AddFileOption settings)
         {
+            if (!string.IsNullOrWhiteSpace(settings.FileExtension))
+                this.config.FileType = settings.FileExtension.GetExtensionFileType();
+
             try
             {
                 Console.CancelKeyPress += CancelProcessing;
@@ -305,7 +308,7 @@ namespace VideoConverter.Commands
                         else if (settings.ReEncode)
                         {
                             outputPath = Path.Combine(directory, Path.GetFileName(file));
-                            outputPath = Path.ChangeExtension(outputPath, ".mkv");
+                            outputPath = Path.ChangeExtension(outputPath, this.config.FileType.GetFileExtension());
                         }
                         else
                         {
@@ -316,7 +319,7 @@ namespace VideoConverter.Commands
                     }
                     else if (settings.ReEncode)
                     {
-                        outputPath = Path.ChangeExtension(file, ".mkv");
+                        outputPath = Path.ChangeExtension(file, this.config.FileType.GetFileExtension());
                     }
                     else
                     {
@@ -528,7 +531,7 @@ namespace VideoConverter.Commands
             if (episodeData.SeasonNumber is null)
                 episodeData.SeasonNumber = 1;
 
-            episodeData.Container = "Matroska"; // TODO: Make Configurable
+            episodeData.Container = this.config.FileType;
 
             if (!config.IncludeFansubber)
                 episodeData.Fansubber = null;

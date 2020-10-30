@@ -2,6 +2,7 @@ namespace VideoConverter.Core.Parsers
 {
     using System.Collections.Generic;
     using System.Text.RegularExpressions;
+    using VideoConverter.Core.Extensions;
     using VideoConverter.Core.Models;
 
     public static class FileParser
@@ -35,35 +36,7 @@ namespace VideoConverter.Core.Parsers
                 if (!m.Success)
                     continue;
 
-                string container = string.Empty;
-                switch (m.Groups["Extension"].Value.ToUpperInvariant())
-                {
-                    case "MKV":
-                    case "MK3D":
-                    case "MKA":
-                    case "MKS":
-                        container = "Matroska";
-                        break;
-                    case "MP4":
-                    case "M4A":
-                    case "M4P":
-                    case "M4B":
-                    case "M4R":
-                    case "M4V":
-                        container = "MPEG-4";
-                        break;
-                    case "AVI":
-                        container = "Audio Video Interleave";
-                        break;
-                    case "WMV":
-                    case "WMA":
-                    case "ASF":
-                        container = "Advanced Systems Format";
-                        break;
-
-                    default:
-                        continue;
-                }
+                string container = m.Groups["Extension"].Value.GetExtensionFileType();
 
                 var episode = m.Groups["Episode"].Value;
                 var episodeNum = 0;

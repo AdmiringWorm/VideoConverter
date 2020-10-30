@@ -1,8 +1,9 @@
-using System;
-using System.Text;
-
 namespace VideoConverter.Core.Models
 {
+    using System;
+    using System.Text;
+    using VideoConverter.Core.Extensions;
+
     public sealed class EpisodeData
     {
         public EpisodeData(string fileName, string series, int episodeNumber, string container)
@@ -68,23 +69,7 @@ namespace VideoConverter.Core.Models
             if (EpisodeName is not null)
                 sb.Append($" - {EpisodeName}");
 
-            switch (Container.ToUpperInvariant())
-            {
-                case "MATROSKA":
-                    sb.Append(".mkv");
-                    break;
-                case "MPEG-4":
-                    sb.Append(".mp4");
-                    break;
-                case "AUDIO VIDEO INTERLEAVE":
-                    sb.Append(".avi");
-                    break;
-                case "ADVANCED SYSTEMS FORMAT":
-                    sb.Append(".wmv");
-                    break;
-                default:
-                    throw new Exception("Nope");
-            }
+            sb.Append(Container.GetFileExtension());
 
             return sb.ToString();
         }

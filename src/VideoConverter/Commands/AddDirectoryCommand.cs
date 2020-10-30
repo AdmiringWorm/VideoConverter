@@ -33,6 +33,7 @@ namespace VideoConverter.Commands
                 RemoveDuplicates = settings.RemoveDuplicates,
                 IgnoreDuplicates = settings.IgnoreDuplicates,
                 IgnoreStatuses = settings.IgnoreStatuses,
+                FileExtension = settings.FileExtension,
             };
 
             return fileCommand.ExecuteAsync(context, fileSettings);
