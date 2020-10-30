@@ -21,7 +21,7 @@ RUN mkdir ${HOME}/dotnet_install && cd ${HOME}/dotnet_install \
 
 # [Optional] Uncomment this section to install additional OS packages.
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y install --no-install-recommends ffmpeg
+	&& apt-get -y install --no-install-recommends ffmpeg
 
 # [Optional] Uncomment this line to install global node packages.
 # RUN su vscode -c "source /usr/local/share/nvm/nvm.sh && npm install -g <your-package-here>" 2>&1
@@ -31,3 +31,4 @@ USER vscode
 ENV PATH="${PATH}:/home/vscode/.dotnet/tools"
 
 RUN dotnet tool install -g cake.tool
+RUN dotnet new --install "VitalElement.AvalonStudio.Templates"

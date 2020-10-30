@@ -19,6 +19,7 @@ namespace VideoConverter.Core.Tests.Parsers
         [TestCase("Tsukiuta. The Animation - 06 (1280x720 HEVC2 AAC).mp4", "Tsukiuta. The Animation", null, 6, "MPEG-4")]
         [TestCase("[Judas] Granblue Fantasy - OAV 02.mkv", "Granblue Fantasy", 0, 2, "Matroska")]
         [TestCase("[GSK_kun] Kaguya-sama Love Is War 08 [BDRip 1920x1080 HEVC FLAC] [84C8F965].mkv", "Kaguya-sama Love Is War", null, 8, "Matroska")]
+        [TestCase("Clannad 1x05.mkv", "Clannad", "1", "5", "Matroska")]
         public void ShouldParseCorrectEpisodeData(string fileName, string expectedSeries, int? expectedSeason, int expectedEpisode, string container)
         {
             var result = FileParser.ParseEpisode(fileName);

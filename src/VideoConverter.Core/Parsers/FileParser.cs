@@ -20,6 +20,7 @@ namespace VideoConverter.Core.Parsers
             episodeRegexes.AddLast(@"^[\s_]*(?<Series>.+)[\s_]*-[\s_]*(?<Episode>\d+|(?:OVA|OAV) ?\d*)[^\.]*\.(?<Extension>[a-z\d]+)$");
             episodeRegexes.AddLast(@"^[\s_]*(?<Series>.+)[\s_]*-[\s_]*S(?<Season>\d+)E(?<Episode>\d+)(?:[\s_]*-[\s_]*(?<EpisodeName>[^\.]+)[\s_]*|[^\.]*)\.(?<Extension>[a-z\d]+)$");
             episodeRegexes.AddLast(@"^[\s_]*[\[\(][\s_]*(?<Fansubber>[^\]\)]+)[\s_]*[\]\)][\s_]*(?<Series>[^\[]+)[\s_]+(?<Episode>\d+|(?:OVA|OAV) ?\d*)[^\.]*\.(?<Extension>[a-z\d]+)$");
+            episodeRegexes.AddLast(@"^(?:[\s_]*[\[\(][\s_]*(?<Fansubber>[^\]\)]+)[\s_]*[\]\)][\s_]*)?(?<Series>.+)(?<Season>\d+)x(?<Episode>\d+)(?:[\s_]*-[\s_]*(?<EpisodeName>[^\.]+)[\s_]*|[^\.]*)\.(?<Extension>[a-z\d]+)$");
         }
 
         public static EpisodeData? ParseEpisode(string fileName)

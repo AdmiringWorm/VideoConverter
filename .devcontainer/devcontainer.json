@@ -32,7 +32,8 @@
 		"wayou.vscode-todo-highlight",
 		"kreativ-software.csharpextensions",
 		"derivitec-ltd.vscode-dotnet-adapter",
-		"hbenl.vscode-test-explorer"
+		"hbenl.vscode-test-explorer",
+		"przemyslawonak.pimp-my-avalonia"
 	],
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
