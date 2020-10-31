@@ -12,6 +12,7 @@ namespace VideoConverter
     using DryIoc;
     using VideoConverter.Storage.Models;
     using VideoConverter.Storage.Database;
+    using AnsiSupport = Spectre.Console.AnsiSupport;
 
     internal static class Program
     {
@@ -89,7 +90,10 @@ namespace VideoConverter
         private static IContainer CreateContainer()
         {
             var container = new Container(rules => rules.WithTrackingDisposableTransients().WithCaptureContainerDisposeStackTrace());
-            container.RegisterDelegate<IAnsiConsole>(context => AnsiConsole.Create(new AnsiConsoleSettings { Ansi = Spectre.Console.AnsiSupport.Detect, ColorSystem = ColorSystemSupport.Detect }), Reuse.Singleton);
+            var ansiSupport = Console.IsOutputRedirected ? AnsiSupport.No : AnsiSupport.Detect;
+            var colorSupport = Console.IsOutputRedirected ? ColorSystemSupport.NoColors : ColorSystemSupport.Detect;
+
+            container.RegisterDelegate<IAnsiConsole>(context => AnsiConsole.Create(new AnsiConsoleSettings { Ansi = ansiSupport, ColorSystem = colorSupport }), Reuse.Singleton);
             container.RegisterDelegate(RegisterConfigurationRepository, Reuse.Singleton);
             container.RegisterDelegate(RegisterConfiguration, Reuse.Singleton);
             container.Register<DatabaseFactory>(Reuse.Singleton);
