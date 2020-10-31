@@ -84,14 +84,36 @@ namespace VideoConverter.Commands
 
             using var pbMain = new ProgressBar(count, string.Empty, progressOptions);
 
+            var mapperDb = this.config.MapperDatabase ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "VideoConverter", "storage.db");
+            var dbDirectory = Path.GetDirectoryName(mapperDb) ?? Environment.CurrentDirectory;
+            var fileName = Path.GetFileName(mapperDb);
+
+            using var monitor = new FileSystemWatcher(dbDirectory, fileName);
+
             int indexCount = 0;
             FileQueue? queue = GetNextQueueItem(settings.Indexes, ref indexCount);
+
+            monitor.Changed += (sender, e) =>
+            {
+                if (e.ChangeType != WatcherChangeTypes.Changed)
+                    return;
+                var newCount = GetPendingCount(pbMain.CurrentTick + 1, settings.Indexes);
+                if (newCount != count)
+                {
+                    count = newCount;
+                    pbMain.MaxTicks = count;
+                    pbMain.Tick(pbMain.CurrentTick, $"Processing file {pbMain.CurrentTick + 1} / {pbMain.MaxTicks}");
+                }
+            };
+            monitor.EnableRaisingEvents = true;
 
             while (queue != null)
             {
                 try
                 {
+                    monitor.EnableRaisingEvents = false;
                     this.queueRepo.SaveChanges();
+                    monitor.EnableRaisingEvents = true;
                 }
                 catch (Exception ex)
                 {
@@ -129,7 +151,9 @@ namespace VideoConverter.Commands
                         stepChild.ForegroundColor = ConsoleColor.DarkGray;
                         stepChild.Tick($"Duplicate file '{Path.GetFileNameWithoutExtension(queue.Path)}'");
                         this.queueRepo.UpdateQueue(queue);
+                        monitor.EnableRaisingEvents = false;
                         this.queueRepo.SaveChanges();
+                        monitor.EnableRaisingEvents = true;
                         continue;
                     }
 
@@ -165,7 +189,9 @@ namespace VideoConverter.Commands
                     stepChild.Tick($"Encoding '{newFileName}'...");
                     queue.Status = QueueStatus.Encoding;
                     this.queueRepo.UpdateQueue(queue);
+                    monitor.EnableRaisingEvents = false;
                     this.queueRepo.SaveChanges();
+                    monitor.EnableRaisingEvents = true;
 
                     using (var encodingPb = stepChild.Spawn(100, $"Initialized", encodingOptions))
                     {
@@ -276,19 +302,21 @@ namespace VideoConverter.Commands
 
                 try
                 {
+                    monitor.EnableRaisingEvents = false;
                     this.queueRepo.SaveChanges();
+                    monitor.EnableRaisingEvents = true;
 
                     pbMain.Tick($"Completed file {pbMain.CurrentTick + 1} / {pbMain.MaxTicks}");
 
                     if (!cancellationToken.IsCancellationRequested)
                     {
-                        var newCount = GetPendingCount(pbMain.CurrentTick, settings.Indexes);
+                        /*var newCount = GetPendingCount(pbMain.CurrentTick, settings.Indexes);
 
                         if (newCount != count)
                         {
                             count = newCount;
                             pbMain.MaxTicks = count;
-                        }
+                        }*/
 
 
                         queue = GetNextQueueItem(settings.Indexes, ref indexCount);
@@ -296,6 +324,13 @@ namespace VideoConverter.Commands
                 }
                 catch (Exception ex)
                 {
+                    if (queue?.Status == QueueStatus.Encoding)
+                    {
+                        queue.Status = QueueStatus.Pending;
+                        this.queueRepo.UpdateQueue(queue);
+                        this.queueRepo.SaveChanges();
+                    }
+
                     this.console.WriteException(ex);
                     return 1;
                 }
