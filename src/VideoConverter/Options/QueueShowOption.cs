@@ -7,6 +7,6 @@ namespace VideoConverter.Options
     {
         [CommandArgument(0, "<IDENTIFIER>")]
         [Description("The identifier of the queue item to use")]
-        public int Identifier { get; set; }
+        public int[] Identifiers { get; set; } = new int[0];
     }
 }
