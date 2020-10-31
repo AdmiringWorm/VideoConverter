@@ -33,6 +33,8 @@ namespace VideoConverter
                 {
                     config.AddBranch("add", add =>
                     {
+                        config.UseStrictParsing();
+
                         add.SetDescription("Common command collection for all things related to adding file/directory/criteria");
 
                         add.AddCommand<AddDirectoryCommand>("directory")
