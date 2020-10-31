@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DryIoc" Version="4.5.0" />
+    <PackageReference Include="DryIoc" Version="4.5.1" />
     <PackageReference Include="Humanizer" Version="2.8.26" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="Roslynator.Analyzers" Version="3.0.0">
