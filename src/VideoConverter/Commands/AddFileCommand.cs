@@ -73,13 +73,6 @@ namespace VideoConverter.Commands
                         continue;
                     }
 
-                    Task<string> hashTask;
-
-                    if (string.IsNullOrEmpty(existingFile?.OldHash))
-                        hashTask = GetSHA1Async(file, this.tokenSource.Token);
-                    else
-                        hashTask = Task.FromResult(existingFile.OldHash);
-
                     var mediaInfoTask = FFmpeg.GetMediaInfo(file, this.tokenSource.Token);
 
                     bool isAccepted = false;
@@ -255,8 +248,7 @@ namespace VideoConverter.Commands
                     if (this.tokenSource.IsCancellationRequested)
                         break;
 
-                    var hash = await hashTask.ConfigureAwait(false);
-                    var fileExist = this.queueRepository.FileExists(file.Normalize(), hash);
+                    var fileExist = this.queueRepository.FileExists(file.Normalize(), null);
 
                     if (fileExist)
                     {
@@ -344,7 +336,6 @@ namespace VideoConverter.Commands
 
                     queueItem.AudioCodec = settings.AudioCodec ?? this.config.AudioCodec;
                     queueItem.OutputPath = outputPath;
-                    queueItem.OldHash = hash;
                     queueItem.NewHash = string.Empty;
                     queueItem.Status = QueueStatus.Pending;
                     queueItem.StatusMessage = string.Empty;
@@ -379,25 +370,6 @@ namespace VideoConverter.Commands
             }
 
             return this.tokenSource.Token.IsCancellationRequested ? 1 : 0;
-        }
-
-        private async Task<string> GetSHA1Async(string file, CancellationToken cancellationToken)
-        {
-            using var algo = SHA1.Create();
-            using var stream = File.OpenRead(file);
-            var sb = new StringBuilder();
-
-            var hashBytes = await algo.ComputeHashAsync(stream, cancellationToken);
-
-            if (cancellationToken.IsCancellationRequested)
-                return string.Empty;
-
-            foreach (var b in hashBytes)
-            {
-                sb.AppendFormat("{0:x2}", b);
-            }
-
-            return sb.ToString();
         }
 
         private void CancelProcessing(object? sender, ConsoleCancelEventArgs e)

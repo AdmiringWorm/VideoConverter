@@ -102,12 +102,15 @@ namespace VideoConverter.Storage.Repositories
             return true;
         }
 
-        public bool FileExists(string path, string hash)
+        public bool FileExists(string path, string? hash)
         {
             var col = this.dbFactory.GetCollection<FileQueue>(TABLE_NAME);
             var prefixedPath = ReplaceWithPrefix(path);
 
-            return col.Count(c => (c.Path != prefixedPath && c.OldHash == hash) || c.NewHash == hash) > 0;
+            if (hash is null)
+                return col.Count(c => c.Path == prefixedPath) > 0;
+            else
+                return col.Count(c => (c.Path != prefixedPath && c.OldHash == hash) || c.NewHash == hash) > 0;
         }
 
         public void ResetFailedQueue()

@@ -117,6 +117,21 @@ namespace VideoConverter.Commands
 
                 try
                 {
+                    var oldHash = await GetSHA1Async(queue.Path, cancellationToken);
+
+                    var exists = this.queueRepo.FileExists(queue.Path, oldHash);
+                    queue.OldHash = oldHash;
+
+                    if (exists && settings.IgnoreDuplicates)
+                    {
+                        queue.Status = QueueStatus.Completed;
+                        queue.StatusMessage = "Duplicate file...";
+                        stepChild.ForegroundColor = ConsoleColor.DarkGray;
+                        stepChild.Tick($"Duplicate file '{Path.GetFileNameWithoutExtension(queue.Path)}'");
+                        this.queueRepo.UpdateQueue(queue);
+                        this.queueRepo.SaveChanges();
+                        continue;
+                    }
 
                     var mediaInfo = await FFmpeg.GetMediaInfo(queue.Path);
 
@@ -148,7 +163,8 @@ namespace VideoConverter.Commands
                         .SetOutput(tempWorkPath);
 
                     stepChild.Tick($"Encoding '{newFileName}'...");
-                    this.queueRepo.UpdateQueueStatus(queue.Id, QueueStatus.Encoding);
+                    queue.Status = QueueStatus.Encoding;
+                    this.queueRepo.UpdateQueue(queue);
                     this.queueRepo.SaveChanges();
 
                     using (var encodingPb = stepChild.Spawn(100, $"Initialized", encodingOptions))
