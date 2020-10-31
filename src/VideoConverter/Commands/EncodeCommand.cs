@@ -84,6 +84,21 @@ namespace VideoConverter.Commands
 
             using var pbMain = new ProgressBar(count, string.Empty, progressOptions);
 
+            var mapperDb = this.config.MapperDatabase ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "VideoConverter", "storage.db");
+
+            var monitor = new FileSystemWatcher(mapperDb);
+
+            monitor.Changed += (sender, e) =>
+            {
+                var newCount = GetPendingCount(0, settings.Indexes);
+                pbMain.Message = $"Processing file {pbMain.CurrentTick + 1} / {pbMain.MaxTicks}";
+                if (newCount != count)
+                {
+                    count = newCount;
+                    pbMain.MaxTicks = count;
+                }
+            };
+
             int indexCount = 0;
             FileQueue? queue = GetNextQueueItem(settings.Indexes, ref indexCount);
 
@@ -282,13 +297,13 @@ namespace VideoConverter.Commands
 
                     if (!cancellationToken.IsCancellationRequested)
                     {
-                        var newCount = GetPendingCount(pbMain.CurrentTick, settings.Indexes);
+                        /*var newCount = GetPendingCount(pbMain.CurrentTick, settings.Indexes);
 
                         if (newCount != count)
                         {
                             count = newCount;
                             pbMain.MaxTicks = count;
-                        }
+                        }*/
 
 
                         queue = GetNextQueueItem(settings.Indexes, ref indexCount);
