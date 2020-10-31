@@ -70,7 +70,7 @@ namespace VideoConverter.Commands
                 int newEpisode = settings.EpisodeNumber.Value;
                 if (settings.EpisodeNumber > 1 && (episodeData.EpisodeNumber - settings.EpisodeNumber + 1) > 0)
                 {
-                    (episodeNum, newEpisode) = GetEpisodeNumbers(episodeData.Series, settings.EpisodeNumber.Value, episodeData.EpisodeNumber);
+                    (episodeNum, newEpisode) = GetEpisodeNumbers(episodeData.Series, episodeData.EpisodeNumber, settings.EpisodeNumber.Value);
                 }
                 else
                 {
@@ -100,7 +100,7 @@ namespace VideoConverter.Commands
                 newEpisode++;
             }
 
-            var criteria = this.repository.GetEpisodeCriterias(seriesName).FirstOrDefault(c => c.Episode > episodeNum && episodeNum < originalEpisode);
+            var criteria = this.repository.GetEpisodeCriterias(seriesName).FirstOrDefault(c => (c.Episode > episodeNum && episodeNum < originalEpisode) || c.NewEpisode == newEpisode);
             if (criteria is not null)
             {
                 episodeNum = originalEpisode;
