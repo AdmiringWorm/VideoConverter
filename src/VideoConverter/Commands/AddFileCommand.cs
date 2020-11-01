@@ -78,7 +78,9 @@ namespace VideoConverter.Commands
                     bool isAccepted = false;
                     EpisodeData? episodeData = null;
 
-                    while (!this.tokenSource.Token.IsCancellationRequested && string.IsNullOrEmpty(settings.OutputPath) && !isAccepted)
+                    var outputPath = settings.OutputPath;
+
+                    while (!this.tokenSource.Token.IsCancellationRequested && string.IsNullOrEmpty(outputPath) && !isAccepted)
                     {
                         try
                         {
@@ -93,7 +95,18 @@ namespace VideoConverter.Commands
                             break;
                         if (episodeData is null)
                         {
-                            this.console.MarkupLine("[yellow on black] WARNING: We were unable to extract necessary information from '[fuchsia]{0}[/]'. Ignoring...[/]", file.EscapeMarkup());
+                            var relativePath = settings.OutputDir ?? Environment.CurrentDirectory;
+                            this.console.MarkupLine("File '[fuchsia]{0}[/]'...", file.EscapeMarkup());
+                            this.console.MarkupLine("We were unable to extract necessary information. Please input the location of the file to save,");
+                            this.console.MarkupLine("Relative to the path ([fuchsia]{0}[/]), or press {{Enter}} to skip the file.", relativePath.EscapeMarkup());
+                            var path = Console.ReadLine();
+                            if (string.IsNullOrWhiteSpace(path))
+                                break;
+                            else if (path.StartsWith('/'))
+                                outputPath = path.Trim();
+                            else
+                                outputPath = Path.Combine(relativePath, path.Trim());
+
                             break;
                         }
 
@@ -111,7 +124,7 @@ namespace VideoConverter.Commands
                     if (this.tokenSource.Token.IsCancellationRequested)
                         break;
 
-                    if ((episodeData is null && string.IsNullOrEmpty(settings.OutputPath) && !settings.ReEncode) ||
+                    if ((episodeData is null && string.IsNullOrEmpty(outputPath) && !settings.ReEncode) ||
                         (episodeData is not null && episodeData.Series == "SKIP"))
                         continue;
 
@@ -269,10 +282,9 @@ namespace VideoConverter.Commands
                         }
                     }
 
-                    string outputPath = string.Empty;
-                    if (!string.IsNullOrEmpty(settings.OutputPath))
+                    if (!string.IsNullOrEmpty(outputPath))
                     {
-                        outputPath = Path.GetFullPath(settings.OutputPath);
+                        outputPath = Path.GetFullPath(outputPath);
                     }
                     else if (!string.IsNullOrEmpty(settings.OutputDir))
                     {
