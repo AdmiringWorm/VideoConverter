@@ -12,7 +12,7 @@
             // If you have changed target frameworks, make sure to update the program path.
             "program": "${workspaceFolder}/src/VideoConverter/bin/Debug/net5.0/VideoConverter.dll",
 			//"args": ["add", "file", "/path/1", "/path/2", "--dir", "/mnt/test/com"],
-			"args":["encode"],
+			"args":["add", "dir", "/mnt/Videos/Anime Unsorted/Aquarion Logos", "/mnt/Videos/Anime Unsorted/K-On!", "/mnt/Videos/Anime Unsorted/[Cerberus] Clannad S1 + S2 + Special [BD 1080p HEVC 10-bit AAC]", "--output", "/mnt/Videos/Anime Unsorted/Anime/TV Series", "--ignore-duplicates", "--ignore", "Encoding", "--ignore", "Completed", "--ignore", "Pending", "--recurse"],
             "cwd": "${workspaceFolder}/src/VideoConverter",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
             "console": "integratedTerminal",

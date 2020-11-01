@@ -407,7 +407,7 @@ namespace VideoConverter.Commands
 
         private bool AskAcceptable(CommandContext context, Core.Models.EpisodeData episodeData)
         {
-            DisplayEpisadeData(episodeData);
+            DisplayEpisodeData(episodeData);
 
             this.console.MarkupLine("Do this information look correct? (Y/n/s) ");
 
@@ -429,6 +429,8 @@ namespace VideoConverter.Commands
                 FilePath = episodeData.FileName,
                 SeriesName = Console.ReadLine()
             };
+            if (string.IsNullOrEmpty(settings.SeriesName))
+                settings.SeriesName = episodeData.Series;
 
             this.console.Markup("[aqua] Season Number: [/]");
             var input = Console.ReadLine();
@@ -467,7 +469,7 @@ namespace VideoConverter.Commands
             return Regex.Replace(sb.ToString(), @"\s{2,}", " ", RegexOptions.Compiled).Trim();
         }
 
-        private void DisplayEpisadeData(Core.Models.EpisodeData episodeData)
+        private void DisplayEpisodeData(Core.Models.EpisodeData episodeData)
         {
             var table = new Table()
                 .SetDefaults()

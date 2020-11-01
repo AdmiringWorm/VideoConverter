@@ -66,49 +66,12 @@ namespace VideoConverter.Commands
 
             if (settings.EpisodeNumber is not null && episodeData.EpisodeNumber != settings.EpisodeNumber)
             {
-                int episodeNum = episodeData.EpisodeNumber;
-                int newEpisode = settings.EpisodeNumber.Value;
-                if (settings.EpisodeNumber > 1 && (episodeData.EpisodeNumber - settings.EpisodeNumber + 1) > 0)
-                {
-                    (episodeNum, newEpisode) = GetEpisodeNumbers(episodeData.Series, episodeData.EpisodeNumber, settings.EpisodeNumber.Value);
-                }
-                else
-                {
-                    episodeNum = episodeData.EpisodeNumber;
-                    newEpisode = settings.EpisodeNumber.Value;
-                }
-
-                if (episodeNum != newEpisode || episodeNum != episodeData.EpisodeNumber || newEpisode != settings.EpisodeNumber)
-                {
-                    newCriteria.Episode = episodeNum;
-                    newCriteria.NewEpisode = newEpisode;
-                }
+                newCriteria.Episode = episodeData.EpisodeNumber;
+                newCriteria.NewEpisode = settings.EpisodeNumber.Value;
             }
 
             this.repository.AddOrUpdateCriteria(newCriteria);
             this.repository.SaveChanges();
-        }
-
-        private (int, int) GetEpisodeNumbers(string seriesName, int originalEpisode, int wantedEpisode)
-        {
-            int episodeNum = originalEpisode - wantedEpisode + 1;
-            int newEpisode = 1;
-
-            while (episodeNum < 1)
-            {
-                episodeNum++;
-                newEpisode++;
-            }
-
-            var criteria = this.repository.GetEpisodeCriterias(seriesName).FirstOrDefault(c => (c.Episode > episodeNum && episodeNum < originalEpisode) || c.NewEpisode == newEpisode);
-            if (criteria is not null)
-            {
-                episodeNum = originalEpisode;
-                newEpisode = wantedEpisode;
-            }
-
-
-            return (episodeNum, newEpisode);
         }
     }
 }
