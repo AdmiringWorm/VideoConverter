@@ -6,24 +6,24 @@ namespace VideoConverter.Commands
     using System.IO;
     using Spectre.Cli;
     using Spectre.Console;
+    using VideoConverter.Core.Models;
+    using VideoConverter.Core.Services;
     using VideoConverter.Options;
-    using VideoConverter.Storage.Models;
-    using VideoConverter.Storage.Repositories;
 
     public sealed class AddPrefixCommand : Command<AddPrefixOption>
     {
-        private readonly ConfigurationRepository configRepo;
+        private readonly IConfigurationService configService;
         private readonly IAnsiConsole console;
 
-        public AddPrefixCommand(ConfigurationRepository configRepo, IAnsiConsole console)
+        public AddPrefixCommand(IConfigurationService configService, IAnsiConsole console)
         {
-            this.configRepo = configRepo;
+            this.configService = configService;
             this.console = console;
         }
 
         public override int Execute(CommandContext context, AddPrefixOption settings)
         {
-            var config = this.configRepo.GetConfiguration();
+            var config = this.configService.GetConfiguration();
             if (config.Prefixes is null)
                 config.Prefixes = new List<PrefixConfiguration>();
 
@@ -33,7 +33,7 @@ namespace VideoConverter.Commands
             else
                 prefixConfig.Path = Path.GetFullPath(settings.DirectoryPath);
 
-            this.configRepo.SaveConfiguration(config);
+            this.configService.SetConfiguration(config);
 
             this.console.MarkupLine("[green]Successfully added prefix [fuchsia]{0}[/] with path [fuchsia]{1}[/][/]",
                 settings.Prefix.EscapeMarkup(),

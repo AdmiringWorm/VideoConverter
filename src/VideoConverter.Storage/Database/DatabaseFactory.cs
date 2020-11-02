@@ -3,6 +3,7 @@ namespace VideoConverter.Storage.Database
     using System;
     using LiteDB;
     using VideoConverter.Storage.Models;
+    using Configuration = VideoConverter.Core.Models.Configuration;
 
     public sealed class DatabaseFactory : IDisposable
     {

@@ -1,4 +1,4 @@
-namespace VideoConverter.Storage.Models
+namespace VideoConverter.Core.Models
 {
     public class PrefixConfiguration
     {

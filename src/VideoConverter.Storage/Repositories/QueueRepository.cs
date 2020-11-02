@@ -4,6 +4,7 @@ namespace VideoConverter.Storage.Repositories
     using System.Collections.Generic;
     using System.Linq;
     using LiteDB;
+    using VideoConverter.Core.Models;
     using VideoConverter.Storage.Database;
     using VideoConverter.Storage.Models;
 

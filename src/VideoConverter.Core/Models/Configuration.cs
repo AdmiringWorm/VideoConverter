@@ -1,11 +1,9 @@
-namespace VideoConverter.Storage.Models
+namespace VideoConverter.Core.Models
 {
-    using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
 
-    [Serializable]
     public class Configuration
     {
         private List<PrefixConfiguration> prefixes;

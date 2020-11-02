@@ -1,21 +1,22 @@
 namespace VideoConverter.Commands
 {
     using System;
-    using System.Threading;
-    using System.Runtime.InteropServices;
     using System.IO;
     using System.Linq;
+    using System.Runtime.InteropServices;
+    using System.Threading;
     using System.Threading.Tasks;
     using Humanizer;
     using ShellProgressBar;
     using Spectre.Cli;
+    using Spectre.Console;
+    using System.Security.Cryptography;
+    using System.Text;
+    using VideoConverter.Core.Models;
     using VideoConverter.Options;
     using VideoConverter.Storage.Models;
     using VideoConverter.Storage.Repositories;
     using Xabe.FFmpeg;
-    using System.Security.Cryptography;
-    using System.Text;
-    using Spectre.Console;
 
     public class EncodeCommand : AsyncCommand<EncodeOption>
     {

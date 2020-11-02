@@ -2,24 +2,23 @@ using System.IO;
 namespace VideoConverter.Commands
 {
     using System;
-    using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
     using Humanizer;
     using Spectre.Cli;
     using Spectre.Console;
+    using VideoConverter.Core.Models;
+    using VideoConverter.Core.Services;
     using VideoConverter.Options;
-    using VideoConverter.Storage.Models;
-    using VideoConverter.Storage.Repositories;
 
     public class ConfigCommand : Command<ConfigOption>
     {
-        private readonly ConfigurationRepository repository;
+        private readonly IConfigurationService service;
         private readonly IAnsiConsole console;
 
-        public ConfigCommand(ConfigurationRepository repository, IAnsiConsole console)
+        public ConfigCommand(IConfigurationService service, IAnsiConsole console)
         {
-            this.repository = repository ?? throw new ArgumentNullException(nameof(repository));
+            this.service = service ?? throw new ArgumentNullException(nameof(service));
             this.console = console ?? throw new ArgumentNullException(nameof(console));
         }
 
@@ -27,7 +26,7 @@ namespace VideoConverter.Commands
         {
             try
             {
-                var config = repository.GetConfiguration();
+                var config = service.GetConfiguration();
 
                 if (string.IsNullOrWhiteSpace(settings.Name))
                 {
@@ -57,7 +56,7 @@ namespace VideoConverter.Commands
                 {
                     var value = bool.Parse(settings.Value);
                     property.SetValue(config, value);
-                    repository.SaveConfiguration(config);
+                    service.SetConfiguration(config);
                     this.console.WriteLine("Configuration Updated!", Style.Plain);
                 }
                 else if (string.Equals(property.Name, "MapperDatabase", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(config.MapperDatabase) && File.Exists(config.MapperDatabase))
@@ -75,13 +74,13 @@ namespace VideoConverter.Commands
                     this.console.WriteLine();
 
                     property.SetValue(config, Path.GetFullPath(settings.Value));
-                    repository.SaveConfiguration(config);
+                    service.SetConfiguration(config);
                     this.console.WriteLine("Configuration updated!", Style.Plain);
                 }
                 else
                 {
                     property.SetValue(config, settings.Value);
-                    repository.SaveConfiguration(config);
+                    service.SetConfiguration(config);
                     this.console.WriteLine("Configuration updated!", Style.Plain);
                 }
             }

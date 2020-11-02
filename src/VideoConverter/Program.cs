@@ -4,14 +4,16 @@ namespace VideoConverter
     using System.IO;
     using System.Text;
     using System.Threading.Tasks;
+    using DryIoc;
     using Spectre.Cli;
     using Spectre.Console;
-    using VideoConverter.Storage.Repositories;
     using VideoConverter.Commands;
+    using VideoConverter.Core.Models;
+    using VideoConverter.Core.Services;
     using VideoConverter.DependencyInjection;
-    using DryIoc;
-    using VideoConverter.Storage.Models;
     using VideoConverter.Storage.Database;
+    using VideoConverter.Storage.Models;
+    using VideoConverter.Storage.Repositories;
     using AnsiSupport = Spectre.Console.AnsiSupport;
 
     internal static class Program
@@ -103,16 +105,16 @@ namespace VideoConverter
             return container;
         }
 
-        private static ConfigurationRepository RegisterConfigurationRepository(IResolverContext arg)
+        private static IConfigurationService RegisterConfigurationRepository(IResolverContext arg)
         {
             var configPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "VideoConverter", "config.xml");
 
-            return new ConfigurationRepository(configPath);
+            return new XmlConfigurationService(configPath);
         }
 
         private static Configuration RegisterConfiguration(IResolverContext context)
         {
-            var repository = context.Resolve<ConfigurationRepository>();
+            var repository = context.Resolve<IConfigurationService>();
 
             var config = repository.GetConfiguration();
 
@@ -120,7 +122,7 @@ namespace VideoConverter
 
             {
                 config.MapperDatabase = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "VideoConverter", "storage.db");
-                repository.SaveConfiguration(config);
+                repository.SetConfiguration(config);
             }
 
             return config;
