@@ -1,14 +1,16 @@
 namespace VideoConverter.Storage.Database
 {
     using System;
+    using System.Threading.Tasks;
     using LiteDB;
+    using LiteDB.Async;
     using VideoConverter.Storage.Models;
     using Configuration = VideoConverter.Core.Models.Configuration;
 
     public sealed class DatabaseFactory : IDisposable
     {
         private readonly Configuration configuration;
-        private LiteDatabase? database;
+        private LiteDatabaseAsync? database;
         private bool transactionStarted = false;
 
         private BsonMapper bsonMapper;
@@ -27,7 +29,7 @@ namespace VideoConverter.Storage.Database
                 .DbRef(x => x.Criterias);
         }
 
-        public ILiteCollection<TEntity> GetCollection<TEntity>(string? name = null)
+        public ILiteCollectionAsync<TEntity> GetCollectionAsync<TEntity>(string? name = null)
         {
             EnsureDatabase();
 
@@ -37,26 +39,26 @@ namespace VideoConverter.Storage.Database
                 return this.database!.GetCollection<TEntity>(name);
         }
 
-        public void EnsureTransaction()
+        public async Task EnsureTransactionAsync()
         {
             EnsureDatabase();
 
             if (!transactionStarted)
-                transactionStarted = this.database!.BeginTrans();
+                transactionStarted = await this.database!.BeginTransAsync().ConfigureAwait(false);
         }
 
-        public void CreateCheckpoint()
+        public async Task CreateCheckpointAsync()
         {
-            EnsureTransaction();
+            await EnsureTransactionAsync().ConfigureAwait(false);
 
-            this.database!.Checkpoint();
+            await this.database!.CheckpointAsync().ConfigureAwait(false);
         }
 
-        public void RollbackTransaction()
+        public async Task RollbackTransactionAsync()
         {
             if (this.database is not null)
             {
-                this.database.Rollback();
+                await this.database.RollbackAsync().ConfigureAwait(false);
                 this.transactionStarted = false;
 
                 this.database.Dispose();
@@ -64,11 +66,11 @@ namespace VideoConverter.Storage.Database
             }
         }
 
-        public void CommitTransaction()
+        public async Task CommitTransactionAsync()
         {
             if (this.database is not null)
             {
-                this.database.Commit();
+                await this.database.CommitAsync().ConfigureAwait(false);
                 this.transactionStarted = false;
 
                 this.database.Dispose();
@@ -79,7 +81,7 @@ namespace VideoConverter.Storage.Database
         private void EnsureDatabase()
         {
             if (this.database is null)
-                this.database = new LiteDatabase($"Filename={this.configuration.MapperDatabase};Connection=shared;Upgrade=true", bsonMapper);
+                this.database = new LiteDatabaseAsync($"Filename={this.configuration.MapperDatabase};Connection=shared;Upgrade=true", bsonMapper);
         }
 
         public void Dispose()

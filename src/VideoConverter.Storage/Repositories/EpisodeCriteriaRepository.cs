@@ -2,6 +2,7 @@ using System.Linq;
 namespace VideoConverter.Storage.Repositories
 {
     using System.Collections.Generic;
+    using System.Threading.Tasks;
     using LiteDB;
     using VideoConverter.Storage.Database;
     using VideoConverter.Storage.Models;
@@ -17,14 +18,14 @@ namespace VideoConverter.Storage.Repositories
             this.dbFactory = dbFactory;
         }
 
-        public IEnumerable<CoreEpisodeCriteria> GetEpisodeCriterias(string seriesName)
+        public async IAsyncEnumerable<CoreEpisodeCriteria> GetEpisodeCriteriasAsync(string seriesName)
         {
-            var collection = this.dbFactory.GetCollection<Criteria<EpisodeCriteria>>(TABLE_NAME);
+            var collection = this.dbFactory.GetCollectionAsync<Criteria<EpisodeCriteria>>(TABLE_NAME);
 
-            var criterias = collection.Query()
+            var criterias = await collection.Query()
                 .Where(c => c.Name == seriesName)
                 .Include(c => c.Criterias)
-                .ToEnumerable();
+                .ToEnumerableAsync().ConfigureAwait(false);
 
             foreach (var criteriaName in criterias)
             {
@@ -42,15 +43,15 @@ namespace VideoConverter.Storage.Repositories
             }
         }
 
-        public void AddOrUpdateCriteria(CoreEpisodeCriteria criteria)
+        public async Task AddOrUpdateCriteriaAsync(CoreEpisodeCriteria criteria)
         {
-            var collection = this.dbFactory.GetCollection<Criteria<EpisodeCriteria>>(TABLE_NAME);
-            var epCol = this.dbFactory.GetCollection<EpisodeCriteria>();
-            this.dbFactory.EnsureTransaction();
+            var collection = this.dbFactory.GetCollectionAsync<Criteria<EpisodeCriteria>>(TABLE_NAME);
+            var epCol = this.dbFactory.GetCollectionAsync<EpisodeCriteria>();
+            await this.dbFactory.EnsureTransactionAsync().ConfigureAwait(false);
 
-            var existingCriteria = collection
+            var existingCriteria = await collection
                 .Include(c => c.Criterias)
-                .FindOne(c => c.Name == criteria.SeriesName);
+                .FindOneAsync(c => c.Name == criteria.SeriesName).ConfigureAwait(false);
 
             if (existingCriteria is null)
             {
@@ -66,11 +67,11 @@ namespace VideoConverter.Storage.Repositories
                     OldEpisode = criteria.Episode,
                     OldSeason = criteria.Season,
                 };
-                epCol.Insert(epCriteria);
-                this.dbFactory.CreateCheckpoint();
+                await epCol.InsertAsync(epCriteria).ConfigureAwait(false);
+                await this.dbFactory.CreateCheckpointAsync().ConfigureAwait(false);
 
                 newCriteria.Criterias.Add(epCriteria);
-                collection.Insert(newCriteria);
+                await collection.InsertAsync(newCriteria).ConfigureAwait(false);
             }
             else
             {
@@ -85,8 +86,8 @@ namespace VideoConverter.Storage.Repositories
                         OldEpisode = criteria.Episode,
                         OldSeason = criteria.Season,
                     };
-                    epCol.Insert(actualCriteria);
-                    this.dbFactory.CreateCheckpoint();
+                    await epCol.InsertAsync(actualCriteria).ConfigureAwait(false);
+                    await this.dbFactory.CreateCheckpointAsync().ConfigureAwait(false);
                     existingCriteria.Criterias.Add(actualCriteria);
                 }
                 else
@@ -96,26 +97,26 @@ namespace VideoConverter.Storage.Repositories
                     actualCriteria.NewSeason = criteria.NewSeason;
                     actualCriteria.OldEpisode = criteria.Episode;
                     actualCriteria.OldSeason = criteria.Season;
-                    epCol.Update(actualCriteria);
-                    this.dbFactory.CreateCheckpoint();
+                    await epCol.UpdateAsync(actualCriteria).ConfigureAwait(false);
+                    await this.dbFactory.CreateCheckpointAsync().ConfigureAwait(false);
                 }
-                collection.Update(existingCriteria);
+                await collection.UpdateAsync(existingCriteria).ConfigureAwait(false);
             }
 
-            collection.EnsureIndex(c => c.Name);
+            await collection.EnsureIndexAsync(c => c.Name).ConfigureAwait(false);
 
 
-            this.dbFactory.CreateCheckpoint();
+            await this.dbFactory.CreateCheckpointAsync().ConfigureAwait(false);
         }
 
-        public void SaveChanges()
+        public Task SaveChangesAsync()
         {
-            this.dbFactory.CommitTransaction();
+            return this.dbFactory.CommitTransactionAsync();
         }
 
-        public void AbortChanges()
+        public Task AbortChanges()
         {
-            this.dbFactory.RollbackTransaction();
+            return this.dbFactory.RollbackTransactionAsync();
         }
     }
 }

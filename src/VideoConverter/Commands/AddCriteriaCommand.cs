@@ -5,12 +5,11 @@ namespace VideoConverter.Commands
     using VideoConverter.Storage.Repositories;
     using VideoConverter.Core.Parsers;
     using Spectre.Console;
-    using System.Linq;
-    using Humanizer;
     using System;
     using VideoConverter.Core.Models;
+    using System.Threading.Tasks;
 
-    public class AddCriteriaCommand : Command<AddCriteriaOption>
+    public class AddCriteriaCommand : AsyncCommand<AddCriteriaOption>
     {
         private readonly EpisodeCriteriaRepository repository;
         private readonly IAnsiConsole console;
@@ -21,7 +20,7 @@ namespace VideoConverter.Commands
             this.console = console;
         }
 
-        public override int Execute(CommandContext context, AddCriteriaOption settings)
+        public override async Task<int> ExecuteAsync(CommandContext context, AddCriteriaOption settings)
         {
             EpisodeData? episodeData;
             try
@@ -42,11 +41,12 @@ namespace VideoConverter.Commands
                 return 1;
             }
 
-            AddOrUpdateCriteria(episodeData, settings);
+            await AddOrUpdateCriteriaAsync(episodeData, settings);
 
             return 0;
         }
-        private void AddOrUpdateCriteria(Core.Models.EpisodeData episodeData, AddCriteriaOption settings)
+
+        private async Task AddOrUpdateCriteriaAsync(Core.Models.EpisodeData episodeData, AddCriteriaOption settings)
         {
             var newCriteria = new EpisodeCriteria
             {
@@ -70,8 +70,8 @@ namespace VideoConverter.Commands
                 newCriteria.NewEpisode = settings.EpisodeNumber.Value;
             }
 
-            this.repository.AddOrUpdateCriteria(newCriteria);
-            this.repository.SaveChanges();
+            await this.repository.AddOrUpdateCriteriaAsync(newCriteria);
+            await this.repository.SaveChangesAsync();
         }
     }
 }

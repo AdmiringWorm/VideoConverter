@@ -50,11 +50,11 @@ namespace VideoConverter.Commands
             var failed = false;
             if (settings.IncludeFailing)
             {
-                this.queueRepo.ResetFailedQueue();
-                this.queueRepo.SaveChanges();
+                await this.queueRepo.ResetFailedQueueAsync();
+                await this.queueRepo.SaveChangesAsync();
             }
 
-            var count = GetPendingCount(0, settings.Indexes);
+            var count = await GetPendingCountAsync(0, settings.Indexes);
 
             if (count == 0)
             {
@@ -91,14 +91,13 @@ namespace VideoConverter.Commands
 
             using var monitor = new FileSystemWatcher(dbDirectory, fileName);
 
-            int indexCount = 0;
-            FileQueue? queue = GetNextQueueItem(settings.Indexes, ref indexCount);
+            (FileQueue? queue, int indexCount) = await GetNextQueueItemAsync(settings.Indexes, 0);
 
-            monitor.Changed += (sender, e) =>
+            monitor.Changed += async (sender, e) =>
             {
                 if (e.ChangeType != WatcherChangeTypes.Changed)
                     return;
-                var newCount = GetPendingCount(pbMain.CurrentTick + 1, settings.Indexes);
+                var newCount = await GetPendingCountAsync(pbMain.CurrentTick + 1, settings.Indexes);
                 if (newCount != count)
                 {
                     count = newCount;
@@ -113,7 +112,7 @@ namespace VideoConverter.Commands
                 try
                 {
                     monitor.EnableRaisingEvents = false;
-                    this.queueRepo.SaveChanges();
+                    await this.queueRepo.SaveChangesAsync();
                     monitor.EnableRaisingEvents = true;
                 }
                 catch (Exception ex)
@@ -142,7 +141,7 @@ namespace VideoConverter.Commands
                 {
                     var oldHash = await GetSHA1Async(queue.Path, cancellationToken);
 
-                    var exists = this.queueRepo.FileExists(queue.Path, oldHash);
+                    var exists = await this.queueRepo.FileExistsAsync(queue.Path, oldHash);
                     queue.OldHash = oldHash;
 
                     if (exists && settings.IgnoreDuplicates)
@@ -151,9 +150,9 @@ namespace VideoConverter.Commands
                         queue.StatusMessage = "Duplicate file...";
                         stepChild.ForegroundColor = ConsoleColor.DarkGray;
                         stepChild.Tick($"Duplicate file '{Path.GetFileNameWithoutExtension(queue.Path)}'");
-                        this.queueRepo.UpdateQueue(queue);
+                        await this.queueRepo.UpdateQueueAsync(queue);
                         monitor.EnableRaisingEvents = false;
-                        this.queueRepo.SaveChanges();
+                        await this.queueRepo.SaveChangesAsync();
                         monitor.EnableRaisingEvents = true;
                         continue;
                     }
@@ -189,9 +188,9 @@ namespace VideoConverter.Commands
 
                     stepChild.Tick($"Encoding '{newFileName}'...");
                     queue.Status = QueueStatus.Encoding;
-                    this.queueRepo.UpdateQueue(queue);
+                    await this.queueRepo.UpdateQueueAsync(queue);
                     monitor.EnableRaisingEvents = false;
-                    this.queueRepo.SaveChanges();
+                    await this.queueRepo.SaveChangesAsync();
                     monitor.EnableRaisingEvents = true;
 
                     using (var encodingPb = stepChild.Spawn(100, $"Initialized", encodingOptions))
@@ -210,7 +209,7 @@ namespace VideoConverter.Commands
                             if (cancellationToken.IsCancellationRequested)
                             {
                                 failed = true;
-                                this.queueRepo.UpdateQueueStatus(queue.Id, QueueStatus.Pending, "Progress was cancelled by user");
+                                await this.queueRepo.UpdateQueueStatusAsync(queue.Id, QueueStatus.Pending, "Progress was cancelled by user");
                                 stepChild.ForegroundColor = ConsoleColor.DarkGray;
                                 stepChild.Tick(stepChild.CurrentTick, $"Encoding Cancelled for '{newFileName}'");
                                 if (File.Exists(tempWorkPath))
@@ -222,7 +221,7 @@ namespace VideoConverter.Commands
                                 var newHash = await GetSHA1Async(tempWorkPath, CancellationToken.None);
                                 queue.NewHash = newHash;
 
-                                var isDuplicate = this.queueRepo.FileExists(queue.Path, newHash);
+                                var isDuplicate = await this.queueRepo.FileExistsAsync(queue.Path, newHash);
                                 queue.Status = QueueStatus.Completed;
 
                                 if (isDuplicate)
@@ -247,7 +246,7 @@ namespace VideoConverter.Commands
                                         queue.StatusMessage = $"No loss or gain in size";
                                 }
 
-                                this.queueRepo.UpdateQueue(queue);
+                                await this.queueRepo.UpdateQueueAsync(queue);
 
                                 //this.queueRepo.UpdateQueueStatus(queue.Id, QueueStatus.Completed, statusMessage);
                                 encodingPb.Tick(encodingPb.MaxTicks, "Completed");
@@ -276,14 +275,14 @@ namespace VideoConverter.Commands
                             failed = true;
                             if (cancellationToken.IsCancellationRequested)
                             {
-                                this.queueRepo.UpdateQueueStatus(queue.Id, QueueStatus.Pending, "Progress was cancelled by user");
+                                await this.queueRepo.UpdateQueueStatusAsync(queue.Id, QueueStatus.Pending, "Progress was cancelled by user");
                                 stepChild.ForegroundColor = ConsoleColor.DarkGray;
                                 stepChild.Tick(stepChild.CurrentTick, $"Encoding Cancelled for '{newFileName}'");
                             }
                             else
                             {
                                 stepChild.ForegroundColor = ConsoleColor.DarkRed;
-                                this.queueRepo.UpdateQueueStatus(queue.Id, QueueStatus.Failed, ex);
+                                await this.queueRepo.UpdateQueueStatusAsync(queue.Id, QueueStatus.Failed, ex);
                                 stepChild.Tick(stepChild.CurrentTick, $"Encoding failed for '{newFileName}'");
                             }
 
@@ -296,7 +295,7 @@ namespace VideoConverter.Commands
                 catch (Exception ex)
                 {
                     stepChild.ForegroundColor = ConsoleColor.DarkRed;
-                    this.queueRepo.UpdateQueueStatus(queue.Id, QueueStatus.Failed, ex);
+                    await this.queueRepo.UpdateQueueStatusAsync(queue.Id, QueueStatus.Failed, ex);
                     stepChild.Tick(stepChild.CurrentTick, $"Encoding failed for '{newFileName}'");
                     failed = true;
                 }
@@ -304,7 +303,7 @@ namespace VideoConverter.Commands
                 try
                 {
                     monitor.EnableRaisingEvents = false;
-                    this.queueRepo.SaveChanges();
+                    await this.queueRepo.SaveChangesAsync();
                     monitor.EnableRaisingEvents = true;
 
                     pbMain.Tick($"Completed file {pbMain.CurrentTick + 1} / {pbMain.MaxTicks}");
@@ -319,8 +318,7 @@ namespace VideoConverter.Commands
                             pbMain.MaxTicks = count;
                         }*/
 
-
-                        queue = GetNextQueueItem(settings.Indexes, ref indexCount);
+                        (queue, indexCount) = await GetNextQueueItemAsync(settings.Indexes, indexCount);
                     }
                 }
                 catch (Exception ex)
@@ -328,8 +326,8 @@ namespace VideoConverter.Commands
                     if (queue?.Status == QueueStatus.Encoding)
                     {
                         queue.Status = QueueStatus.Pending;
-                        this.queueRepo.UpdateQueue(queue);
-                        this.queueRepo.SaveChanges();
+                        await this.queueRepo.UpdateQueueAsync(queue);
+                        await this.queueRepo.SaveChangesAsync();
                     }
 
                     this.console.WriteException(ex);
@@ -340,31 +338,32 @@ namespace VideoConverter.Commands
             return failed ? 1 : 0;
         }
 
-        private int GetPendingCount(int currentTick, int[] indexes)
+        private async Task<int> GetPendingCountAsync(int currentTick, int[] indexes)
         {
             if (indexes is not null && indexes.Length > 0)
                 return indexes.Length;
 
-            return this.queueRepo.GetPendingQueueCount() + currentTick;
+            return (await this.queueRepo.GetPendingQueueCountAsync()) + currentTick;
         }
 
-        private FileQueue? GetNextQueueItem(int[] indexes, ref int indexCount)
+        private async Task<(FileQueue? queue, int count)> GetNextQueueItemAsync(int[] indexes, int indexCount)
         {
+            int newIndex = indexCount;
             FileQueue? queue = null;
             if (indexes is not null && indexes.Length > 0)
             {
-                if (indexCount < indexes.Length)
+                if (newIndex < indexes.Length)
                 {
-                    queue = this.queueRepo.GetQueueItem(indexes[indexCount]);
-                    indexCount++;
+                    queue = await this.queueRepo.GetQueueItemAsync(indexes[newIndex]);
+                    newIndex++;
                 }
             }
             else
             {
-                queue = this.queueRepo.GetNextQueueItem();
+                queue = await this.queueRepo.GetNextQueueItemAsync();
             }
 
-            return queue;
+            return (queue, newIndex);
         }
 
         private async Task<string> GetSHA1Async(string file, CancellationToken cancellationToken)

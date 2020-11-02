@@ -2,15 +2,14 @@ namespace VideoConverter.Commands
 {
     using System;
     using System.IO;
-    using System.Linq;
-    using Humanizer;
+    using System.Threading.Tasks;
     using Spectre.Cli;
     using Spectre.Console;
     using VideoConverter.Extensions;
     using VideoConverter.Options;
     using VideoConverter.Storage.Repositories;
 
-    public class QueueListCommand : Command<QueueListOption>
+    public class QueueListCommand : AsyncCommand<QueueListOption>
     {
         private readonly QueueRepository queueRepo;
         private readonly IAnsiConsole console;
@@ -21,11 +20,11 @@ namespace VideoConverter.Commands
             this.console = console;
         }
 
-        public override int Execute(CommandContext context, QueueListOption settings)
+        public override async Task<int> ExecuteAsync(CommandContext context, QueueListOption settings)
         {
             if (settings.CountOnly)
             {
-                var itemCount = this.queueRepo.GetQueueItemCount(settings.Status);
+                var itemCount = await this.queueRepo.GetQueueItemCountAsync(settings.Status);
 
                 if (settings.Status is null)
                 {
@@ -42,9 +41,9 @@ namespace VideoConverter.Commands
 
                 try
                 {
-                    var items = this.queueRepo.GetQueueItems(settings.Status).ToList();
+                    var items = this.queueRepo.GetQueueItemsAsync(settings.Status);
 
-                    foreach (var item in items)
+                    await foreach (var item in items)
                     {
                         this.console.Markup("[fuchsia] {0}>[/] ({1})  ", item.Id, item.Status.GetAnsiTextString());
                         this.console.WriteLine(Path.GetFileName(item.OutputPath), new Style(Color.DarkCyan));

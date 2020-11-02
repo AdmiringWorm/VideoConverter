@@ -65,7 +65,7 @@ namespace VideoConverter.Commands
                         return 1;
                     }
 
-                    var existingFile = this.queueRepository.GetQueueItem(file);
+                    var existingFile = await this.queueRepository.GetQueueItemAsync(file);
 
                     if (existingFile is not null && settings.IgnoreStatuses.Contains(existingFile.Status))
                     {
@@ -113,12 +113,12 @@ namespace VideoConverter.Commands
                         if (this.tokenSource.Token.IsCancellationRequested)
                             break;
 
-                        UpdateEpisodeData(episodeData);
+                        await UpdateEpisodeDataAsync(episodeData);
 
                         if (this.tokenSource.Token.IsCancellationRequested)
                             break;
 
-                        isAccepted = AskAcceptable(context, episodeData);
+                        isAccepted = await AskAcceptableAsync(context, episodeData);
                     }
 
                     if (this.tokenSource.Token.IsCancellationRequested)
@@ -261,7 +261,7 @@ namespace VideoConverter.Commands
                     if (this.tokenSource.IsCancellationRequested)
                         break;
 
-                    var fileExist = this.queueRepository.FileExists(file.Normalize(), null);
+                    var fileExist = await this.queueRepository.FileExistsAsync(file.Normalize(), null);
 
                     if (fileExist)
                     {
@@ -317,7 +317,7 @@ namespace VideoConverter.Commands
                         else
                         {
                             this.console.MarkupLine("[yellow on black] ERROR: No information was found in the data, and no output path is specified. This should not happen, please report this error to the developers.[/]");
-                            this.queueRepository.AbortChanges();
+                            await this.queueRepository.AbortChangesAsync();
                             return 1;
                         }
                     }
@@ -328,7 +328,7 @@ namespace VideoConverter.Commands
                     else
                     {
                         this.console.MarkupLine("[yellow on black] ERROR: No information was found in the data, and no output path is specified. This should not happen, please report this error to the developers.[/]");
-                        this.queueRepository.AbortChanges();
+                        await this.queueRepository.AbortChangesAsync();
                         return 1;
                     }
 
@@ -355,9 +355,9 @@ namespace VideoConverter.Commands
                     queueItem.SubtitleCodec = settings.SubtitleCodec ?? this.config.SubtitleCodec;
                     queueItem.VideoCodec = settings.VideoCodec ?? this.config.VideoCodec;
 
-                    if (queueRepository.AddToQueue(queueItem))
+                    if (await queueRepository.AddToQueueAsync(queueItem))
                     {
-                        this.queueRepository.SaveChanges();
+                        await this.queueRepository.SaveChangesAsync();
                         try
                         {
                             this.console.MarkupLine("Added or updated '[fuchsia]{0}[/]' to the encoding queue!", file.EscapeMarkup());
@@ -369,7 +369,7 @@ namespace VideoConverter.Commands
                     }
                     else
                     {
-                        this.queueRepository.AbortChanges();
+                        await this.queueRepository.AbortChangesAsync();
                         this.console.WriteLine($"WARNING: Unable to update '{file}'. Encoding have already started on the file!", new Style(Color.Yellow, Color.Black));
                     }
                 }
@@ -417,7 +417,7 @@ namespace VideoConverter.Commands
             return videoStreams.Where(a => indexes.Contains(a.Index)).Select(i => i.Index);
         }
 
-        private bool AskAcceptable(CommandContext context, Core.Models.EpisodeData episodeData)
+        private async Task<bool> AskAcceptableAsync(CommandContext context, Core.Models.EpisodeData episodeData)
         {
             DisplayEpisodeData(episodeData);
 
@@ -460,7 +460,7 @@ namespace VideoConverter.Commands
             else
                 settings.EpisodeNumber = episodeData.EpisodeNumber;
 
-            this.criteriaCommand.Execute(context, settings);
+            await this.criteriaCommand.ExecuteAsync(context, settings);
 
             return false;
         }
@@ -504,11 +504,11 @@ namespace VideoConverter.Commands
             this.console.RenderTable(table, "New Episode Data");
         }
 
-        private void UpdateEpisodeData(Core.Models.EpisodeData episodeData)
+        private async Task UpdateEpisodeDataAsync(Core.Models.EpisodeData episodeData)
         {
-            var criterias = this.criteriaRepo.GetEpisodeCriterias(episodeData.Series);
+            var criterias = this.criteriaRepo.GetEpisodeCriteriasAsync(episodeData.Series);
 
-            foreach (var criteria in criterias)
+            await foreach (var criteria in criterias)
             {
                 if (criteria.UpdateEpisodeData(episodeData) && criteria.SeriesName is not null)
                     break;

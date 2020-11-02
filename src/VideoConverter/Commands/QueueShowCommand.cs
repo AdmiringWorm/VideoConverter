@@ -1,16 +1,15 @@
-using System.Drawing;
-using System;
-using System.IO;
 namespace VideoConverter.Commands
 {
-    using Humanizer;
+    using System;
+    using System.IO;
+    using System.Threading.Tasks;
     using Spectre.Cli;
     using Spectre.Console;
     using VideoConverter.Extensions;
     using VideoConverter.Options;
     using VideoConverter.Storage.Repositories;
 
-    public class QueueShowCommand : Command<QueueShowOption>
+    public class QueueShowCommand : AsyncCommand<QueueShowOption>
     {
         private readonly QueueRepository queueRepo;
         private readonly IAnsiConsole console;
@@ -21,11 +20,11 @@ namespace VideoConverter.Commands
             this.console = console;
         }
 
-        public override int Execute(CommandContext context, QueueShowOption settings)
+        public override async Task<int> ExecuteAsync(CommandContext context, QueueShowOption settings)
         {
             for (int i = 0; i < settings.Identifiers.Length; i++)
             {
-                var item = this.queueRepo.GetQueueItem(settings.Identifiers[i]);
+                var item = await this.queueRepo.GetQueueItemAsync(settings.Identifiers[i]);
 
                 if (item is null)
                     throw new Exception($"We could not find any queue item with the id {settings.Identifiers[i]}");
