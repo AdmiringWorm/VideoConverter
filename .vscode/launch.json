@@ -23,6 +23,21 @@
             "type": "coreclr",
             "request": "attach",
             "processId": "${command:pickProcess}"
+		},
+		{
+            "name": ".NET Cake Launch (console)",
+            "type": "coreclr",
+            "request": "launch",
+            // If you have changed target frameworks, make sure to update the program path.
+            "program": "dotnet-cake",
+            "windows": {
+                "program": "dotnet-cake.exe"
+            },
+            "args": ["build.cake", "--debug"],
+            "cwd": "${workspaceFolder}",
+            // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
+            "console": "internalConsole",
+            "stopAtEntry": true
         }
    ]
 }

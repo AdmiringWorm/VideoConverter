@@ -24,8 +24,18 @@ namespace VideoConverter.Core.Extensions
                 case "M4A":
                     return "MPEG-4-Audio";
 
+                case "MPG":
+                case "MPEG":
+                    return "MPEG";
+
+                case "DV":
+                    return "DIGITAL VIDEO";
+
                 case "AVI":
                     return "Audio Video Interleave";
+
+                case "VOB":
+                    return "DVD Video";
 
                 case "WMV":
                 case "ASF":
@@ -51,6 +61,12 @@ namespace VideoConverter.Core.Extensions
 
                 "MPEG-4" => ".mp4",
                 "MPEG-4-AUDIO" => ".m4a",
+
+                "MPEG" => ".mpg",
+
+                "DVD VIDEO" => ".vob",
+
+                "DIGITAL VIDEO" => ".dv",
 
                 "AUDIO VIDEO INTERLEAVE" => ".avi",
 
