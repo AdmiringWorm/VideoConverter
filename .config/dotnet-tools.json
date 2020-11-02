@@ -2,8 +2,14 @@
   "version": 1,
   "isRoot": true,
   "tools": {
+    "dotnet-reportgenerator-globaltool": {
+      "version": "4.7.1",
+      "commands": [
+        "reportgenerator"
+      ]
+    },
     "cake.tool": {
-      "version": "0.38.4",
+      "version": "0.38.5",
       "commands": [
         "dotnet-cake"
       ]

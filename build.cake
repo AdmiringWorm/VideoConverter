@@ -55,6 +55,26 @@ Task("Test")
 		Configuration = configuration,
 		NoBuild = true,
 		Runtime = runtime,
+		ArgumentCustomization = (args) =>
+			args.AppendSwitchQuoted("--collect", ":", "XPlat Code Coverage")
+			.Append("--")
+			.AppendSwitchQuoted("DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format", "=", "opencover,cobertura")
+			.AppendSwitchQuoted("DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.SkipAutoProps","=", "true")
+			.AppendSwitchQuoted("DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.UseSourceLink","=", "true")
+			.AppendSwitchQuoted("DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Exclude","=", "[*]DryIoc.*,[*]FastExpressionCompiler.*,[*]ImTools.*"),
+		ResultsDirectory = "./.artifacts/tests"
+	});
+});
+
+Task("Coverage")
+	.IsDependentOn("Test")
+	.Does(() =>
+{
+	var files = GetFiles("./.artifacts/tests/**/*");
+	ReportGenerator(files, "./.artifacts/coverage", new ReportGeneratorSettings
+	{
+		ArgumentCustomization = args => args.Prepend("reportgenerator"),
+		ToolPath = Context.Tools.Resolve("dotnet")
 	});
 });
 
@@ -76,6 +96,7 @@ Task("Publish")
 });
 
 Task("Default")
+	.IsDependentOn("Coverage")
 	.IsDependentOn("Publish");
 
 RunTarget(target);
