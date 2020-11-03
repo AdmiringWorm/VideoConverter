@@ -24,6 +24,7 @@ namespace VideoConverter.Commands
         private readonly Configuration config;
         private readonly CancellationToken cancellationToken;
         private readonly IAnsiConsole console;
+        private readonly Random rand = new Random();
 
         public EncodeCommand(QueueRepository queueRepo, Configuration config, IAnsiConsole console)
         {
@@ -130,7 +131,7 @@ namespace VideoConverter.Commands
 
                 var newFileName = Path.GetFileNameWithoutExtension(queue.OutputPath);
 
-                int maxSteps = 5;
+                int maxSteps = 6;
                 if (settings.RemoveOldFiles)
                     maxSteps++;
 
@@ -187,13 +188,9 @@ namespace VideoConverter.Commands
 
                     var firstVideoStream = mediaInfo.VideoStreams.First();
 
-                    var tempWorkThumb = Path.ChangeExtension(tempWorkPath, "-thumb.jpg");
-
                     conversion.AddParameter("-movflags +faststart")
                         .SetOverwriteOutput(true)
                         .SetOutput(tempWorkPath);
-
-                    var thumbConversion = await FFmpeg.Conversions.FromSnippet.Snapshot(queue.Path, tempWorkThumb, TimeSpan.FromSeconds(Math.Max(firstVideoStream.Duration.Seconds / 2, 0)));
 
                     stepChild.Tick($"Encoding '{newFileName}'...");
                     queue.Status = QueueStatus.Encoding;
@@ -214,7 +211,8 @@ namespace VideoConverter.Commands
                         try
                         {
                             var initialSize = new FileInfo(queue.Path).Length;
-                            await Task.WhenAll(conversion.Start(cancellationToken), thumbConversion.Start(cancellationToken));
+                            await conversion.Start(cancellationToken);
+
                             if (cancellationToken.IsCancellationRequested)
                             {
                                 failed = true;
@@ -223,8 +221,6 @@ namespace VideoConverter.Commands
                                 stepChild.Tick(stepChild.CurrentTick, $"Encoding Cancelled for '{newFileName}'");
                                 if (File.Exists(tempWorkPath))
                                     File.Delete(tempWorkPath);
-                                if (File.Exists(tempWorkThumb))
-                                    File.Delete(tempWorkThumb);
                             }
                             else
                             {
@@ -242,7 +238,6 @@ namespace VideoConverter.Commands
                                     {
                                         stepChild.Tick($"Removing duplicate file...");
                                         File.Delete(tempWorkPath);
-                                        File.Delete(tempWorkThumb);
                                         stepChild.ForegroundColor = ConsoleColor.DarkGray;
                                     }
                                 }
@@ -264,14 +259,23 @@ namespace VideoConverter.Commands
                                 encodingPb.Tick(encodingPb.MaxTicks, "Completed");
                                 if (!isDuplicate || !settings.IgnoreDuplicates)
                                 {
-                                    stepChild.Tick($"Moving encoded file to new location '{newFileName}'");
                                     var newThumbPath = Path.ChangeExtension(queue.OutputPath, "-thumb.jpg").Replace(".-thumb", "-thumb");
-                                    if (File.Exists(queue.OutputPath))
-                                        File.Delete(queue.OutputPath);
+
+                                    stepChild.Tick($"Creating snapshot of '{newFileName}'");
+
                                     if (File.Exists(newThumbPath))
                                         File.Delete(newThumbPath);
+
+                                    var screenshotAt = this.rand.Next((int)firstVideoStream.Duration.TotalMilliseconds + 1);
+                                    var thumbConversion = await FFmpeg.Conversions.FromSnippet.Snapshot(tempWorkPath, newThumbPath, TimeSpan.FromMilliseconds(screenshotAt));
+                                    await thumbConversion.Start(cancellationToken);
+
+                                    stepChild.Tick($"Moving encoded file to new location '{newFileName}'");
+
+                                    if (File.Exists(queue.OutputPath))
+                                        File.Delete(queue.OutputPath);
+
                                     File.Move(tempWorkPath, queue.OutputPath);
-                                    File.Move(tempWorkThumb, newThumbPath);
                                     var fanArt = newThumbPath.Replace("-thumb.jpg", "-fanart.jpg");
                                     if (!File.Exists(fanArt))
                                         File.Copy(newThumbPath, fanArt);
@@ -307,8 +311,6 @@ namespace VideoConverter.Commands
 
                             if (File.Exists(tempWorkPath))
                                 File.Delete(tempWorkPath);
-                            if (File.Exists(tempWorkThumb))
-                                File.Delete(tempWorkThumb);
                         }
                     }
                 }
