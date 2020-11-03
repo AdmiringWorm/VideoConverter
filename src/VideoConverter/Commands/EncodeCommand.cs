@@ -180,11 +180,20 @@ namespace VideoConverter.Commands
                         conversion.AddStream(stream);
                     }
 
+                    if (!Directory.Exists(this.config.WorkDirectory))
+                        Directory.CreateDirectory(this.config.WorkDirectory);
+
                     var tempWorkPath = Path.Combine(this.config.WorkDirectory, Guid.NewGuid() + Path.GetExtension(queue.OutputPath));
+
+                    var firstVideoStream = mediaInfo.VideoStreams.First();
+
+                    var tempWorkThumb = Path.ChangeExtension(tempWorkPath, "-thumb.jpg");
 
                     conversion.AddParameter("-movflags +faststart")
                         .SetOverwriteOutput(true)
                         .SetOutput(tempWorkPath);
+
+                    var thumbConversion = await FFmpeg.Conversions.FromSnippet.Snapshot(queue.Path, tempWorkThumb, TimeSpan.FromSeconds(Math.Max(firstVideoStream.Duration.Seconds / 2, 0)));
 
                     stepChild.Tick($"Encoding '{newFileName}'...");
                     queue.Status = QueueStatus.Encoding;
@@ -205,7 +214,7 @@ namespace VideoConverter.Commands
                         try
                         {
                             var initialSize = new FileInfo(queue.Path).Length;
-                            await conversion.Start(cancellationToken);
+                            await Task.WhenAll(conversion.Start(cancellationToken), thumbConversion.Start(cancellationToken));
                             if (cancellationToken.IsCancellationRequested)
                             {
                                 failed = true;
@@ -214,6 +223,8 @@ namespace VideoConverter.Commands
                                 stepChild.Tick(stepChild.CurrentTick, $"Encoding Cancelled for '{newFileName}'");
                                 if (File.Exists(tempWorkPath))
                                     File.Delete(tempWorkPath);
+                                if (File.Exists(tempWorkThumb))
+                                    File.Delete(tempWorkThumb);
                             }
                             else
                             {
@@ -231,6 +242,7 @@ namespace VideoConverter.Commands
                                     {
                                         stepChild.Tick($"Removing duplicate file...");
                                         File.Delete(tempWorkPath);
+                                        File.Delete(tempWorkThumb);
                                         stepChild.ForegroundColor = ConsoleColor.DarkGray;
                                     }
                                 }
@@ -253,9 +265,16 @@ namespace VideoConverter.Commands
                                 if (!isDuplicate || !settings.IgnoreDuplicates)
                                 {
                                     stepChild.Tick($"Moving encoded file to new location '{newFileName}'");
+                                    var newThumbPath = Path.ChangeExtension(queue.OutputPath, "-thumb.jpg").Replace(".-thumb", "-thumb");
                                     if (File.Exists(queue.OutputPath))
                                         File.Delete(queue.OutputPath);
+                                    if (File.Exists(newThumbPath))
+                                        File.Delete(newThumbPath);
                                     File.Move(tempWorkPath, queue.OutputPath);
+                                    File.Move(tempWorkThumb, newThumbPath);
+                                    var fanArt = newThumbPath.Replace("-thumb.jpg", "-fanart.jpg");
+                                    if (!File.Exists(fanArt))
+                                        File.Copy(newThumbPath, fanArt);
                                     stepChild.ForegroundColor = ConsoleColor.DarkGreen;
                                 }
 
@@ -287,8 +306,9 @@ namespace VideoConverter.Commands
                             }
 
                             if (File.Exists(tempWorkPath))
-
                                 File.Delete(tempWorkPath);
+                            if (File.Exists(tempWorkThumb))
+                                File.Delete(tempWorkThumb);
                         }
                     }
                 }
