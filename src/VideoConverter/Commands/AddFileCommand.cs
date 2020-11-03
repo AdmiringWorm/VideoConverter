@@ -129,7 +129,7 @@ namespace VideoConverter.Commands
                         continue;
 
                     var mediaInfo = await mediaInfoTask;
-                    var videoStreams = mediaInfo.VideoStreams.ToList();
+                    var videoStreams = mediaInfo.VideoStreams.Where(v => !string.Equals(v.Codec, "mjpeg", StringComparison.OrdinalIgnoreCase)).ToList();
                     var audioStreams = mediaInfo.AudioStreams.ToList();
                     var subtitleStreams = mediaInfo.SubtitleStreams.ToList();
 
@@ -165,6 +165,10 @@ namespace VideoConverter.Commands
 
                         if (this.tokenSource.IsCancellationRequested)
                             break;
+                    }
+                    else if (videoStreams.Count == 0)
+                    {
+                        streams.AddRange(mediaInfo.VideoStreams.Select(i => i.Index));
                     }
                     else
                     {
