@@ -1,125 +1,128 @@
 using System.IO;
 namespace VideoConverter.Commands
 {
-    using System;
-    using System.Linq;
-    using System.Reflection;
-    using Humanizer;
-    using Spectre.Cli;
-    using Spectre.Console;
-    using VideoConverter.Core.Models;
-    using VideoConverter.Core.Services;
-    using VideoConverter.Options;
+	using System;
+	using System.Linq;
+	using System.Reflection;
+	using Humanizer;
+	using Spectre.Cli;
+	using Spectre.Console;
+	using VideoConverter.Core.Models;
+	using VideoConverter.Core.Services;
+	using VideoConverter.Options;
 
-    public class ConfigCommand : Command<ConfigOption>
-    {
-        private readonly IConfigurationService service;
-        private readonly IAnsiConsole console;
+	public class ConfigCommand : Command<ConfigOption>
+	{
+		private readonly IConfigurationService service;
+		private readonly IAnsiConsole console;
 
-        public ConfigCommand(IConfigurationService service, IAnsiConsole console)
-        {
-            this.service = service ?? throw new ArgumentNullException(nameof(service));
-            this.console = console ?? throw new ArgumentNullException(nameof(console));
-        }
+		public ConfigCommand(IConfigurationService service, IAnsiConsole console)
+		{
+			this.service = service ?? throw new ArgumentNullException(nameof(service));
+			this.console = console ?? throw new ArgumentNullException(nameof(console));
+		}
 
-        public override int Execute(CommandContext context, ConfigOption settings)
-        {
-            try
-            {
-                var config = service.GetConfiguration();
+		public override int Execute(CommandContext context, ConfigOption settings)
+		{
+			if (settings is null)
+				throw new ArgumentNullException(nameof(settings));
 
-                if (string.IsNullOrWhiteSpace(settings.Name))
-                {
-                    ListConfigurations(config);
-                    return 0;
-                }
-                if (settings.Name == "Prefixes")
-                    throw new Exception("Prefixes can not be displayed at this time");
+			try
+			{
+				var config = service.GetConfiguration();
 
-                var property = GetProperty(settings.Name.Dehumanize());
+				if (string.IsNullOrWhiteSpace(settings.Name))
+				{
+					ListConfigurations(config);
+					return 0;
+				}
+				if (settings.Name == "Prefixes")
+					throw new Exception("Prefixes can not be displayed at this time");
 
-                if (property is null)
-                {
-                    this.console.MarkupLine("[red on black] ERROR: We could not find any configuration with the name '[fuchsia]{0}[/]'[/]", settings.Name);
-                    return 1;
-                }
+				var property = GetProperty(settings.Name.Dehumanize());
 
-                if (string.IsNullOrEmpty(settings.Value))
-                {
-                    this.console.MarkupLine("[fuchsia]{0}[/] = [aqua]{1}[/]", property.Name.Humanize(), property.GetValue(config) ?? string.Empty);
-                }
-                else if (string.Equals(property.GetValue(config), settings.Value))
-                {
-                    this.console.MarkupLine("[yellow on black] WARNING: No change in configuration value. Ignoring...[/]");
-                }
-                else if (property.PropertyType == typeof(bool))
-                {
-                    var value = bool.Parse(settings.Value);
-                    property.SetValue(config, value);
-                    service.SetConfiguration(config);
-                    this.console.WriteLine("Configuration Updated!", Style.Plain);
-                }
-                else if (string.Equals(property.Name, "MapperDatabase", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(config.MapperDatabase) && File.Exists(config.MapperDatabase))
-                {
-                    this.console.Markup("[yellow on black] WARNING: We found an existing database in the previous location. Do you want to move this to the new location? (y/N)[/]");
+				if (property is null)
+				{
+					this.console.MarkupLine("[red on black] ERROR: We could not find any configuration with the name '[fuchsia]{0}[/]'[/]", settings.Name);
+					return 1;
+				}
 
-                    var key = Console.ReadKey();
-                    if (key.KeyChar == 'Y' || key.KeyChar == 'y')
-                    {
-                        var directory = Path.GetDirectoryName(settings.Value) ?? Environment.CurrentDirectory;
-                        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-                            Directory.CreateDirectory(directory);
-                        File.Move(config.MapperDatabase, settings.Value);
-                    }
-                    this.console.WriteLine();
+				if (string.IsNullOrEmpty(settings.Value))
+				{
+					this.console.MarkupLine("[fuchsia]{0}[/] = [aqua]{1}[/]", property.Name.Humanize(), property.GetValue(config) ?? string.Empty);
+				}
+				else if (string.Equals(property.GetValue(config), settings.Value))
+				{
+					this.console.MarkupLine("[yellow on black] WARNING: No change in configuration value. Ignoring...[/]");
+				}
+				else if (property.PropertyType == typeof(bool))
+				{
+					var value = bool.Parse(settings.Value);
+					property.SetValue(config, value);
+					service.SetConfiguration(config);
+					this.console.WriteLine("Configuration Updated!", Style.Plain);
+				}
+				else if (string.Equals(property.Name, "MapperDatabase", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(config.MapperDatabase) && File.Exists(config.MapperDatabase))
+				{
+					this.console.Markup("[yellow on black] WARNING: We found an existing database in the previous location. Do you want to move this to the new location? (y/N)[/]");
 
-                    property.SetValue(config, Path.GetFullPath(settings.Value));
-                    service.SetConfiguration(config);
-                    this.console.WriteLine("Configuration updated!", Style.Plain);
-                }
-                else
-                {
-                    property.SetValue(config, settings.Value);
-                    service.SetConfiguration(config);
-                    this.console.WriteLine("Configuration updated!", Style.Plain);
-                }
-            }
-            catch (Exception ex)
-            {
-                this.console.WriteException(ex);
-                return 1;
-            }
+					var key = Console.ReadKey();
+					if (key.KeyChar == 'Y' || key.KeyChar == 'y')
+					{
+						var directory = Path.GetDirectoryName(settings.Value) ?? Environment.CurrentDirectory;
+						if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+							Directory.CreateDirectory(directory);
+						File.Move(config.MapperDatabase, settings.Value);
+					}
+					this.console.WriteLine();
 
-            return 0;
-        }
+					property.SetValue(config, Path.GetFullPath(settings.Value));
+					service.SetConfiguration(config);
+					this.console.WriteLine("Configuration updated!", Style.Plain);
+				}
+				else
+				{
+					property.SetValue(config, settings.Value);
+					service.SetConfiguration(config);
+					this.console.WriteLine("Configuration updated!", Style.Plain);
+				}
+			}
+			catch (Exception ex)
+			{
+				this.console.WriteException(ex);
+				return 1;
+			}
 
-        private PropertyInfo? GetProperty(string name)
-        {
-            return typeof(Configuration).GetProperties(BindingFlags.Instance | BindingFlags.Public).FirstOrDefault(p => string.Compare(p.Name, name, StringComparison.OrdinalIgnoreCase) == 0);
-        }
+			return 0;
+		}
 
-        private void ListConfigurations(Configuration config)
-        {
-            var table = new Table()
-                .BorderStyle(new Style(Color.Olive))
-                .DoubleEdgeBorder()
-                .AddColumns(new TableColumn("Name").RightAligned(), new TableColumn("Value").LeftAligned());
+		private static PropertyInfo? GetProperty(string name)
+		{
+			return Array.Find(typeof(Configuration).GetProperties(BindingFlags.Instance | BindingFlags.Public), p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase));
+		}
 
-            foreach (var property in config.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public).Where(p => p.Name != "Prefixes"))
-            {
-                var name = property.Name;
-                var value = property.GetValue(config);
-                table.AddRow(
-                    $"[fuchsia]{name.Humanize()}[/]",
-                    $"[aqua]{value}[/]"
-                );
-            }
+		private void ListConfigurations(Configuration config)
+		{
+			var table = new Table()
+				.BorderStyle(new Style(Color.Olive))
+				.DoubleEdgeBorder()
+				.AddColumns(new TableColumn("Name").RightAligned(), new TableColumn("Value").LeftAligned());
 
-            var panel = new Panel(table)
-                .NoBorder()
-                .Header("Available Configurations", new Style(Color.Aqua), Justify.Center);
+			foreach (var property in config.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public).Where(p => p.Name != "Prefixes"))
+			{
+				var name = property.Name;
+				var value = property.GetValue(config);
+				table.AddRow(
+					$"[fuchsia]{name.Humanize()}[/]",
+					$"[aqua]{value}[/]"
+				);
+			}
 
-            console.Render(panel);
-        }
-    }
+			var panel = new Panel(table)
+				.NoBorder()
+				.Header("Available Configurations", new Style(Color.Aqua), Justify.Center);
+
+			console.Render(panel);
+		}
+	}
 }

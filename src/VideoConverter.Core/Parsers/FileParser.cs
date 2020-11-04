@@ -1,90 +1,94 @@
+using System.Globalization;
 namespace VideoConverter.Core.Parsers
 {
-    using System.Collections.Generic;
-    using System.Text.RegularExpressions;
-    using VideoConverter.Core.Extensions;
-    using VideoConverter.Core.Models;
+	using System.Collections.Generic;
+	using System.Text.RegularExpressions;
+	using VideoConverter.Core.Assertions;
+	using VideoConverter.Core.Extensions;
+	using VideoConverter.Core.Models;
 
-    public static class FileParser
-    {
-        private readonly static LinkedList<string> episodeRegexes = new LinkedList<string>();
+	public static class FileParser
+	{
+		private readonly static LinkedList<string> episodeRegexes = new LinkedList<string>();
 
-        static FileParser()
-        {
-            episodeRegexes.AddLast(@"^[\s_]*[\[\(][\s_]*(?<Fansubber>[^\]\)]+)[\s_]*[\]\)][\s_]*(?<Series>.+)[\s_]*S(?<Season>\d+)[\s_]*-[\s_]*(?<Episode>\d+|(?:OVA|OAV) ?\d*)[^\.]*\.(?<Extension>[a-z\d]+)$");
-            episodeRegexes.AddLast(@"^[\s_]*[\[\(][\s_]*(?<Fansubber>[^\]\)]+)[\s_]*[\]\)][\s_]*(?<Series>.+)[\s_]*-[\s_]*(?<Episode>\d+|(?:OVA|OAV) ?\d*)[^\.]*\.(?<Extension>[a-z\d]+)$");
-            episodeRegexes.AddLast(@"^[\s_]*[\[\(][\s_]*(?<Fansubber>[^\]\)]+)[\s_]*[\]\)][\s_]*(?<Series>.+)[\s_]*-[\s_]*S(?<Season>\d+)E(?<Episode>\d+)(?:[\s_]*-[\s_]*(?<EpisodeName>[^\.]+)[\s_]*|[^\.]*)\.(?<Extension>[a-z\d]+)$");
-            episodeRegexes.AddLast(@"^[\s_]*(?<Series>.+)[\s_]*-[\s_]*S(?<Season>\d+)E(?<Episode>\d+)[\s_]*-[\s_]*(?<EpisodeName>[^\.]+)\.(?<Extension>[a-z\d]+)$");
-            episodeRegexes.AddLast(@"^(?<Series>.+)[\s_]*(?:S(?<Season>\d+))[\s_]*-[\s_]*(?<Episode>\d+)[\s_]*\.(?<Extension>[a-z\d]+)$");
-            episodeRegexes.AddLast(@"^[\s_]*(?<Series>.+)[\s_]*S(?<Season>\d+)[\s_]*-[\s_]*(?<Episode>\d+|(?:OVA|OAV) ?\d*)[^\.]*\.(?<Extension>[a-z\d]+)$");
-            episodeRegexes.AddLast(@"^[\s_]*(?<Series>.+)[\s_]*-[\s_]*(?<Episode>\d+|(?:OVA|OAV) ?\d*)[^\.]*\.(?<Extension>[a-z\d]+)$");
-            episodeRegexes.AddLast(@"^[\s_]*(?<Series>.+)[\s_]*-[\s_]*S(?<Season>\d+)E(?<Episode>\d+)(?:[\s_]*-[\s_]*(?<EpisodeName>[^\.]+)[\s_]*|[^\.]*)\.(?<Extension>[a-z\d]+)$");
-            episodeRegexes.AddLast(@"^[\s_]*[\[\(][\s_]*(?<Fansubber>[^\]\)]+)[\s_]*[\]\)][\s_]*(?<Series>[^\[]+)[\s_]+(?<Episode>\d+|(?:OVA|OAV) ?\d*)[^\.]*\.(?<Extension>[a-z\d]+)$");
-            episodeRegexes.AddLast(@"^(?:[\s_]*[\[\(][\s_]*(?<Fansubber>[^\]\)]+)[\s_]*[\]\)][\s_]*)?(?<Series>.+)(?<Season>\d+)x(?<Episode>\d+)(?:[\s_]*-[\s_]*(?<EpisodeName>[^\.]+)[\s_]*|[^\.]*)\.(?<Extension>[a-z\d]+)$");
-            episodeRegexes.AddLast(@"^(?:[\s_]*[\[\(][\s_]*(?<Fansubber>[^\]\)]+)[\s_]*[\]\)][\s_]*)?(?<Series>.+)S(?<Season>\d+)E(?<Episode>\d+)(?:[\s_]*-[\s_]*(?<EpisodeName>[^\.]+)[\s_]*|[^\.]*)\.(?<Extension>[a-z\d]+)$");
-        }
+		static FileParser()
+		{
+			episodeRegexes.AddLast(@"^[\s_]*[\[\(][\s_]*(?<Fansubber>[^\]\)]+)[\s_]*[\]\)][\s_]*(?<Series>.+)[\s_]*S(?<Season>\d+)[\s_]*-[\s_]*(?<Episode>\d+|(?:OVA|OAV) ?\d*)[^\.]*\.(?<Extension>[a-z\d]+)$");
+			episodeRegexes.AddLast(@"^[\s_]*[\[\(][\s_]*(?<Fansubber>[^\]\)]+)[\s_]*[\]\)][\s_]*(?<Series>.+)[\s_]*-[\s_]*(?<Episode>\d+|(?:OVA|OAV) ?\d*)[^\.]*\.(?<Extension>[a-z\d]+)$");
+			episodeRegexes.AddLast(@"^[\s_]*[\[\(][\s_]*(?<Fansubber>[^\]\)]+)[\s_]*[\]\)][\s_]*(?<Series>.+)[\s_]*-[\s_]*S(?<Season>\d+)E(?<Episode>\d+)(?:[\s_]*-[\s_]*(?<EpisodeName>[^\.]+)[\s_]*|[^\.]*)\.(?<Extension>[a-z\d]+)$");
+			episodeRegexes.AddLast(@"^[\s_]*(?<Series>.+)[\s_]*-[\s_]*S(?<Season>\d+)E(?<Episode>\d+)[\s_]*-[\s_]*(?<EpisodeName>[^\.]+)\.(?<Extension>[a-z\d]+)$");
+			episodeRegexes.AddLast(@"^(?<Series>.+)[\s_]*(?:S(?<Season>\d+))[\s_]*-[\s_]*(?<Episode>\d+)[\s_]*\.(?<Extension>[a-z\d]+)$");
+			episodeRegexes.AddLast(@"^[\s_]*(?<Series>.+)[\s_]*S(?<Season>\d+)[\s_]*-[\s_]*(?<Episode>\d+|(?:OVA|OAV) ?\d*)[^\.]*\.(?<Extension>[a-z\d]+)$");
+			episodeRegexes.AddLast(@"^[\s_]*(?<Series>.+)[\s_]*-[\s_]*(?<Episode>\d+|(?:OVA|OAV) ?\d*)[^\.]*\.(?<Extension>[a-z\d]+)$");
+			episodeRegexes.AddLast(@"^[\s_]*(?<Series>.+)[\s_]*-[\s_]*S(?<Season>\d+)E(?<Episode>\d+)(?:[\s_]*-[\s_]*(?<EpisodeName>[^\.]+)[\s_]*|[^\.]*)\.(?<Extension>[a-z\d]+)$");
+			episodeRegexes.AddLast(@"^[\s_]*[\[\(][\s_]*(?<Fansubber>[^\]\)]+)[\s_]*[\]\)][\s_]*(?<Series>[^\[]+)[\s_]+(?<Episode>\d+|(?:OVA|OAV) ?\d*)[^\.]*\.(?<Extension>[a-z\d]+)$");
+			episodeRegexes.AddLast(@"^(?:[\s_]*[\[\(][\s_]*(?<Fansubber>[^\]\)]+)[\s_]*[\]\)][\s_]*)?(?<Series>.+)(?<Season>\d+)x(?<Episode>\d+)(?:[\s_]*-[\s_]*(?<EpisodeName>[^\.]+)[\s_]*|[^\.]*)\.(?<Extension>[a-z\d]+)$");
+			episodeRegexes.AddLast(@"^(?:[\s_]*[\[\(][\s_]*(?<Fansubber>[^\]\)]+)[\s_]*[\]\)][\s_]*)?(?<Series>.+)S(?<Season>\d+)E(?<Episode>\d+)(?:[\s_]*-[\s_]*(?<EpisodeName>[^\.]+)[\s_]*|[^\.]*)\.(?<Extension>[a-z\d]+)$");
+		}
 
-        public static EpisodeData? ParseEpisode(string fileName)
-        {
-            var index = fileName.LastIndexOfAny(new[] { '/', '\\' });
-            if (index > 0)
-            {
-                fileName = fileName.Substring(index + 1);
-            }
+		public static EpisodeData? ParseEpisode(string fileName)
+		{
+			fileName.IsNotNull().IsNotWhitespace();
 
-            foreach (var regex in episodeRegexes)
-            {
-                var m = Regex.Match(fileName, regex, RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
-                if (!m.Success)
-                    continue;
+			var index = fileName.LastIndexOfAny(new[] { '/', '\\' });
+			if (index > 0)
+			{
+				fileName = fileName[(index + 1)..];
+			}
 
-                string container = m.Groups["Extension"].Value.GetExtensionFileType();
+			foreach (var regex in episodeRegexes)
+			{
+				var m = Regex.Match(fileName, regex, RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+				if (!m.Success)
+					continue;
 
-                var episode = m.Groups["Episode"].Value;
-                var episodeNum = 0;
-                bool isSpecial = false;
+				string container = m.Groups["Extension"].Value.GetExtensionFileType();
 
-                if (!string.IsNullOrEmpty(episode) && !char.IsDigit(episode[0]))
-                {
-                    int i = 0;
-                    isSpecial = true;
-                    for (; i < episode.Length; i++)
-                    {
-                        if (char.IsNumber(episode[i]))
-                            break;
-                    }
-                    episode = episode.Substring(i);
-                }
+				var episode = m.Groups["Episode"].Value;
+				var episodeNum = 0;
+				bool isSpecial = false;
 
-                if (!string.IsNullOrEmpty(episode))
-                {
-                    episodeNum = int.Parse(episode);
-                }
+				if (!string.IsNullOrEmpty(episode) && !char.IsDigit(episode[0]))
+				{
+					int i = 0;
+					isSpecial = true;
+					for (; i < episode.Length; i++)
+					{
+						if (char.IsNumber(episode[i]))
+							break;
+					}
+					episode = episode[i..];
+				}
 
-                var data = new EpisodeData(
-                    fileName,
-                    m.Groups["Series"].Value.Replace('_', ' ').Trim(),
-                    episodeNum,
-                    container
-                );
+				if (!string.IsNullOrEmpty(episode))
+				{
+					episodeNum = int.Parse(episode, CultureInfo.InvariantCulture);
+				}
 
-                if (m.Groups["Fansubber"].Success)
-                    data.Fansubber = m.Groups["Fansubber"].Value;
+				var data = new EpisodeData(
+					fileName,
+					m.Groups["Series"].Value.Replace('_', ' ').Trim(),
+					episodeNum,
+					container
+				);
 
-                if (m.Groups["Season"].Success && int.TryParse(m.Groups["Season"].Value, out var season))
-                    data.SeasonNumber = season;
-                else if (string.IsNullOrEmpty(episode) || isSpecial)
-                    data.SeasonNumber = 0;
-                else if (m.Groups["Season"].Success)
-                    continue;
+				if (m.Groups["Fansubber"].Success)
+					data.Fansubber = m.Groups["Fansubber"].Value;
 
-                if (m.Groups["EpisodeName"].Success)
-                    data.EpisodeName = m.Groups["EpisodeName"].Value.Replace('_', ' ').Trim();
+				if (m.Groups["Season"].Success && int.TryParse(m.Groups["Season"].Value, out var season))
+					data.SeasonNumber = season;
+				else if (string.IsNullOrEmpty(episode) || isSpecial)
+					data.SeasonNumber = 0;
+				else if (m.Groups["Season"].Success)
+					continue;
 
-                return data;
-            }
+				if (m.Groups["EpisodeName"].Success)
+					data.EpisodeName = m.Groups["EpisodeName"].Value.Replace('_', ' ').Trim();
 
-            return null;
-        }
-    }
+				return data;
+			}
+
+			return null;
+		}
+	}
 }

@@ -1,105 +1,106 @@
-using System.Globalization;
-using System.Xml.Serialization;
-using System.Text;
-using System;
-using System.IO;
-using VideoConverter.Core.Models;
-
 namespace VideoConverter.Core.Services
 {
-    public class XmlConfigurationService : IConfigurationService, IDisposable
-    {
-        private readonly string configPath;
-        private readonly FileSystemWatcher watcher;
-        private Configuration? config;
+	using System.Xml;
+	using System.Xml.Serialization;
+	using System.Text;
+	using System;
+	using System.IO;
+	using VideoConverter.Core.Models;
 
-        public XmlConfigurationService(string configPath)
-        {
-            this.configPath = configPath;
+	public sealed class XmlConfigurationService : IConfigurationService, IDisposable
+	{
+		private readonly string configPath;
+		private readonly FileSystemWatcher watcher;
+		private Configuration? config;
 
-            var dir = Path.GetDirectoryName(configPath) ?? Environment.CurrentDirectory;
-            var name = Path.GetFileName(configPath);
-            watcher = new FileSystemWatcher(dir, name);
-            watcher.Changed += OnFileChanged;
-            watcher.NotifyFilter = NotifyFilters.LastWrite;
-        }
+		public XmlConfigurationService(string configPath)
+		{
+			this.configPath = configPath;
 
-        public Configuration GetConfiguration()
-        {
-            if (this.config is not null)
-                return this.config;
+			var dir = Path.GetDirectoryName(configPath) ?? Environment.CurrentDirectory;
+			var name = Path.GetFileName(configPath);
+			watcher = new FileSystemWatcher(dir, name);
+			watcher.Changed += OnFileChanged;
+			watcher.NotifyFilter = NotifyFilters.LastWrite;
+		}
 
-            this.config = new Configuration();
+		public Configuration GetConfiguration()
+		{
+			if (this.config is not null)
+				return this.config;
 
-            if (!File.Exists(this.configPath))
-            {
-                this.config.MapperDatabase = GetMapperDatabase(); ;
-            }
-            else
-            {
-                UpdateConfiguration(this.config, this.configPath);
-            }
-            watcher.EnableRaisingEvents = true;
+			this.config = new Configuration();
 
-            return this.config;
-        }
+			if (!File.Exists(this.configPath))
+			{
+				this.config.MapperDatabase = GetMapperDatabase();
+			}
+			else
+			{
+				UpdateConfiguration(this.config, this.configPath);
+			}
+			watcher.EnableRaisingEvents = true;
 
-        private void UpdateConfiguration(Configuration config, string configPath)
-        {
-            using var reader = new StreamReader(configPath, Encoding.UTF8);
-            var serializer = new XmlSerializer(typeof(Configuration));
+			return this.config;
+		}
 
-            var tempConfig = serializer.Deserialize(reader) as Configuration ?? new Configuration();
+		private static void UpdateConfiguration(Configuration config, string configPath)
+		{
+			using var reader = new StreamReader(configPath, Encoding.UTF8);
+			using var xmlReader = XmlReader.Create(reader);
+			var serializer = new XmlSerializer(typeof(Configuration));
 
-            config.AudioCodec = tempConfig.AudioCodec;
-            config.FileType = tempConfig.FileType;
-            config.IncludeFansubber = tempConfig.IncludeFansubber;
-            config.MapperDatabase = tempConfig.MapperDatabase ?? GetMapperDatabase();
-            config.Prefixes = tempConfig.Prefixes;
-            config.SubtitleCodec = tempConfig.SubtitleCodec;
-            config.VideoCodec = tempConfig.VideoCodec;
-            config.WorkDirectory = tempConfig.WorkDirectory;
-        }
+			var tempConfig = serializer.Deserialize(xmlReader) as Configuration ?? new Configuration();
 
-        public void SetConfiguration(Configuration config)
-        {
-            this.watcher.EnableRaisingEvents = false;
+			config.AudioCodec = tempConfig.AudioCodec;
+			config.FileType = tempConfig.FileType;
+			config.IncludeFansubber = tempConfig.IncludeFansubber;
+			config.MapperDatabase = tempConfig.MapperDatabase ?? GetMapperDatabase();
+			config.Prefixes = tempConfig.Prefixes;
+			config.SubtitleCodec = tempConfig.SubtitleCodec;
+			config.VideoCodec = tempConfig.VideoCodec;
+			config.WorkDirectory = tempConfig.WorkDirectory;
+		}
 
-            var directory = Path.GetDirectoryName(configPath);
-            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-                Directory.CreateDirectory(directory);
+		public void SetConfiguration(Configuration config)
+		{
+			this.watcher.EnableRaisingEvents = false;
 
-            using var writer = new StreamWriter(configPath, false, Encoding.UTF8);
+			var directory = Path.GetDirectoryName(configPath);
+			if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+				Directory.CreateDirectory(directory);
 
-            var serializer = new XmlSerializer(typeof(Configuration));
+			using var writer = new StreamWriter(configPath, false, Encoding.UTF8);
 
-            serializer.Serialize(writer, config);
+			var serializer = new XmlSerializer(typeof(Configuration));
 
-            this.config = config;
+			serializer.Serialize(writer, config);
 
-            this.watcher.EnableRaisingEvents = true;
-        }
+			this.config = config;
 
-        private void OnFileChanged(object sender, FileSystemEventArgs e)
-        {
-            if (e.ChangeType != WatcherChangeTypes.Changed || this.config is null)
-                return;
+			this.watcher.EnableRaisingEvents = true;
+		}
 
-            UpdateConfiguration(this.config, this.configPath);
-        }
+		private void OnFileChanged(object sender, FileSystemEventArgs e)
+		{
+			if (e.ChangeType != WatcherChangeTypes.Changed || this.config is null)
+				return;
 
-        private string GetMapperDatabase()
-        {
-            return Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "VideoConverter",
-                "storage.db"
-            );
-        }
+			UpdateConfiguration(this.config, this.configPath);
+		}
 
-        public void Dispose()
-        {
-            this.watcher.Dispose();
-        }
-    }
+		private static string GetMapperDatabase()
+		{
+			return Path.Combine(
+				Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+				"VideoConverter",
+				"storage.db"
+			);
+		}
+
+		public void Dispose()
+		{
+			this.watcher.Dispose();
+		}
+	}
 }
