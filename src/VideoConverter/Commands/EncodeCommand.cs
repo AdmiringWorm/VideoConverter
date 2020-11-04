@@ -263,15 +263,21 @@ namespace VideoConverter.Commands
 							if (!isDuplicate || !settings.IgnoreDuplicates)
 							{
 								var newThumbPath = Path.ChangeExtension(queue.OutputPath, "-thumb.jpg").Replace(".-thumb", "-thumb");
+								var newFanArtPath = Path.ChangeExtension(queue.OutputPath, "-fanart.jpg").Replace(".-fanart", "-fanart");
 
 								stepChild.Tick($"Creating snapshot of '{newFileName}'");
 
 								if (File.Exists(newThumbPath))
 									File.Delete(newThumbPath);
 
-								var screenshotAt = this.rand.Next((int)firstVideoStream.Duration.TotalMilliseconds + 1);
-								var thumbConversion = await FFmpeg.Conversions.FromSnippet.Snapshot(tempWorkPath, newThumbPath, TimeSpan.FromMilliseconds(screenshotAt)).ConfigureAwait(false);
-								await thumbConversion.Start(cancellationToken).ConfigureAwait(false);
+								if (File.Exists(newFanArtPath))
+									File.Delete(newFanArtPath);
+
+								var thumbnailAt = this.rand.Next((int)firstVideoStream.Duration.TotalMilliseconds + 1);
+								var fanArtAt = this.rand.Next((int)firstVideoStream.Duration.TotalMilliseconds + 1);
+								var thumbConversion = await FFmpeg.Conversions.FromSnippet.Snapshot(tempWorkPath, newThumbPath, TimeSpan.FromMilliseconds(thumbnailAt)).ConfigureAwait(false);
+								var fanArtConversion = await FFmpeg.Conversions.FromSnippet.Snapshot(tempWorkPath, newFanArtPath, TimeSpan.FromMilliseconds(fanArtAt)).ConfigureAwait(false);
+								await Task.WhenAll(thumbConversion.Start(cancellationToken), fanArtConversion.Start(cancellationToken)).ConfigureAwait(false);
 
 								stepChild.Tick($"Moving encoded file to new location '{newFileName}'");
 
@@ -279,9 +285,6 @@ namespace VideoConverter.Commands
 									File.Delete(queue.OutputPath);
 
 								File.Move(tempWorkPath, queue.OutputPath);
-								var fanArt = newThumbPath.Replace("-thumb.jpg", "-fanart.jpg");
-								if (!File.Exists(fanArt))
-									File.Copy(newThumbPath, fanArt);
 								stepChild.ForegroundColor = ConsoleColor.DarkGreen;
 							}
 
