@@ -177,11 +177,11 @@ namespace VideoConverter.Commands
 					foreach (var stream in streams)
 					{
 						if (stream is IVideoStream videoStream)
-							videoStream.SetCodec(this.config.VideoCodec);
+							videoStream.SetCodec(queue.VideoCodec ?? this.config.VideoCodec);
 						else if (stream is IAudioStream audioStream)
-							audioStream.SetCodec(this.config.AudioCodec);
+							audioStream.SetCodec(queue.AudioCodec ?? this.config.AudioCodec);
 						else if (stream is ISubtitleStream subtitleStream)
-							subtitleStream.SetCodec(this.config.SubtitleCodec);
+							subtitleStream.SetCodec(queue.SubtitleCodec ?? this.config.SubtitleCodec);
 						conversion.AddStream(stream);
 					}
 
