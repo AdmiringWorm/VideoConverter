@@ -32,7 +32,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="ShellProgressBar" Version="5.0.0" />
-    <PackageReference Include="Spectre.Cli" Version="0.45.0" />
+    <PackageReference Include="Spectre.Cli" Version="0.46.0" />
     <PackageReference Include="Spectre.Console" Version="0.27.0" />
     <PackageReference Include="system.Linq.Async" Version="4.1.1" />
     <PackageReference Include="Xabe.FFmpeg" Version="4.3.1" />
