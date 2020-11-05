@@ -60,9 +60,6 @@ namespace VideoConverter.Storage.Database
 			{
 				await this.database.RollbackAsync().ConfigureAwait(false);
 				this.transactionStarted = false;
-
-				this.database.Dispose();
-				this.database = null;
 			}
 		}
 
@@ -72,9 +69,6 @@ namespace VideoConverter.Storage.Database
 			{
 				await this.database.CommitAsync().ConfigureAwait(false);
 				this.transactionStarted = false;
-
-				this.database.Dispose();
-				this.database = null;
 			}
 		}
 
