@@ -1,0 +1,6 @@
+# The major-minor-patch version that should be used when parsing the commits.
+# This option will only be taken into account when the current HEAD is not a tagged
+# build, and the value is higher than the last tagged release.
+next-version: 0.1.0
+# The pre-release tag to use as a default for non-tagged releases (tagged releases will override this option).
+tag: alpha
