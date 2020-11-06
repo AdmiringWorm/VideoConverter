@@ -52,7 +52,7 @@ Setup((context) =>
 
 	var buildData = DeserializeJsonFromFile<BuildData>(outputPath);
 
-	context.Information("Building CCVARN v{0}", buildData.Version.FullSemVer);
+	context.Information("Building VideoConverter v{0}", buildData.Version.FullSemVer);
 
 	return buildData.Version;
 });
