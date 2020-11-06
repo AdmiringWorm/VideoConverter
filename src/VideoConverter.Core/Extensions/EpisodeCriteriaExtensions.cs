@@ -24,6 +24,10 @@ namespace VideoConverter.Core.Extensions
 							data.EpisodeNumber += criteria.NewEpisode.Value - 1;
 					}
 				}
+				else if (criteria.Season is not null && criteria.NewEpisode is not null)
+				{
+					data.EpisodeNumber = criteria.NewEpisode.Value;
+				}
 
 				if (criteria.NewSeries is not null)
 					data.Series = criteria.NewSeries;

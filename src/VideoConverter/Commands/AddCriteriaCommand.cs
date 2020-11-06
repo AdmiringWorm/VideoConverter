@@ -71,6 +71,8 @@ namespace VideoConverter.Commands
 			{
 				newCriteria.Episode = episodeData.EpisodeNumber;
 				newCriteria.NewEpisode = settings.EpisodeNumber.Value;
+				if (newCriteria.Season is null)
+					newCriteria.Season = episodeData.SeasonNumber;
 			}
 
 			await this.repository.AddOrUpdateCriteriaAsync(newCriteria).ConfigureAwait(false);
