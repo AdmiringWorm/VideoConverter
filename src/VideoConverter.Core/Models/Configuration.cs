@@ -26,6 +26,8 @@ namespace VideoConverter.Core.Models
 
 		public string FileType { get; set; } = "Matroska";
 
+		public string ExtraEncodingParameters { get; set; } = string.Empty;
+
 		public List<PrefixConfiguration> Prefixes
 		{
 			get => prefixes;

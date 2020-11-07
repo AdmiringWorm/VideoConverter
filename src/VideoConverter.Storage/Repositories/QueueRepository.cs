@@ -109,6 +109,7 @@ namespace VideoConverter.Storage.Repositories
 			nextQueue.Streams = queueItem.Streams;
 			nextQueue.SubtitleCodec = queueItem.SubtitleCodec;
 			nextQueue.VideoCodec = queueItem.VideoCodec;
+			nextQueue.Parameters = queueItem.Parameters;
 
 			await queueCol.UpsertAsync(nextQueue).ConfigureAwait(false);
 			await this.dbFactory.CreateCheckpointAsync().ConfigureAwait(false);
@@ -283,6 +284,7 @@ namespace VideoConverter.Storage.Repositories
 			foundQueue.Streams = queue.Streams;
 			foundQueue.SubtitleCodec = queue.SubtitleCodec;
 			foundQueue.VideoCodec = queue.VideoCodec;
+			foundQueue.Parameters = queue.Parameters;
 
 			await col.UpdateAsync(foundQueue).ConfigureAwait(false);
 

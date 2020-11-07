@@ -31,6 +31,10 @@ namespace VideoConverter.Options
 		[Description("The subtitle codec to use for the added files, useful to override global configuration.")]
 		public string? SubtitleCodec { get; set; }
 
+		[CommandOption("--parameters <PARAMETERS>")]
+		[Description("Additional parameters that should be passed when calling ffmpeg (by default, the vaules in global configuration is used)")]
+		public string[] Parameters { get; set; } = Array.Empty<string>();
+
 		[CommandOption("--re-encode|--reencode")]
 		[Description("Pure re-encode of the of the file name (allows re-using the same filename, without a output directory)")]
 		public bool ReEncode { get; set; }

@@ -19,6 +19,8 @@ namespace VideoConverter.Core.Services
 
 			var dir = Path.GetDirectoryName(configPath) ?? Environment.CurrentDirectory;
 			var name = Path.GetFileName(configPath);
+			if (!Directory.Exists(dir))
+				Directory.CreateDirectory(dir);
 			watcher = new FileSystemWatcher(dir, name);
 			watcher.Changed += OnFileChanged;
 			watcher.NotifyFilter = NotifyFilters.LastWrite;

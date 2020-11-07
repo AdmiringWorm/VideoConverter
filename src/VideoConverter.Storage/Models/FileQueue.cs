@@ -1,3 +1,4 @@
+using System;
 namespace VideoConverter.Storage.Models
 {
 	using System.Collections.Generic;
@@ -10,6 +11,7 @@ namespace VideoConverter.Storage.Models
 		public string AudioCodec { get; set; } = "libopus";
 		public string VideoCodec { get; set; } = "hevc";
 		public string SubtitleCodec { get; set; } = "copy";
+		public string Parameters { get; set; } = string.Empty;
 		public string OutputPath { get; set; } = string.Empty;
 
 		public QueueStatus Status { get; set; }

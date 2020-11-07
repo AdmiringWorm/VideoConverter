@@ -192,9 +192,21 @@ namespace VideoConverter.Commands
 
 					var firstVideoStream = mediaInfo.VideoStreams.First();
 
-					conversion.AddParameter("-movflags +faststart")
+					string parameters = string.Empty;
+
+					if (!string.IsNullOrEmpty(queue.Parameters))
+						parameters = queue.Parameters;
+					else
+						parameters = this.config.ExtraEncodingParameters;
+
+					if (!parameters.Contains("faststart") && !parameters.Contains("movflags"))
+						parameters = "-movflags +faststart " + parameters;
+
+					conversion.AddParameter(parameters)
 						.SetOverwriteOutput(true)
 						.SetOutput(tempWorkPath);
+
+					var result = conversion.ToString();
 
 					stepChild.Tick($"Encoding '{newFileName}'...");
 					queue.Status = QueueStatus.Encoding;

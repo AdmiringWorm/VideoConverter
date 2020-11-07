@@ -356,6 +356,7 @@ namespace VideoConverter.Commands
 					queueItem.Streams = streams;
 					queueItem.SubtitleCodec = settings.SubtitleCodec ?? this.config.SubtitleCodec;
 					queueItem.VideoCodec = settings.VideoCodec ?? this.config.VideoCodec;
+					queueItem.Parameters = settings.Parameters.Any(p => !string.IsNullOrEmpty(p)) ? string.Join(' ', settings.Parameters.Where(p => !string.IsNullOrEmpty(p))) : this.config.ExtraEncodingParameters;
 
 					if (await queueRepository.AddToQueueAsync(queueItem).ConfigureAwait(false))
 					{
