@@ -27,17 +27,18 @@ namespace VideoConverter.Commands
 
 			var fileSettings = new AddFileOption
 			{
-				Files = files.ToArray(),
-				OutputDir = settings.OutputDirectory,
-				VideoCodec = settings.VideoCodec,
 				AudioCodec = settings.AudioCodec,
-				SubtitleCodec = settings.SubtitleCodec,
-				ReEncode = settings.ReEncode,
-				RemoveDuplicates = settings.RemoveDuplicates,
+				FileExtension = settings.FileExtension,
+				Files = files.ToArray(),
 				IgnoreDuplicates = settings.IgnoreDuplicates,
 				IgnoreStatuses = settings.IgnoreStatuses,
-				FileExtension = settings.FileExtension,
+				OutputDir = settings.OutputDirectory,
 				Parameters = settings.Parameters,
+				ReEncode = settings.ReEncode,
+				RemoveDuplicates = settings.RemoveDuplicates,
+				SubtitleCodec = settings.SubtitleCodec,
+				UseEncodingCopy = settings.UseEncodingCopy,
+				VideoCodec = settings.VideoCodec,
 			};
 
 			return fileCommand.ExecuteAsync(context, fileSettings);

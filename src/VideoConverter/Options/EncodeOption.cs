@@ -21,5 +21,9 @@ namespace VideoConverter.Options
 		[CommandOption("--ignore-duplicates|--skip-duplicates")]
 		[Description("Ignore any duplicate entries found after encoding")]
 		public bool IgnoreDuplicates { get; set; }
+
+		[CommandOption("--use-copy|--allow-copy")]
+		[Description("Use encoding copy when target and source uses same codec")]
+		public bool UseEncodingCopy { get; set; }
 	}
 }

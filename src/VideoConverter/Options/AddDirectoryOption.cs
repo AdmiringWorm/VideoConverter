@@ -35,6 +35,10 @@ namespace VideoConverter.Options
 		[Description("Additional parameters that should be passed when calling ffmpeg (by default, the vaules in global configuration is used)")]
 		public string[] Parameters { get; set; } = Array.Empty<string>();
 
+		[CommandOption("--use-copy|--allow-copy")]
+		[Description("Use encoding copy when target and source uses same codec")]
+		public bool UseEncodingCopy { get; set; }
+
 		[CommandOption("--re-encode|--reencode")]
 		[Description("Pure re-encode of the of the file name (allows re-using the same filename, without a output directory)")]
 		public bool ReEncode { get; set; }

@@ -19,6 +19,7 @@ namespace VideoConverter.Commands
 	using VideoConverter.Storage.Repositories;
 	using Xabe.FFmpeg;
 	using System.Globalization;
+	using Xabe.FFmpeg.Streams.SubtitleStream;
 
 	public class EncodeCommand : AsyncCommand<EncodeOption>
 	{
@@ -177,11 +178,27 @@ namespace VideoConverter.Commands
 					foreach (var stream in streams)
 					{
 						if (stream is IVideoStream videoStream)
-							videoStream.SetCodec(queue.VideoCodec ?? this.config.VideoCodec);
+						{
+							if (settings.UseEncodingCopy && string.Equals(videoStream.Codec, queue.VideoCodec ?? this.config.VideoCodec, StringComparison.OrdinalIgnoreCase))
+								videoStream.SetCodec(VideoCodec.copy);
+							else
+								videoStream.SetCodec(queue.VideoCodec ?? this.config.VideoCodec);
+						}
 						else if (stream is IAudioStream audioStream)
-							audioStream.SetCodec(queue.AudioCodec ?? this.config.AudioCodec);
+						{
+							if (settings.UseEncodingCopy && string.Equals(audioStream.Codec, queue.AudioCodec ?? this.config.AudioCodec, StringComparison.OrdinalIgnoreCase))
+								audioStream.SetCodec(AudioCodec.copy);
+							else
+								audioStream.SetCodec(queue.AudioCodec ?? this.config.AudioCodec);
+						}
 						else if (stream is ISubtitleStream subtitleStream)
-							subtitleStream.SetCodec(queue.SubtitleCodec ?? this.config.SubtitleCodec);
+						{
+							if (settings.UseEncodingCopy && string.Equals(subtitleStream.Codec, queue.SubtitleCodec ?? this.config.SubtitleCodec, StringComparison.OrdinalIgnoreCase))
+								subtitleStream.SetCodec(SubtitleCodec.copy);
+							else
+								subtitleStream.SetCodec(queue.SubtitleCodec ?? this.config.SubtitleCodec);
+						}
+
 						conversion.AddStream(stream);
 					}
 

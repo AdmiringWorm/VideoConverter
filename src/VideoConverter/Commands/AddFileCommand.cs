@@ -348,14 +348,39 @@ namespace VideoConverter.Commands
 						};
 					}
 
-					queueItem.AudioCodec = settings.AudioCodec ?? this.config.AudioCodec;
+					var audioCodec = settings.AudioCodec ?? this.config.AudioCodec;
+					var videoCodec = settings.VideoCodec ?? this.config.VideoCodec;
+					var subtitleCodec = settings.SubtitleCodec ?? this.config.SubtitleCodec;
+
+					if (settings.UseEncodingCopy)
+					{
+						if (!string.Equals(audioCodec, "copy", StringComparison.OrdinalIgnoreCase) &&
+							mediaInfo.AudioStreams.Where(a => streams.Contains(a.Index)).All(a => string.Equals(a.Codec, audioCodec, StringComparison.OrdinalIgnoreCase)))
+						{
+							audioCodec = "copy";
+						}
+
+						if (!string.Equals(videoCodec, "copy", StringComparison.OrdinalIgnoreCase) &&
+							mediaInfo.VideoStreams.Where(v => streams.Contains(v.Index)).All(v => string.Equals(v.Codec, videoCodec, StringComparison.OrdinalIgnoreCase)))
+						{
+							videoCodec = "copy";
+						}
+
+						if (!string.Equals(subtitleCodec, "copy", StringComparison.OrdinalIgnoreCase) &&
+							mediaInfo.SubtitleStreams.Where(s => streams.Contains(s.Index)).All(s => string.Equals(s.Codec, subtitleCodec, StringComparison.OrdinalIgnoreCase)))
+						{
+							subtitleCodec = "copy";
+						}
+					}
+
+					queueItem.AudioCodec = audioCodec;
 					queueItem.OutputPath = outputPath;
 					queueItem.NewHash = string.Empty;
 					queueItem.Status = QueueStatus.Pending;
 					queueItem.StatusMessage = string.Empty;
 					queueItem.Streams = streams;
-					queueItem.SubtitleCodec = settings.SubtitleCodec ?? this.config.SubtitleCodec;
-					queueItem.VideoCodec = settings.VideoCodec ?? this.config.VideoCodec;
+					queueItem.SubtitleCodec = subtitleCodec;
+					queueItem.VideoCodec = videoCodec;
 					queueItem.Parameters = settings.Parameters.Any(p => !string.IsNullOrEmpty(p)) ? string.Join(' ', settings.Parameters.Where(p => !string.IsNullOrEmpty(p))) : this.config.ExtraEncodingParameters;
 
 					if (await queueRepository.AddToQueueAsync(queueItem).ConfigureAwait(false))
