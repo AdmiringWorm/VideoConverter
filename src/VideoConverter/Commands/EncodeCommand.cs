@@ -63,7 +63,7 @@ namespace VideoConverter.Commands
 
 			var count = await GetPendingCountAsync(0, settings.Indexes).ConfigureAwait(false);
 
-			if (count == 0)
+			if (count == 0 && !settings.MonitorDatabase)
 			{
 				return 1;
 			}
@@ -98,13 +98,16 @@ namespace VideoConverter.Commands
 
 			using var monitor = new FileSystemWatcher(dbDirectory, fileName);
 
-			(FileQueue? queue, int indexCount) = await GetNextQueueItemAsync(settings.Indexes, 0).ConfigureAwait(false);
-
 			monitor.Changed += async (sender, e) =>
 			{
 				if (e.ChangeType != WatcherChangeTypes.Changed)
 					return;
-				var newCount = await GetPendingCountAsync(pbMain.CurrentTick + 1, settings.Indexes).ConfigureAwait(false);
+				int newCount;
+				if (count == 0)
+					newCount = await GetPendingCountAsync(0, settings.Indexes).ConfigureAwait(false);
+				else
+					newCount = await GetPendingCountAsync(pbMain.CurrentTick + 1, settings.Indexes).ConfigureAwait(false);
+
 				if (newCount != count)
 				{
 					count = newCount;
@@ -112,6 +115,10 @@ namespace VideoConverter.Commands
 					pbMain.Tick(pbMain.CurrentTick, $"Processing file {pbMain.CurrentTick + 1} / {pbMain.MaxTicks}");
 				}
 			};
+
+		monitorStart:
+
+			(FileQueue? queue, int indexCount) = await GetNextQueueItemAsync(settings.Indexes, 0).ConfigureAwait(false);
 			monitor.EnableRaisingEvents = true;
 
 			while (queue != null)
@@ -380,6 +387,16 @@ namespace VideoConverter.Commands
 					this.console.WriteException(ex);
 					return 1;
 				}
+			}
+
+			if (settings.MonitorDatabase)
+			{
+				var result = monitor.WaitForChanged(WatcherChangeTypes.Changed);
+
+				if (cancellationToken.IsCancellationRequested)
+					return 1;
+
+				goto monitorStart;
 			}
 
 			return failed ? 1 : 0;

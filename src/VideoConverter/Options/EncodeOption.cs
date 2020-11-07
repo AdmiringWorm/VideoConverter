@@ -25,5 +25,9 @@ namespace VideoConverter.Options
 		[CommandOption("--use-copy|--allow-copy")]
 		[Description("Use encoding copy when target and source uses same codec")]
 		public bool UseEncodingCopy { get; set; }
+
+		[CommandOption("--monitor|--monitor-db|--monitor-database")]
+		[Description("Do not exit the application, but monitor for additional changes")]
+		public bool MonitorDatabase { get; set; }
 	}
 }

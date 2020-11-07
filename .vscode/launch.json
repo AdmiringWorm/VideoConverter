@@ -12,7 +12,7 @@
             // If you have changed target frameworks, make sure to update the program path.
             "program": "${workspaceFolder}/src/VideoConverter/bin/Debug/net5.0/VideoConverter.dll",
 			//"args": ["add", "file", "/path/1", "/path/2", "--dir", "/mnt/test/com"],
-			"args":["encode", "--id", "148", "--use-copy"],
+			"args":["encode", "--ignore-duplicates", "--monitor"],
             "cwd": "${workspaceFolder}/src/VideoConverter",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
             "console": "integratedTerminal",
