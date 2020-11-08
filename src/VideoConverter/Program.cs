@@ -12,7 +12,6 @@ namespace VideoConverter
 	using VideoConverter.Core.Services;
 	using VideoConverter.DependencyInjection;
 	using VideoConverter.Storage.Database;
-	using VideoConverter.Storage.Models;
 	using VideoConverter.Storage.Repositories;
 	using AnsiSupport = Spectre.Console.AnsiSupport;
 
@@ -72,6 +71,7 @@ namespace VideoConverter
 						queue.AddCommand<QueueListCommand>("list")
 							.WithDescription("List files already in the queue!");
 						queue.AddCommand<QueueRemoveCommand>("remove");
+						queue.AddCommand<QueueResetCommand>("reset");
 						queue.AddCommand<QueueShowCommand>("show");
 					});
 				});
