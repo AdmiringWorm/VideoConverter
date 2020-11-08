@@ -209,11 +209,13 @@ namespace VideoConverter.Storage.Repositories
 			await this.dbFactory.CreateCheckpointAsync().ConfigureAwait(false);
 		}
 
-		public Task<int> GetPendingQueueCountAsync()
+		public async Task<int> GetPendingQueueCountAsync()
 		{
 			var col = this.dbFactory.GetCollection<FileQueue>(TABLE_NAME);
 
-			return col.CountAsync(c => c.Status == QueueStatus.Pending);
+			var result = await col.CountAsync(c => c.Status == QueueStatus.Pending).ConfigureAwait(false);
+
+			return result;
 		}
 
 		public async Task<FileQueue?> GetNextQueueItemAsync()

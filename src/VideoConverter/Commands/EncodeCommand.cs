@@ -98,16 +98,28 @@ namespace VideoConverter.Commands
 
 			using var monitor = new FileSystemWatcher(dbDirectory, fileName);
 			var onHold = false;
+			Console.CancelKeyPress += (sender, e) =>
+			{
+				if (e.SpecialKey == ConsoleSpecialKey.ControlC)
+				{
+					monitor.EnableRaisingEvents = false;
+					onHold = false;
+				}
+			};
 
-			monitor.Changed += async (sender, e) =>
+			monitor.Changed += (sender, e) =>
 			{
 				if (e.ChangeType != WatcherChangeTypes.Changed)
 					return;
+				var originalHold = onHold;
+				onHold = false;
+
+				monitor.EnableRaisingEvents = false;
 				int newCount;
-				if (count == 0 || onHold)
-					newCount = await GetPendingCountAsync(pbMain.CurrentTick, settings.Indexes).ConfigureAwait(false);
+				if (count == 0 || originalHold)
+					newCount = GetPendingCountAsync(pbMain.CurrentTick, settings.Indexes).GetAwaiter().GetResult();
 				else
-					newCount = await GetPendingCountAsync(pbMain.CurrentTick + 1, settings.Indexes).ConfigureAwait(false);
+					newCount = GetPendingCountAsync(pbMain.CurrentTick + 1, settings.Indexes).GetAwaiter().GetResult();
 
 				if (newCount != count)
 				{
@@ -115,6 +127,7 @@ namespace VideoConverter.Commands
 					pbMain.MaxTicks = count;
 					pbMain.Tick(pbMain.CurrentTick, $"Processing file {pbMain.CurrentTick + 1} / {pbMain.MaxTicks}");
 				}
+				monitor.EnableRaisingEvents = true;
 			};
 
 		monitorStart:
@@ -393,7 +406,8 @@ namespace VideoConverter.Commands
 			if (settings.MonitorDatabase)
 			{
 				onHold = true;
-				var result = monitor.WaitForChanged(WatcherChangeTypes.Changed);
+				while (onHold)
+					Thread.Sleep(TimeSpan.FromSeconds(5));
 
 				if (cancellationToken.IsCancellationRequested)
 					return 1;
@@ -411,7 +425,9 @@ namespace VideoConverter.Commands
 			if (indexes is not null && indexes.Length > 0)
 				return indexes.Length;
 
-			return (await queueRepo.GetPendingQueueCountAsync().ConfigureAwait(false)) + currentTick;
+			var count = await queueRepo.GetPendingQueueCountAsync().ConfigureAwait(false);
+
+			return count + currentTick;
 		}
 
 		private async Task<(FileQueue? queue, int count)> GetNextQueueItemAsync(int[] indexes, int indexCount)
