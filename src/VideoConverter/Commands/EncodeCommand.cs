@@ -97,14 +97,15 @@ namespace VideoConverter.Commands
 			var fileName = Path.GetFileName(mapperDb);
 
 			using var monitor = new FileSystemWatcher(dbDirectory, fileName);
+			var onHold = false;
 
 			monitor.Changed += async (sender, e) =>
 			{
 				if (e.ChangeType != WatcherChangeTypes.Changed)
 					return;
 				int newCount;
-				if (count == 0)
-					newCount = await GetPendingCountAsync(0, settings.Indexes).ConfigureAwait(false);
+				if (count == 0 || onHold)
+					newCount = await GetPendingCountAsync(pbMain.CurrentTick, settings.Indexes).ConfigureAwait(false);
 				else
 					newCount = await GetPendingCountAsync(pbMain.CurrentTick + 1, settings.Indexes).ConfigureAwait(false);
 
@@ -391,10 +392,13 @@ namespace VideoConverter.Commands
 
 			if (settings.MonitorDatabase)
 			{
+				onHold = true;
 				var result = monitor.WaitForChanged(WatcherChangeTypes.Changed);
 
 				if (cancellationToken.IsCancellationRequested)
 					return 1;
+
+				onHold = false;
 
 				goto monitorStart;
 			}
