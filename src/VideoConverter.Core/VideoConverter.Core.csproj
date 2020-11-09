@@ -4,6 +4,8 @@
 		<TargetFramework>net5.0</TargetFramework>
 		<langVersion>9.0</langVersion>
 		<nullable>enable</nullable>
+		<IsTrimmable>true</IsTrimmable>
+		<TrimMode>link</TrimMode>
 	</PropertyGroup>
 
 	<ItemGroup>
