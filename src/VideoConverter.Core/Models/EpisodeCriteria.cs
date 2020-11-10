@@ -24,7 +24,7 @@ namespace VideoConverter.Core.Models
 			if (criteria.SeriesName is null && criteria.Season is null && criteria.Episode is null && criteria.NewEpisode is null)
 				return false;
 
-			return (criteria.SeriesName is null || string.Equals(criteria.SeriesName, data.Series)) &&
+			return (criteria.SeriesName is null || string.Equals(criteria.SeriesName, data.Series, StringComparison.OrdinalIgnoreCase)) &&
 				   (criteria.Season is null || criteria.Season == data.SeasonNumber || (criteria.Season == 0 && data.SeasonNumber is null)) &&
 				   (criteria.Episode is null || criteria.Episode == data.EpisodeNumber);
 		}
