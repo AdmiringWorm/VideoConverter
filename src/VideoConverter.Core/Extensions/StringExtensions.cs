@@ -12,7 +12,7 @@ namespace VideoConverter.Core.Extensions
 			return (extension.TrimStart('.').ToUpperInvariant()) switch
 			{
 				"MKV" => "Matroska",
-				"MK3D" => "Matroska-3D",
+				"MK3D" or "MKV3D" => "Matroska-3D",
 				"MKA" => "Matroska-Audio",
 				"MP4" or "M4V" => "MPEG-4",
 				"M4A" => "MPEG-4-Audio",
