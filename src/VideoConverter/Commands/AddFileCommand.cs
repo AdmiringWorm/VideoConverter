@@ -287,6 +287,10 @@ namespace VideoConverter.Commands
 					if (!string.IsNullOrEmpty(outputPath))
 					{
 						outputPath = Path.GetFullPath(outputPath);
+						if (string.IsNullOrEmpty(Path.GetExtension(outputPath)))
+						{
+							outputPath = "." + (settings.FileExtension ?? this.config.FileType.GetFileExtension()).TrimStart('.');
+						}
 					}
 					else if (!string.IsNullOrEmpty(settings.OutputDir))
 					{
@@ -296,6 +300,11 @@ namespace VideoConverter.Commands
 						string directory = rootDir;
 						if (episodeData is not null)
 						{
+							if (settings.FileExtension is not null)
+								episodeData.Container = settings.FileExtension;
+							else
+								episodeData.Container = this.config.FileType;
+
 							var seriesName = RemoveInvalidChars(episodeData.Series);
 							directory = Path.Combine(directory, seriesName);
 
@@ -313,8 +322,10 @@ namespace VideoConverter.Commands
 						}
 						else if (settings.ReEncode)
 						{
+							var extension = settings.FileExtension ?? this.config.FileType.GetFileExtension();
+
 							outputPath = Path.Combine(directory, Path.GetFileName(file));
-							outputPath = Path.ChangeExtension(outputPath, this.config.FileType.GetFileExtension());
+							outputPath = Path.ChangeExtension(outputPath, extension);
 						}
 						else
 						{
@@ -325,7 +336,8 @@ namespace VideoConverter.Commands
 					}
 					else if (settings.ReEncode)
 					{
-						outputPath = Path.ChangeExtension(file, this.config.FileType.GetFileExtension());
+						var extension = settings.FileExtension ?? this.config.FileType.GetFileExtension();
+						outputPath = Path.ChangeExtension(outputPath, extension);
 					}
 					else
 					{
@@ -543,8 +555,6 @@ namespace VideoConverter.Commands
 
 			if (episodeData.SeasonNumber is null)
 				episodeData.SeasonNumber = 1;
-
-			episodeData.Container = this.config.FileType;
 
 			if (!config.IncludeFansubber)
 				episodeData.Fansubber = null;
