@@ -3,6 +3,7 @@ namespace VideoConverter.Options
 	using System;
 	using System.ComponentModel;
 	using Spectre.Cli;
+	using VideoConverter.Core.Models;
 	using VideoConverter.Storage.Models;
 
 	public class AddDirectoryOption : CommandSettings
@@ -58,6 +59,10 @@ namespace VideoConverter.Options
 		[CommandOption("--extension")]
 		[Description("The file extension to use when encoding files")]
 		public string? FileExtension { get; set; }
+
+		[CommandOption("--stereo-mode|--stereo")]
+		[Description("The movie is in 3D with the following stereoscopic view")]
+		public StereoScopicMode StereoMode { get; set; }
 
 		public override ValidationResult Validate()
 		{

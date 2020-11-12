@@ -386,14 +386,15 @@ namespace VideoConverter.Commands
 					}
 
 					queueItem.AudioCodec = audioCodec;
-					queueItem.OutputPath = outputPath;
 					queueItem.NewHash = string.Empty;
+					queueItem.OutputPath = outputPath!;
+					queueItem.Parameters = settings.Parameters.Any(p => !string.IsNullOrEmpty(p)) ? string.Join(' ', settings.Parameters.Where(p => !string.IsNullOrEmpty(p))) : this.config.ExtraEncodingParameters;
 					queueItem.Status = QueueStatus.Pending;
 					queueItem.StatusMessage = string.Empty;
+					queueItem.StereoMode = settings.StereoMode;
 					queueItem.Streams = streams;
 					queueItem.SubtitleCodec = subtitleCodec;
 					queueItem.VideoCodec = videoCodec;
-					queueItem.Parameters = settings.Parameters.Any(p => !string.IsNullOrEmpty(p)) ? string.Join(' ', settings.Parameters.Where(p => !string.IsNullOrEmpty(p))) : this.config.ExtraEncodingParameters;
 
 					if (await queueRepository.AddToQueueAsync(queueItem).ConfigureAwait(false))
 					{

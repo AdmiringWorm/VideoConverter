@@ -240,7 +240,49 @@ namespace VideoConverter.Commands
 					if (!parameters.Contains("faststart") && !parameters.Contains("movflags"))
 						parameters = "-movflags +faststart " + parameters;
 
-					conversion.AddParameter(parameters)
+					string parameters3D = string.Empty;
+					string stereo3d = string.Empty;
+
+					switch (queue.StereoMode)
+					{
+						case StereoScopicMode.Mono:
+							parameters3D = "-metadata:s:v stereo_mode=mono";
+							break;
+						case StereoScopicMode.AboveBelowLeft:
+							parameters3D = "-vf \"stereo3d=tbl:tbl\" -metadata:s:v stereo_mode=top_bottom";
+							stereo3d = "tbl";
+							break;
+						case StereoScopicMode.AboveBelowRight:
+							parameters3D = "-vf \"stereo3d=tbr:tbl\" -metadata:s:v stereo_mode=top_bottom";
+							stereo3d = "tbl";
+							break;
+						case StereoScopicMode.AboveBelowLeftHalf:
+							parameters3D = "-vf \"stereo3d=tb2l:tb2l\" -metadata:s:v stereo_mode=top_bottom";
+							stereo3d = "tb2l";
+							break;
+						case StereoScopicMode.AboveBelowRightHalf:
+							parameters3D = "-vf \"stereo3d=tb2r:tb2l\" -metadata:s:v stereo_mode=top_bottom";
+							stereo3d = "tb2l";
+							break;
+						case StereoScopicMode.SideBySideLeft:
+							parameters3D = "-vf \"stereo3d=sbsl:sbsl\" -metadata:s:v stereo_mode=left_right";
+							stereo3d = "sbsl";
+							break;
+						case StereoScopicMode.SideBySideLeftHalf:
+							parameters3D = "-vf \"stereo3d=sbs2l:sbs2l\" -metadata:s:v stereo_mode=left_right";
+							stereo3d = "sbs2l";
+							break;
+						case StereoScopicMode.SideBySideRight:
+							parameters3D = "-vf \"stereo3d=sbsr:sbsl\" -metadata:s:v stereo_mode=left_right";
+							stereo3d = "sbsl";
+							break;
+						case StereoScopicMode.SideBySideRightHalf:
+							parameters3D = "-vf \"stereo3d=sbs2r:sbs2l\" -metadata:s:v stereo_mode=left_right";
+							stereo3d = "sbs2l";
+							break;
+					}
+
+					conversion.AddParameter(parameters + parameters3D)
 						.SetOverwriteOutput(true)
 						.SetOutput(tempWorkPath);
 
@@ -327,6 +369,15 @@ namespace VideoConverter.Commands
 								var fanArtAt = this.rand.Next((int)firstVideoStream.Duration.TotalMilliseconds + 1);
 								var thumbConversion = await FFmpeg.Conversions.FromSnippet.Snapshot(tempWorkPath, newThumbPath, TimeSpan.FromMilliseconds(thumbnailAt)).ConfigureAwait(false);
 								var fanArtConversion = await FFmpeg.Conversions.FromSnippet.Snapshot(tempWorkPath, newFanArtPath, TimeSpan.FromMilliseconds(fanArtAt)).ConfigureAwait(false);
+								if (!string.IsNullOrEmpty(stereo3d))
+								{
+									thumbConversion.AddParameter($"-vf \"stereo3d={stereo3d}:ml\"");
+									fanArtConversion.AddParameter($"-vf \"stereo3d={stereo3d}:mr\"");
+								}
+
+								var thumbArgs = thumbConversion.Build();
+								var fanArtArgs = fanArtConversion.Build();
+
 								await Task.WhenAll(thumbConversion.Start(cancellationToken), fanArtConversion.Start(cancellationToken)).ConfigureAwait(false);
 
 								stepChild.Tick($"Moving encoded file to new location '{newFileName}'");

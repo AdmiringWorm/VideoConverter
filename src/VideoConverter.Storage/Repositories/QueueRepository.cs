@@ -103,13 +103,14 @@ namespace VideoConverter.Storage.Repositories
 			nextQueue.NewHash = queueItem.NewHash;
 			nextQueue.OldHash = queueItem.OldHash;
 			nextQueue.OutputPath = ReplaceWithPrefix(queueItem.OutputPath);
+			nextQueue.Parameters = queueItem.Parameters;
 			nextQueue.Path = path;
 			nextQueue.Status = queueItem.Status;
 			nextQueue.StatusMessage = queueItem.StatusMessage;
+			nextQueue.StereoMode = queueItem.StereoMode;
 			nextQueue.Streams = queueItem.Streams;
 			nextQueue.SubtitleCodec = queueItem.SubtitleCodec;
 			nextQueue.VideoCodec = queueItem.VideoCodec;
-			nextQueue.Parameters = queueItem.Parameters;
 
 			await queueCol.UpsertAsync(nextQueue).ConfigureAwait(false);
 			await this.dbFactory.CreateCheckpointAsync().ConfigureAwait(false);

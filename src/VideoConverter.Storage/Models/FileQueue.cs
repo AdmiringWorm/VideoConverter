@@ -1,7 +1,7 @@
-using System;
 namespace VideoConverter.Storage.Models
 {
 	using System.Collections.Generic;
+	using VideoConverter.Core.Models;
 
 	public sealed class FileQueue
 	{
@@ -19,5 +19,7 @@ namespace VideoConverter.Storage.Models
 
 		public string? OldHash { get; set; }
 		public string? NewHash { get; set; }
+
+		public StereoScopicMode StereoMode { get; set; }
 	}
 }
