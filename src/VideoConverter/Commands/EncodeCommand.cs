@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using System.Security.Cryptography;
 namespace VideoConverter.Commands
 {
@@ -249,10 +250,15 @@ namespace VideoConverter.Commands
 					switch (queue.StereoMode)
 					{
 						case StereoScopicMode.Mono:
-							parameters3D = "-metadata:s:v stereo_mode=mono";
+							if (!parameters.Contains("v360"))
+								parameters3D = "-metadata:s:v stereo_mode=mono";
 							break;
 						case StereoScopicMode.AboveBelowLeft:
-							parameters3D = "-vf \"stereo3d=tbl:tbl\" -metadata:s:v stereo_mode=top_bottom";
+							if (parameters.Contains("v360"))
+								parameters = Regex.Replace(parameters, "v360=([^\\s\"])", "v360=$1:in_stereo=tb:out_stereo=tb");
+							else
+								parameters3D = "-vf \"stereo3d=tbl:tbl\"";
+							parameters3D += " -metadata:s:v stereo_mode=top_bottom";
 							stereo3d = "tbl";
 							break;
 						case StereoScopicMode.AboveBelowRight:
@@ -268,7 +274,11 @@ namespace VideoConverter.Commands
 							stereo3d = "tb2l";
 							break;
 						case StereoScopicMode.SideBySideLeft:
-							parameters3D = "-vf \"stereo3d=sbsl:sbsl\" -metadata:s:v stereo_mode=left_right";
+							if (parameters.Contains("v360"))
+								parameters = Regex.Replace(parameters, "v360=([^\\s\"]+)", "v360=$1:in_stereo=sbs:out_stereo=sbs");
+							else
+								parameters3D = "-vf \"stereo3d=sbsl:sbsl\"";
+							parameters3D += " -metadata:s:v stereo_mode=left_right";
 							stereo3d = "sbsl";
 							break;
 						case StereoScopicMode.SideBySideLeftHalf:
@@ -285,11 +295,11 @@ namespace VideoConverter.Commands
 							break;
 					}
 
-					conversion.AddParameter(parameters + parameters3D)
+					conversion.AddParameter($"{parameters} {parameters3D}")
 						.SetOverwriteOutput(true)
 						.SetOutput(tempWorkPath);
 
-					var result = conversion.ToString();
+					var result = conversion.Build();
 
 					stepChild.Tick($"Encoding '{newFileName}'...");
 					queue.Status = QueueStatus.Encoding;
@@ -330,78 +340,78 @@ namespace VideoConverter.Commands
 							queue.Status = QueueStatus.Completed;
 
 							if (isDuplicate)
+							{
+								queue.StatusMessage = "Duplicate file...";
+								if (settings.IgnoreDuplicates)
 								{
-									queue.StatusMessage = "Duplicate file...";
-									if (settings.IgnoreDuplicates)
-									{
-										stepChild.Tick("Removing duplicate file...");
-										File.Delete(tempWorkPath);
-										stepChild.ForegroundColor = ConsoleColor.DarkGray;
-									}
+									stepChild.Tick("Removing duplicate file...");
+									File.Delete(tempWorkPath);
+									stepChild.ForegroundColor = ConsoleColor.DarkGray;
 								}
-
-								if (!isDuplicate || !settings.IgnoreDuplicates)
-								{
-									var newSize = new FileInfo(tempWorkPath).Length;
-									if (newSize > initialSize)
-										queue.StatusMessage = $"Lost {(newSize - initialSize).Bytes().Humanize("#.##", CultureInfo.CurrentCulture)}";
-									else if (newSize < initialSize)
-										queue.StatusMessage = $"Saved {(initialSize - newSize).Bytes().Humanize("#.##", CultureInfo.CurrentCulture)}";
-									else
-										queue.StatusMessage = "No loss or gain in size";
-								}
-
-								await queueRepo.UpdateQueueAsync(queue).ConfigureAwait(false);
-
-								//this.queueRepo.UpdateQueueStatus(queue.Id, QueueStatus.Completed, statusMessage);
-								encodingPb.Tick(encodingPb.MaxTicks, "Completed");
-								if (!isDuplicate || !settings.IgnoreDuplicates)
-								{
-									var newThumbPath = Path.ChangeExtension(queue.OutputPath, "-thumb.jpg").Replace(".-thumb", "-thumb");
-									var newFanArtPath = Path.ChangeExtension(queue.OutputPath, "-fanart.jpg").Replace(".-fanart", "-fanart");
-
-									stepChild.Tick($"Creating snapshot of '{newFileName}'");
-
-									if (File.Exists(newThumbPath))
-										File.Delete(newThumbPath);
-
-									if (File.Exists(newFanArtPath))
-										File.Delete(newFanArtPath);
-
-									var thumbnailAt = this.rand.Next((int)firstVideoStream.Duration.TotalMilliseconds + 1);
-									var fanArtAt = this.rand.Next((int)firstVideoStream.Duration.TotalMilliseconds + 1);
-									var thumbConversion = await FFmpeg.Conversions.FromSnippet.Snapshot(tempWorkPath, newThumbPath, TimeSpan.FromMilliseconds(thumbnailAt)).ConfigureAwait(false);
-									var fanArtConversion = await FFmpeg.Conversions.FromSnippet.Snapshot(tempWorkPath, newFanArtPath, TimeSpan.FromMilliseconds(fanArtAt)).ConfigureAwait(false);
-									if (!string.IsNullOrEmpty(stereo3d))
-									{
-										thumbConversion.AddParameter($"-vf \"stereo3d={stereo3d}:ml\"");
-										fanArtConversion.AddParameter($"-vf \"stereo3d={stereo3d}:mr\"");
-									}
-
-									var thumbArgs = thumbConversion.Build();
-									var fanArtArgs = fanArtConversion.Build();
-
-									await Task.WhenAll(thumbConversion.Start(cancellationToken), fanArtConversion.Start(cancellationToken)).ConfigureAwait(false);
-
-									stepChild.Tick($"Moving encoded file to new location '{newFileName}'");
-
-									if (File.Exists(queue.OutputPath))
-										File.Delete(queue.OutputPath);
-
-									File.Move(tempWorkPath, queue.OutputPath);
-									stepChild.ForegroundColor = ConsoleColor.DarkGreen;
-								}
-
-								if (settings.RemoveOldFiles)
-								{
-									stepChild.Tick($"Removing old encoded file '{Path.GetFileNameWithoutExtension(queue.Path)}");
-									if (queue.Path != queue.OutputPath && File.Exists(queue.Path))
-										File.Delete(queue.Path);
-								}
-
-								stepChild.Tick($"Encoding completed for '{newFileName}'");
 							}
+
+							if (!isDuplicate || !settings.IgnoreDuplicates)
+							{
+								var newSize = new FileInfo(tempWorkPath).Length;
+								if (newSize > initialSize)
+									queue.StatusMessage = $"Lost {(newSize - initialSize).Bytes().Humanize("#.##", CultureInfo.CurrentCulture)}";
+								else if (newSize < initialSize)
+									queue.StatusMessage = $"Saved {(initialSize - newSize).Bytes().Humanize("#.##", CultureInfo.CurrentCulture)}";
+								else
+									queue.StatusMessage = "No loss or gain in size";
+							}
+
+							await queueRepo.UpdateQueueAsync(queue).ConfigureAwait(false);
+
+							//this.queueRepo.UpdateQueueStatus(queue.Id, QueueStatus.Completed, statusMessage);
+							encodingPb.Tick(encodingPb.MaxTicks, "Completed");
+							if (!isDuplicate || !settings.IgnoreDuplicates)
+							{
+								var newThumbPath = Path.ChangeExtension(queue.OutputPath, "-thumb.jpg").Replace(".-thumb", "-thumb");
+								var newFanArtPath = Path.ChangeExtension(queue.OutputPath, "-fanart.jpg").Replace(".-fanart", "-fanart");
+
+								stepChild.Tick($"Creating snapshot of '{newFileName}'");
+
+								if (File.Exists(newThumbPath))
+									File.Delete(newThumbPath);
+
+								if (File.Exists(newFanArtPath))
+									File.Delete(newFanArtPath);
+
+								var thumbnailAt = this.rand.Next((int)firstVideoStream.Duration.TotalMilliseconds + 1);
+								var fanArtAt = this.rand.Next((int)firstVideoStream.Duration.TotalMilliseconds + 1);
+								var thumbConversion = await FFmpeg.Conversions.FromSnippet.Snapshot(tempWorkPath, newThumbPath, TimeSpan.FromMilliseconds(thumbnailAt)).ConfigureAwait(false);
+								var fanArtConversion = await FFmpeg.Conversions.FromSnippet.Snapshot(tempWorkPath, newFanArtPath, TimeSpan.FromMilliseconds(fanArtAt)).ConfigureAwait(false);
+								if (!string.IsNullOrEmpty(stereo3d))
+								{
+									thumbConversion.AddParameter($"-vf \"stereo3d={stereo3d}:ml\"");
+									fanArtConversion.AddParameter($"-vf \"stereo3d={stereo3d}:mr\"");
+								}
+
+								var thumbArgs = thumbConversion.Build();
+								var fanArtArgs = fanArtConversion.Build();
+
+								await Task.WhenAll(thumbConversion.Start(cancellationToken), fanArtConversion.Start(cancellationToken)).ConfigureAwait(false);
+
+								stepChild.Tick($"Moving encoded file to new location '{newFileName}'");
+
+								if (File.Exists(queue.OutputPath))
+									File.Delete(queue.OutputPath);
+
+								File.Move(tempWorkPath, queue.OutputPath);
+								stepChild.ForegroundColor = ConsoleColor.DarkGreen;
+							}
+
+							if (settings.RemoveOldFiles)
+							{
+								stepChild.Tick($"Removing old encoded file '{Path.GetFileNameWithoutExtension(queue.Path)}");
+								if (queue.Path != queue.OutputPath && File.Exists(queue.Path))
+									File.Delete(queue.Path);
+							}
+
+							stepChild.Tick($"Encoding completed for '{newFileName}'");
 						}
+					}
 					catch (Exception ex)
 					{
 						failed = true;
