@@ -301,7 +301,7 @@ namespace VideoConverter.Commands
 						if (episodeData is not null)
 						{
 							if (settings.FileExtension is not null)
-								episodeData.Container = settings.FileExtension;
+								episodeData.Container = settings.FileExtension.GetExtensionFileType();
 							else
 								episodeData.Container = this.config.FileType;
 
