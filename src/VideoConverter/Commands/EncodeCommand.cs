@@ -250,7 +250,7 @@ namespace VideoConverter.Commands
 					switch (queue.StereoMode)
 					{
 						case StereoScopicMode.Mono:
-							if (!parameters.Contains("v360"))
+							if (!parameters.Contains("v360") && !settings.NoStereoModeMetadata)
 								parameters3D = "-metadata:s:v stereo_mode=mono";
 							break;
 						case StereoScopicMode.AboveBelowLeft:
@@ -258,19 +258,26 @@ namespace VideoConverter.Commands
 								parameters = Regex.Replace(parameters, "v360=([^\\s\"])", "v360=$1:in_stereo=tb:out_stereo=tb");
 							else
 								parameters3D = "-vf \"stereo3d=tbl:tbl\"";
-							parameters3D += " -metadata:s:v stereo_mode=top_bottom";
+							if (!settings.NoStereoModeMetadata)
+								parameters3D += " -metadata:s:v stereo_mode=top_bottom";
 							stereo3d = "tbl";
 							break;
 						case StereoScopicMode.AboveBelowRight:
-							parameters3D = "-vf \"stereo3d=tbr:tbl\" -metadata:s:v stereo_mode=top_bottom";
+							parameters3D = "-vf \"stereo3d=tbr:tbl\"";
+							if (!settings.NoStereoModeMetadata)
+								parameters3D += " -metadata:s:v stereo_mode=top_bottom";
 							stereo3d = "tbl";
 							break;
 						case StereoScopicMode.AboveBelowLeftHalf:
-							parameters3D = "-vf \"stereo3d=tb2l:tb2l\" -metadata:s:v stereo_mode=top_bottom";
+							parameters3D = "-vf \"stereo3d=tb2l:tb2l\"";
+							if (!settings.NoStereoModeMetadata)
+								parameters3D += " -metadata:s:v stereo_mode=top_bottom";
 							stereo3d = "tb2l";
 							break;
 						case StereoScopicMode.AboveBelowRightHalf:
-							parameters3D = "-vf \"stereo3d=tb2r:tb2l\" -metadata:s:v stereo_mode=top_bottom";
+							parameters3D = "-vf \"stereo3d=tb2r:tb2l\"";
+							if (!settings.NoStereoModeMetadata)
+								parameters3D += " -metadata:s:v stereo_mode=top_bottom";
 							stereo3d = "tb2l";
 							break;
 						case StereoScopicMode.SideBySideLeft:
@@ -278,19 +285,26 @@ namespace VideoConverter.Commands
 								parameters = Regex.Replace(parameters, "v360=([^\\s\"]+)", "v360=$1:in_stereo=sbs:out_stereo=sbs");
 							else
 								parameters3D = "-vf \"stereo3d=sbsl:sbsl\"";
-							parameters3D += " -metadata:s:v stereo_mode=left_right";
+							if (!settings.NoStereoModeMetadata)
+								parameters3D += " -metadata:s:v stereo_mode=left_right";
 							stereo3d = "sbsl";
 							break;
 						case StereoScopicMode.SideBySideLeftHalf:
-							parameters3D = "-vf \"stereo3d=sbs2l:sbs2l\" -metadata:s:v stereo_mode=left_right";
+							parameters3D = "-vf \"stereo3d=sbs2l:sbs2l\"";
+							if (!settings.NoStereoModeMetadata)
+								parameters3D += " -metadata:s:v stereo_mode=left_right";
 							stereo3d = "sbs2l";
 							break;
 						case StereoScopicMode.SideBySideRight:
-							parameters3D = "-vf \"stereo3d=sbsr:sbsl\" -metadata:s:v stereo_mode=left_right";
+							parameters3D = "-vf \"stereo3d=sbsr:sbsl\"";
+							if (!settings.NoStereoModeMetadata)
+								parameters3D += " -metadata:s:v stereo_mode=left_right";
 							stereo3d = "sbsl";
 							break;
 						case StereoScopicMode.SideBySideRightHalf:
-							parameters3D = "-vf \"stereo3d=sbs2r:sbs2l\" -metadata:s:v stereo_mode=left_right";
+							parameters3D = "-vf \"stereo3d=sbs2r:sbs2l\"";
+							if (!settings.NoStereoModeMetadata)
+								parameters3D += " -metadata:s:v stereo_mode=left_right";
 							stereo3d = "sbs2l";
 							break;
 					}

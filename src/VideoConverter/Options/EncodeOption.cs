@@ -29,5 +29,9 @@ namespace VideoConverter.Options
 		[CommandOption("--monitor|--monitor-db|--monitor-database")]
 		[Description("Do not exit the application, but monitor for additional changes")]
 		public bool MonitorDatabase { get; set; }
+
+		[CommandOption("--no-stereo-meta|--no-stereo-metadata|--no-stereo-mode")]
+		[Description("Do not set the stereo_mode metadata in the output")]
+		public bool NoStereoModeMetadata { get; set; }
 	}
 }
