@@ -100,6 +100,7 @@ namespace VideoConverter.Storage.Repositories
 			}
 
 			nextQueue.AudioCodec = queueItem.AudioCodec;
+			nextQueue.InputParameters = queueItem.InputParameters;
 			nextQueue.NewHash = queueItem.NewHash;
 			nextQueue.OldHash = queueItem.OldHash;
 			nextQueue.OutputPath = ReplaceWithPrefix(queueItem.OutputPath);
@@ -278,16 +279,17 @@ namespace VideoConverter.Storage.Repositories
 			var foundQueue = await col.FindByIdAsync(queue.Id).ConfigureAwait(false);
 
 			foundQueue.AudioCodec = queue.AudioCodec;
+			foundQueue.InputParameters = queue.InputParameters;
 			foundQueue.NewHash = queue.NewHash;
 			foundQueue.OldHash = queue.OldHash;
 			foundQueue.OutputPath = ReplaceWithPrefix(foundQueue.OutputPath);
+			foundQueue.Parameters = queue.Parameters;
 			foundQueue.Path = ReplaceWithPrefix(foundQueue.Path);
 			foundQueue.Status = queue.Status;
 			foundQueue.StatusMessage = queue.StatusMessage;
 			foundQueue.Streams = queue.Streams;
 			foundQueue.SubtitleCodec = queue.SubtitleCodec;
 			foundQueue.VideoCodec = queue.VideoCodec;
-			foundQueue.Parameters = queue.Parameters;
 
 			await col.UpdateAsync(foundQueue).ConfigureAwait(false);
 

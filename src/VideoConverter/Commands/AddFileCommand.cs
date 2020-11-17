@@ -1,3 +1,4 @@
+using System.Net.NetworkInformation;
 using System.Threading;
 using System.Security.Cryptography;
 using System.Drawing;
@@ -337,7 +338,7 @@ namespace VideoConverter.Commands
 					else if (settings.ReEncode)
 					{
 						var extension = settings.FileExtension ?? this.config.FileType.GetFileExtension();
-						outputPath = Path.ChangeExtension(outputPath, extension);
+						outputPath = Path.ChangeExtension(outputPath ?? file, extension);
 					}
 					else
 					{
@@ -395,6 +396,24 @@ namespace VideoConverter.Commands
 					queueItem.Streams = streams;
 					queueItem.SubtitleCodec = subtitleCodec;
 					queueItem.VideoCodec = videoCodec;
+
+					if (!string.IsNullOrWhiteSpace(settings.Repeat))
+					{
+						if (TimeSpan.TryParse(settings.Repeat, CultureInfo.InvariantCulture, out var ts))
+						{
+							int repeatTimes;
+							if (videoStreams.First().Duration.TotalMilliseconds > 0)
+								repeatTimes = (int)Math.Ceiling(ts.TotalMilliseconds / videoStreams.First().Duration.TotalMilliseconds);
+							else
+								repeatTimes = (int)Math.Ceiling(ts.TotalSeconds / videoStreams.First().Duration.TotalSeconds);
+							if (repeatTimes > 1)
+								queueItem.InputParameters = "-stream_loop " + repeatTimes;
+						}
+						else if (int.TryParse(settings.Repeat, NumberStyles.Integer, CultureInfo.InvariantCulture, out var i) && i > 1)
+						{
+							queueItem.InputParameters = "-stream_loop " + settings.Repeat;
+						}
+					}
 
 					if (await queueRepository.AddToQueueAsync(queueItem).ConfigureAwait(false))
 					{

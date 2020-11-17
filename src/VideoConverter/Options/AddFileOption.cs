@@ -1,3 +1,4 @@
+using System.Globalization;
 namespace VideoConverter.Options
 {
 	using System;
@@ -64,6 +65,10 @@ namespace VideoConverter.Options
 		[Description("The movie is in 3D with the following stereoscopic view")]
 		public StereoScopicMode StereoMode { get; set; }
 
+		[CommandOption("--repeat")]
+		[Description("Repeat the movie until it reaches a certain threshold (value can be a timespan, or a number of repeated loops)")]
+		public string? Repeat { get; set; }
+
 		public override ValidationResult Validate()
 		{
 			if (string.IsNullOrEmpty(OutputPath) && string.IsNullOrEmpty(OutputDir) && !ReEncode)
@@ -74,6 +79,14 @@ namespace VideoConverter.Options
 			if (Files.Length > 1 && !string.IsNullOrEmpty(OutputPath) && !ReEncode)
 			{
 				return ValidationResult.Error("A output path can not be used with several files!");
+			}
+
+			if (!string.IsNullOrEmpty(Repeat))
+			{
+				if (!TimeSpan.TryParse(Repeat, CultureInfo.InvariantCulture, out _) && !int.TryParse(Repeat, NumberStyles.Integer, CultureInfo.InvariantCulture, out _))
+				{
+					return ValidationResult.Error("The repeat argument must either be a timespan, or a number of loops");
+				}
 			}
 
 			return base.Validate();

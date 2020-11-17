@@ -36,6 +36,7 @@ namespace VideoConverter.Commands
 				Parameters = settings.Parameters,
 				ReEncode = settings.ReEncode,
 				RemoveDuplicates = settings.RemoveDuplicates,
+				Repeat = settings.Repeat,
 				StereoMode = settings.StereoMode,
 				SubtitleCodec = settings.SubtitleCodec,
 				UseEncodingCopy = settings.UseEncodingCopy,

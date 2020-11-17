@@ -21,5 +21,7 @@ namespace VideoConverter.Storage.Models
 		public string? NewHash { get; set; }
 
 		public StereoScopicMode StereoMode { get; set; }
+
+		public string InputParameters { get; set; }
 	}
 }

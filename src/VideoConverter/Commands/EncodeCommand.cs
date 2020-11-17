@@ -309,6 +309,9 @@ namespace VideoConverter.Commands
 							break;
 					}
 
+					if (!string.IsNullOrEmpty(queue.InputParameters))
+						conversion.AddParameter(queue.InputParameters, ParameterPosition.PreInput);
+
 					conversion.AddParameter($"{parameters} {parameters3D}")
 						.SetOverwriteOutput(true)
 						.SetOutput(tempWorkPath);
