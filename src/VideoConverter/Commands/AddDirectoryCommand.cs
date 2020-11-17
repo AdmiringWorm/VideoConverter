@@ -50,9 +50,18 @@ namespace VideoConverter.Commands
 		{
 			var extensions = new[]
 			{
-				"mkv",
-				"mp4",
+				"asf",
 				"avi",
+				"dv",
+				"m4v",
+				"mk3d",
+				"mkv",
+				"mkv3d",
+				"mp4",
+				"mpeg",
+				"mpg",
+				"vob",
+				"webm",
 				"wmv",
 			};
 

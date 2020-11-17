@@ -10,7 +10,7 @@ namespace VideoConverter.Options
 	public class AddDirectoryOption : CommandSettings
 	{
 		[CommandArgument(0, "<DIRECTORY_PATH>")]
-		[Description("The path to the directory containing video files. [bold]Multiple paths can be used[/].\n[italic]Only .mkv and .mp4 files will be collected[/]")]
+		[Description("The path to the directory containing video files. [bold]Multiple paths can be used[/].")]
 		public string[] Directories { get; set; } = Array.Empty<string>();
 
 		[CommandOption("-o|-d|--output|--dir <OUTPUT_DIRECTORY>")]

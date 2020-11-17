@@ -11,17 +11,18 @@ namespace VideoConverter.Core.Extensions
 
 			return (extension.TrimStart('.').ToUpperInvariant()) switch
 			{
-				"MKV" => "Matroska",
+				"AVI" => "Audio Video Interleave",
+				"DV" => "DIGITAL VIDEO",
+				"M4A" => "MPEG-4-Audio",
 				"MK3D" or "MKV3D" => "Matroska-3D",
 				"MKA" => "Matroska-Audio",
+				"MKV" => "Matroska",
 				"MP4" or "M4V" => "MPEG-4",
-				"M4A" => "MPEG-4-Audio",
 				"MPG" or "MPEG" => "MPEG",
-				"DV" => "DIGITAL VIDEO",
-				"AVI" => "Audio Video Interleave",
 				"VOB" => "DVD Video",
-				"WMV" or "ASF" => "Advanced Systems Format",
+				"WEBM" => "WebM",
 				"WMA" => "Advanced Systems Format-Audio",
+				"WMV" or "ASF" => "Advanced Systems Format",
 				_ => throw new ArgumentOutOfRangeException(nameof(extension)),
 			};
 		}
@@ -33,23 +34,18 @@ namespace VideoConverter.Core.Extensions
 
 			return extensionType.ToUpperInvariant() switch
 			{
-				"MATROSKA" => ".mkv",
+				"ADVANCED SYSTEMS FORMAT-AUDIO" => ".wma",
+				"ADVANCED SYSTEMS FORMAT" => ".wmv",
+				"AUDIO VIDEO INTERLEAVE" => ".avi",
+				"DIGITAL VIDEO" => ".dv",
+				"DVD VIDEO" => ".vob",
 				"MATROSKA-3D" => ".mk3d",
 				"MATROSKA-AUDIO" => ".mka",
-
-				"MPEG-4" => ".mp4",
+				"MATROSKA" => ".mkv",
 				"MPEG-4-AUDIO" => ".m4a",
-
+				"MPEG-4" => ".mp4",
 				"MPEG" => ".mpg",
-
-				"DVD VIDEO" => ".vob",
-
-				"DIGITAL VIDEO" => ".dv",
-
-				"AUDIO VIDEO INTERLEAVE" => ".avi",
-
-				"ADVANCED SYSTEMS FORMAT" => ".wmv",
-				"ADVANCED SYSTEMS FORMAT-AUDIO" => ".wma",
+				"WEBM" => ".webm",
 
 				_ => throw new ArgumentOutOfRangeException(nameof(extensionType))
 			};
