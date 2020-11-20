@@ -13,6 +13,7 @@ namespace VideoConverter.Core.Extensions
 			{
 				"AVI" => "Audio Video Interleave",
 				"DV" => "DIGITAL VIDEO",
+				"GIF" => "Graphics Interchange Format",
 				"M4A" => "MPEG-4-Audio",
 				"MK3D" or "MKV3D" => "Matroska-3D",
 				"MKA" => "Matroska-Audio",
@@ -39,6 +40,7 @@ namespace VideoConverter.Core.Extensions
 				"AUDIO VIDEO INTERLEAVE" => ".avi",
 				"DIGITAL VIDEO" => ".dv",
 				"DVD VIDEO" => ".vob",
+				"GIF" or "Graphics Interchange Format" => ".gif",
 				"MATROSKA-3D" => ".mk3d",
 				"MATROSKA-AUDIO" => ".mka",
 				"MATROSKA" => ".mkv",

@@ -12,6 +12,7 @@ namespace VideoConverter.Commands
 	using System.Text;
 	using System.Text.RegularExpressions;
 	using System.Threading.Tasks;
+	using Humanizer;
 	using Spectre.Cli;
 	using Spectre.Console;
 	using VideoConverter.Core.Extensions;
@@ -401,11 +402,22 @@ namespace VideoConverter.Commands
 					{
 						if (TimeSpan.TryParse(settings.Repeat, CultureInfo.InvariantCulture, out var ts))
 						{
-							int repeatTimes;
+							int repeatTimes = 0;
 							if (videoStreams.First().Duration.TotalMilliseconds > 0)
+							{
 								repeatTimes = (int)Math.Ceiling(ts.TotalMilliseconds / videoStreams.First().Duration.TotalMilliseconds);
-							else
+							}
+							else if (videoStreams.First().Duration.TotalSeconds > 0)
+							{
 								repeatTimes = (int)Math.Ceiling(ts.TotalSeconds / videoStreams.First().Duration.TotalSeconds);
+							}
+							else
+							{
+								this.console.MarkupLine("[yellow]WARNING: We were unable to detect how long the video is, unable to specify repeat vairable automatically[/]");
+								this.console.MarkupLine("[yellow]         Assuming a length of 1 second, and will repeat {0}", "time[/]".ToQuantity((int)ts.TotalSeconds));
+								repeatTimes = (int)ts.TotalSeconds;
+							}
+
 							if (repeatTimes > 1)
 								queueItem.InputParameters = "-stream_loop " + repeatTimes;
 						}

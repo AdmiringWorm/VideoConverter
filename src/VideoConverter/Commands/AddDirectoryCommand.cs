@@ -53,6 +53,7 @@ namespace VideoConverter.Commands
 				"asf",
 				"avi",
 				"dv",
+				"gif",
 				"m4v",
 				"mk3d",
 				"mkv",
