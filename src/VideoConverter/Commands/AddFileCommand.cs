@@ -85,7 +85,7 @@ namespace VideoConverter.Commands
 
 					var outputPath = settings.OutputPath;
 
-					while (!this.tokenSource.Token.IsCancellationRequested && string.IsNullOrEmpty(outputPath) && !isAccepted)
+					while (!this.tokenSource.Token.IsCancellationRequested && !settings.ReEncode && string.IsNullOrEmpty(outputPath) && !isAccepted)
 					{
 						episodeData = FileParser.ParseEpisode(file);
 
