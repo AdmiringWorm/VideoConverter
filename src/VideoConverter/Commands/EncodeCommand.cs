@@ -328,8 +328,7 @@ namespace VideoConverter.Commands
 					using var encodingPb = stepChild.Spawn(100, "Initialized", encodingOptions);
 					conversion.OnProgress += (sender, args) =>
 					{
-						if (encodingPb.MaxTicks == 100)
-							encodingPb.MaxTicks = (int)args.TotalLength.TotalSeconds;
+						encodingPb.MaxTicks = (int)args.TotalLength.TotalSeconds;
 						encodingPb.Tick((int)args.Duration.TotalSeconds, $"Completed: {args.Duration} / Total: {args.TotalLength}");
 					};
 
