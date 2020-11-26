@@ -395,6 +395,9 @@ namespace VideoConverter.Commands
 								if (File.Exists(newFanArtPath))
 									File.Delete(newFanArtPath);
 
+								mediaInfo = await FFmpeg.GetMediaInfo(tempWorkPath).ConfigureAwait(false);
+								firstVideoStream = mediaInfo.VideoStreams.First();
+
 								var thumbnailAt = this.rand.Next((int)firstVideoStream.Duration.TotalMilliseconds + 1);
 								var fanArtAt = this.rand.Next((int)firstVideoStream.Duration.TotalMilliseconds + 1);
 								var thumbConversion = await FFmpeg.Conversions.FromSnippet.Snapshot(tempWorkPath, newThumbPath, TimeSpan.FromMilliseconds(thumbnailAt)).ConfigureAwait(false);
