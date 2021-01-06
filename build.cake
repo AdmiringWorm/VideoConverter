@@ -40,6 +40,7 @@ var plainTextReleaseNotes = artifactsDir.CombineWithFilePath("release-notes.txt"
 Setup((context) =>
 {
 	var outputPath = artifactsDir.CombineWithFilePath("data.json");
+	EnsureDirectoryExists(artifactsDir);
 
 	var exitCode = StartProcess(dotnetExec, new ProcessSettings
 	{
