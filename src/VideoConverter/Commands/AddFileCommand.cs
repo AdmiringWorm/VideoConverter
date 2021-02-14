@@ -154,7 +154,7 @@ namespace VideoConverter.Commands
 					if (videoStreams.Count > 1)
 					{
 						var prompt = new MultiSelectionPrompt<(int, string, string, TimeSpan)>()
-							.Title("Which video streams do you wish to use?")
+							.Title("Which video streams do you wish to use ([fuchsia]Select no streams to use all streams)[/]?")
 							.NotRequired();
 
 						foreach (var stream in videoStreams)
@@ -194,7 +194,7 @@ namespace VideoConverter.Commands
 					if (audioStreams.Count > 1)
 					{
 						var prompt = new MultiSelectionPrompt<(int, string, string, int, string)>()
-							.Title("Which audio streams to you wish to use?")
+							.Title("Which audio streams to you wish to use ([fuchsia]Select no streams to use all streams)[/]?")
 							.NotRequired();
 
 						foreach (var stream in audioStreams)
@@ -240,7 +240,8 @@ namespace VideoConverter.Commands
 					if (subtitleStreams.Count > 1)
 					{
 						var prompt = new MultiSelectionPrompt<(int, string, string, string)>()
-							.Title("Which subtitle streams do you wish to use?");
+							.Title("Which subtitle streams do you wish to use ([fuchsia]Select no streams to use all streams)[/]?")
+							.NotRequired();
 
 						foreach (var stream in subtitleStreams)
 						{
@@ -519,31 +520,6 @@ namespace VideoConverter.Commands
 				e.Cancel = true;
 				this.tokenSource.Cancel();
 			}
-		}
-
-		private IEnumerable<int> AskAndSelectStreams(IEnumerable<IStream> videoStreams, string type)
-		{
-			this.console.MarkupLine(
-				"We found {0} {1}, please select the index of the streams "
-				+ "you wish to keep (seperated by a space)\n"
-				+ "or press {{Enter}} to keep all the {1}",
-				videoStreams.Count(),
-				type
-			);
-
-			var result = Console.ReadLine();
-
-			if (string.IsNullOrWhiteSpace(result))
-			{
-				return videoStreams.Select(i => i.Index);
-			}
-
-			var indexes = result.Split(
-				' ',
-				StringSplitOptions.RemoveEmptyEntries).Select(i => int.Parse(i, CultureInfo.InvariantCulture)
-			);
-
-			return videoStreams.Where(a => indexes.Contains(a.Index)).Select(i => i.Index);
 		}
 
 		private async Task<bool> AskAcceptableAsync(CommandContext context, Core.Models.EpisodeData episodeData, CancellationToken cancellationToken)
