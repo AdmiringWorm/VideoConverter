@@ -1,3 +1,5 @@
+using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
 namespace VideoConverter.Commands
 {
 	using System;
@@ -17,6 +19,7 @@ namespace VideoConverter.Commands
 	using VideoConverter.Core.Parsers;
 	using VideoConverter.Extensions;
 	using VideoConverter.Options;
+	using VideoConverter.Prompts;
 	using VideoConverter.Storage.Models;
 	using VideoConverter.Storage.Repositories;
 	using Xabe.FFmpeg;
@@ -515,7 +518,7 @@ namespace VideoConverter.Commands
 		{
 			if (e.SpecialKey == ConsoleSpecialKey.ControlC)
 			{
-				this.console.MarkupLine("We are cancelling all processing, please wait for cleanup to be complete!");
+				this.console.MarkupLine("We are cancelling all processing once current prompts are complete, please wait for cleanup to be complete!");
 
 				e.Cancel = true;
 				this.tokenSource.Cancel();
@@ -527,25 +530,44 @@ namespace VideoConverter.Commands
 			const string INVALID_CHOICE_MESSAGE = "[red]Please select one of the available options[/]";
 			DisplayEpisodeData(episodeData);
 
-			var prompt = this.console.Prompt(new TextPrompt<char>("Do this information look correct?")
-				.DefaultValue('y')
-				.InvalidChoiceMessage(INVALID_CHOICE_MESSAGE)
-				.ValidationErrorMessage(INVALID_CHOICE_MESSAGE)
-				.AddChoices(
-					new[] { 'y', 'n', 's' }
-				));
+			// var prompt = this.console.Prompt(new TextPrompt<char>("Do this information look correct?")
+			// 	.DefaultValue('y')
+			// 	.AddChoices(
+			// 		new[] { 'y', 'n', 's' }
+			// 	)
+			// 	.Validate(answer =>
+			// 	{
+			// 		if (cancellationToken.IsCancellationRequested)
+			// 			return ValidationResult.Success();
 
-			if (prompt == 's')
+			// 		switch (answer)
+			// 		{
+			// 			case 'y':
+			// 			case 'Y':
+			// 			case 'n':
+			// 			case 'N':
+			// 			case 's':
+			// 			case 'S':
+			// 				return ValidationResult.Success();
+
+			// 			default:
+			// 				return ValidationResult.Error(INVALID_CHOICE_MESSAGE);
+			// 		}
+			// 	}));
+
+			var prompt = this.console.Prompt(new YesNoPrompt("Do this information look correct?"));
+
+			if (cancellationToken.IsCancellationRequested)
+			{
+				return true;
+			}
+
+			if (prompt == PromptResponse.Skip)
 			{
 				episodeData.Series = "SKIP";
 				return true;
 			}
-			else if (prompt == 'y')
-			{
-				return true;
-			}
-
-			if (cancellationToken.IsCancellationRequested)
+			else if (prompt == PromptResponse.Yes)
 			{
 				return true;
 			}
