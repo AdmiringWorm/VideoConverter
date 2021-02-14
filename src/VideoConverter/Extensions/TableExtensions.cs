@@ -86,7 +86,7 @@ namespace VideoConverter.Extensions
 		{
 			var panel = new Panel(table)
 				.NoBorder();
-			panel.Header = new PanelHeader("[teal bold underscore]" + header + "[/]", Justify.Center);
+			panel.Header = new PanelHeader("[teal bold underline]" + header + "[/]", Justify.Center);
 
 			console.Render(panel);
 		}
