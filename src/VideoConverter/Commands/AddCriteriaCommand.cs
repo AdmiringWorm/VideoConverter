@@ -1,7 +1,7 @@
 namespace VideoConverter.Commands
 {
 	using VideoConverter.Options;
-	using Spectre.Cli;
+	using Spectre.Console.Cli;
 	using VideoConverter.Storage.Repositories;
 	using VideoConverter.Core.Parsers;
 	using Spectre.Console;
@@ -38,8 +38,12 @@ namespace VideoConverter.Commands
 
 			if (episodeData is null)
 			{
-				this.console.MarkupLine("[red on black] ERROR: We could not extract any of the necessary information from the file name![/]");
-				this.console.MarkupLine("[red on black] ERROR: Please note that only Episodes are currently supported!");
+				this.console.MarkupLine(
+					"[red on black] ERROR: We could not extract any of the necessary information from the file name![/]"
+				);
+				this.console.MarkupLine(
+					"[red on black] ERROR: Please note that only Episodes are currently supported!"
+				);
 
 				return 1;
 			}

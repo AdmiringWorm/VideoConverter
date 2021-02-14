@@ -2,7 +2,7 @@ namespace VideoConverter.Options
 {
 	using System;
 	using System.ComponentModel;
-	using Spectre.Cli;
+	using Spectre.Console.Cli;
 
 	public class EncodeOption : CommandSettings
 	{

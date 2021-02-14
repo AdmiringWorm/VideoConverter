@@ -3,7 +3,7 @@ namespace VideoConverter.Commands
 	using System;
 	using System.IO;
 	using System.Threading.Tasks;
-	using Spectre.Cli;
+	using Spectre.Console.Cli;
 	using Spectre.Console;
 	using VideoConverter.Extensions;
 	using VideoConverter.Options;
@@ -76,7 +76,7 @@ namespace VideoConverter.Commands
 				{
 					var panel = new Panel(item.StatusMessage.EscapeMarkup())
 						.NoBorder();
-					panel.Header("Status Message", new Style(Color.Aqua), Justify.Center);
+					panel.Header = new PanelHeader("[aqua]Status Message[/]", Justify.Center);
 					this.console.Render(panel);
 				}
 			}

@@ -1,20 +1,17 @@
-using System.Net.NetworkInformation;
-using System.Threading;
-using System.Security.Cryptography;
-using System.Drawing;
 namespace VideoConverter.Commands
 {
-	using System.Globalization;
 	using System;
 	using System.Collections.Generic;
+	using System.Globalization;
 	using System.IO;
 	using System.Linq;
 	using System.Text;
 	using System.Text.RegularExpressions;
+	using System.Threading;
 	using System.Threading.Tasks;
 	using Humanizer;
-	using Spectre.Cli;
 	using Spectre.Console;
+	using Spectre.Console.Cli;
 	using VideoConverter.Core.Extensions;
 	using VideoConverter.Core.Models;
 	using VideoConverter.Core.Parsers;
@@ -33,11 +30,12 @@ namespace VideoConverter.Commands
 		private readonly QueueRepository queueRepository;
 		private readonly CancellationTokenSource tokenSource;
 
-		public AddFileCommand(Configuration config,
-							  IAnsiConsole console,
-							  AddCriteriaCommand criteriaCommand,
-							  EpisodeCriteriaRepository criteriaRepo,
-							  QueueRepository queueRepository)
+		public AddFileCommand(
+			Configuration config,
+			IAnsiConsole console,
+			AddCriteriaCommand criteriaCommand,
+			EpisodeCriteriaRepository criteriaRepo,
+			QueueRepository queueRepository)
 		{
 			this.config = config;
 			this.console = console;
@@ -74,7 +72,10 @@ namespace VideoConverter.Commands
 
 					if (existingFile is not null && settings.IgnoreStatuses.Contains(existingFile.Status))
 					{
-						this.console.MarkupLine("[yellow]WARNING: [fuchsia]'{0}'[/] exists with status [aqua]{1}[/]. Ignoring...[/]", file.EscapeMarkup(), existingFile.Status);
+						this.console.MarkupLine(
+							"[yellow]WARNING: [fuchsia]'{0}'[/] exists with status [aqua]{1}[/]. Ignoring...[/]",
+							file.EscapeMarkup(), existingFile.Status
+						);
 						continue;
 					}
 
@@ -85,7 +86,12 @@ namespace VideoConverter.Commands
 
 					var outputPath = settings.OutputPath;
 
-					while (!this.tokenSource.Token.IsCancellationRequested && !settings.ReEncode && string.IsNullOrEmpty(outputPath) && !isAccepted)
+					while (
+						!this.tokenSource.Token.IsCancellationRequested &&
+						!settings.ReEncode &&
+						string.IsNullOrEmpty(outputPath) &&
+						!isAccepted
+					)
 					{
 						episodeData = FileParser.ParseEpisode(file);
 
@@ -94,9 +100,14 @@ namespace VideoConverter.Commands
 						if (episodeData is null)
 						{
 							var relativePath = settings.OutputDir ?? Environment.CurrentDirectory;
-							this.console.MarkupLine("File '[fuchsia]{0}[/]'...", file.EscapeMarkup());
-							this.console.MarkupLine("We were unable to extract necessary information. Please input the location of the file to save,");
-							this.console.MarkupLine("Relative to the path ([fuchsia]{0}[/]), or press {{Enter}} to skip the file.", relativePath.EscapeMarkup());
+							this.console.MarkupLine(
+								"File '[fuchsia]{0}[/]'...\n" +
+								"We were unable to extract necessary information. Please input the location of the file to save,\n" +
+								"Relative to the path ([fuchsia]{0}[/]), er press {{Enter}} to skip the file.",
+								file.EscapeMarkup(),
+								relativePath.EscapeMarkup()
+							);
+
 							var path = Console.ReadLine();
 							if (string.IsNullOrWhiteSpace(path))
 								break;
@@ -129,7 +140,9 @@ namespace VideoConverter.Commands
 					}
 
 					var mediaInfo = await mediaInfoTask.ConfigureAwait(false);
-					var videoStreams = mediaInfo.VideoStreams.Where(v => !string.Equals(v.Codec, "mjpeg", StringComparison.OrdinalIgnoreCase)).ToList();
+					var videoStreams = mediaInfo.VideoStreams.Where(
+						v => !string.Equals(v.Codec, "mjpeg", StringComparison.OrdinalIgnoreCase)
+					).ToList();
 					var audioStreams = mediaInfo.AudioStreams.ToList();
 					var subtitleStreams = mediaInfo.SubtitleStreams.ToList();
 
@@ -271,18 +284,26 @@ namespace VideoConverter.Commands
 					{
 						if (settings.RemoveDuplicates)
 						{
-							this.console.WriteLine($"The file '{file}' is a duplicate of an existing file. Removing...", new Style(Color.Green));
+							this.console.WriteLine(
+								$"The file '{file}' is a duplicate of an existing file. Removing...",
+								new Style(Color.Green)
+							);
 							File.Delete(file);
 							continue;
 						}
 						else if (settings.IgnoreDuplicates)
 						{
-							this.console.WriteLine($"WARNING: The file '{file}' is a duplicate of an existing file. Ignoring...", new Style(Color.Yellow));
+							this.console.WriteLine(
+								$"WARNING: The file '{file}' is a duplicate of an existing file. Ignoring...",
+								new Style(Color.Yellow)
+							);
 							continue;
 						}
 						else
 						{
-							this.console.MarkupLine("[yellow]WARNING: Found duplicate file, ignoring or removing duplicates have not been specified. Continuing[/]");
+							this.console.MarkupLine(
+								"[yellow]WARNING: Found duplicate file, ignoring or removing duplicates have not been specified. Continuing[/]"
+							);
 						}
 					}
 
@@ -331,7 +352,10 @@ namespace VideoConverter.Commands
 						}
 						else
 						{
-							this.console.MarkupLine("[yellow on black] ERROR: No information was found in the data, and no output path is specified. This should not happen, please report this error to the developers.[/]");
+							this.console.MarkupLine(
+								"[yellow on black] ERROR: No information was found in the data, and no output path is specified. " +
+								"This should not happen, please report this error to the developers.[/]"
+							);
 							await queueRepository.AbortChangesAsync().ConfigureAwait(false);
 							return 1;
 						}
@@ -343,7 +367,10 @@ namespace VideoConverter.Commands
 					}
 					else
 					{
-						this.console.MarkupLine("[yellow on black] ERROR: No information was found in the data, and no output path is specified. This should not happen, please report this error to the developers.[/]");
+						this.console.MarkupLine(
+							"[yellow on black] ERROR: No information was found in the data, and no output path is specified. " +
+							"This should not happen, please report this error to the developers.[/]"
+						);
 						await queueRepository.AbortChangesAsync().ConfigureAwait(false);
 						return 1;
 					}
@@ -369,19 +396,28 @@ namespace VideoConverter.Commands
 					if (settings.UseEncodingCopy)
 					{
 						if (!string.Equals(audioCodec, "copy", StringComparison.OrdinalIgnoreCase) &&
-							mediaInfo.AudioStreams.Where(a => streams.Contains(a.Index)).All(a => string.Equals(a.Codec, audioCodec, StringComparison.OrdinalIgnoreCase)))
+							mediaInfo.AudioStreams
+								.Where(a => streams.Contains(a.Index))
+								.All(a => string.Equals(a.Codec, audioCodec, StringComparison.OrdinalIgnoreCase))
+						)
 						{
 							audioCodec = "copy";
 						}
 
 						if (!string.Equals(videoCodec, "copy", StringComparison.OrdinalIgnoreCase) &&
-							mediaInfo.VideoStreams.Where(v => streams.Contains(v.Index)).All(v => string.Equals(v.Codec, videoCodec, StringComparison.OrdinalIgnoreCase)))
+							mediaInfo.VideoStreams
+								.Where(v => streams.Contains(v.Index))
+								.All(v => string.Equals(v.Codec, videoCodec, StringComparison.OrdinalIgnoreCase))
+						)
 						{
 							videoCodec = "copy";
 						}
 
 						if (!string.Equals(subtitleCodec, "copy", StringComparison.OrdinalIgnoreCase) &&
-							mediaInfo.SubtitleStreams.Where(s => streams.Contains(s.Index)).All(s => string.Equals(s.Codec, subtitleCodec, StringComparison.OrdinalIgnoreCase)))
+							mediaInfo.SubtitleStreams
+								.Where(s => streams.Contains(s.Index))
+								.All(s => string.Equals(s.Codec, subtitleCodec, StringComparison.OrdinalIgnoreCase))
+						)
 						{
 							subtitleCodec = "copy";
 						}
@@ -390,7 +426,9 @@ namespace VideoConverter.Commands
 					queueItem.AudioCodec = audioCodec;
 					queueItem.NewHash = string.Empty;
 					queueItem.OutputPath = outputPath!;
-					queueItem.Parameters = settings.Parameters.Any(p => !string.IsNullOrEmpty(p)) ? string.Join(' ', settings.Parameters.Where(p => !string.IsNullOrEmpty(p))) : this.config.ExtraEncodingParameters;
+					queueItem.Parameters = settings.Parameters.Any(p => !string.IsNullOrEmpty(p))
+											? string.Join(' ', settings.Parameters.Where(p => !string.IsNullOrEmpty(p)))
+											: this.config.ExtraEncodingParameters;
 					queueItem.Status = QueueStatus.Pending;
 					queueItem.StatusMessage = string.Empty;
 					queueItem.StereoMode = settings.StereoMode;
@@ -413,8 +451,14 @@ namespace VideoConverter.Commands
 							}
 							else
 							{
-								this.console.MarkupLine("[yellow]WARNING: We were unable to detect how long the video is, unable to specify repeat vairable automatically[/]");
-								this.console.MarkupLine("[yellow]         Assuming a length of 1 second, and will repeat {0}", "time[/]".ToQuantity((int)ts.TotalSeconds));
+								this.console.MarkupLine(
+									"[yellow]WARNING: We were unable to detect how long the video is, " +
+									"unable to specify repeat vairable automatically[/]"
+								);
+								this.console.MarkupLine(
+									"[yellow]         Assuming a length of 1 second, and will repeat {0}", "time[/]"
+										.ToQuantity((int)ts.TotalSeconds)
+								);
 								repeatTimes = (int)ts.TotalSeconds;
 							}
 
@@ -442,7 +486,10 @@ namespace VideoConverter.Commands
 					else
 					{
 						await queueRepository.AbortChangesAsync().ConfigureAwait(false);
-						this.console.WriteLine($"WARNING: Unable to update '{file}'. Encoding have already started on the file!", new Style(Color.Yellow, Color.Black));
+						this.console.WriteLine(
+							$"WARNING: Unable to update '{file}'. Encoding have already started on the file!",
+							new Style(Color.Yellow, Color.Black)
+						);
 					}
 				}
 			}
@@ -483,7 +530,10 @@ namespace VideoConverter.Commands
 				return videoStreams.Select(i => i.Index);
 			}
 
-			var indexes = result.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(i => int.Parse(i, CultureInfo.InvariantCulture));
+			var indexes = result.Split(
+				' ',
+				StringSplitOptions.RemoveEmptyEntries).Select(i => int.Parse(i, CultureInfo.InvariantCulture)
+			);
 
 			return videoStreams.Where(a => indexes.Contains(a.Index)).Select(i => i.Index);
 		}

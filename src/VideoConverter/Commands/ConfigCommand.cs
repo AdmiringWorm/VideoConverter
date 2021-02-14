@@ -5,7 +5,7 @@ namespace VideoConverter.Commands
 	using System.Linq;
 	using System.Reflection;
 	using Humanizer;
-	using Spectre.Cli;
+	using Spectre.Console.Cli;
 	using Spectre.Console;
 	using VideoConverter.Core.Models;
 	using VideoConverter.Core.Services;
@@ -43,13 +43,20 @@ namespace VideoConverter.Commands
 
 				if (property is null)
 				{
-					this.console.MarkupLine("[red on black] ERROR: We could not find any configuration with the name '[fuchsia]{0}[/]'[/]", settings.Name);
+					this.console.MarkupLine(
+						"[red on black] ERROR: We could not find any configuration with the name '[fuchsia]{0}[/]'[/]",
+						settings.Name
+					);
 					return 1;
 				}
 
 				if (string.IsNullOrEmpty(settings.Value))
 				{
-					this.console.MarkupLine("[fuchsia]{0}[/] = [aqua]{1}[/]", property.Name.Humanize(), property.GetValue(config) ?? string.Empty);
+					this.console.MarkupLine(
+						"[fuchsia]{0}[/] = [aqua]{1}[/]",
+						property.Name.Humanize(),
+						property.GetValue(config) ?? string.Empty
+					);
 				}
 				else if (string.Equals(property.GetValue(config), settings.Value))
 				{
@@ -62,9 +69,18 @@ namespace VideoConverter.Commands
 					service.SetConfiguration(config);
 					this.console.WriteLine("Configuration Updated!", Style.Plain);
 				}
-				else if (string.Equals(property.Name, "MapperDatabase", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(config.MapperDatabase) && File.Exists(config.MapperDatabase))
+				else if (string.Equals(
+							property.Name,
+							"MapperDatabase",
+							StringComparison.OrdinalIgnoreCase) &&
+						!string.IsNullOrEmpty(config.MapperDatabase) &&
+						File.Exists(config.MapperDatabase)
+				)
 				{
-					this.console.Markup("[yellow on black] WARNING: We found an existing database in the previous location. Do you want to move this to the new location? (y/N)[/]");
+					this.console.Markup(
+						"[yellow on black] WARNING: We found an existing database in the previous location. " +
+						"Do you want to move this to the new location? (y/N)[/]"
+					);
 
 					var key = Console.ReadKey();
 					if (key.KeyChar == 'Y' || key.KeyChar == 'y')
@@ -98,7 +114,11 @@ namespace VideoConverter.Commands
 
 		private static PropertyInfo? GetProperty(string name)
 		{
-			return Array.Find(typeof(Configuration).GetProperties(BindingFlags.Instance | BindingFlags.Public), p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase));
+			return Array.Find(
+				typeof(Configuration).GetProperties(
+					BindingFlags.Instance | BindingFlags.Public),
+					p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase)
+			);
 		}
 
 		private void ListConfigurations(Configuration config)
@@ -108,7 +128,13 @@ namespace VideoConverter.Commands
 				.DoubleEdgeBorder()
 				.AddColumns(new TableColumn("Name").RightAligned(), new TableColumn("Value").LeftAligned());
 
-			foreach (var property in config.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public).Where(p => p.Name != "Prefixes"))
+			foreach (var property in
+				config
+					.GetType()
+					.GetProperties(
+						BindingFlags.Instance | BindingFlags.Public)
+					.Where(p => p.Name != "Prefixes")
+			)
 			{
 				var name = property.Name;
 				var value = property.GetValue(config);
@@ -119,8 +145,8 @@ namespace VideoConverter.Commands
 			}
 
 			var panel = new Panel(table)
-				.NoBorder()
-				.Header("Available Configurations", new Style(Color.Aqua), Justify.Center);
+				.NoBorder();
+			panel.Header = new PanelHeader("[aqua]Available Configuations[/]", Justify.Center);
 
 			console.Render(panel);
 		}

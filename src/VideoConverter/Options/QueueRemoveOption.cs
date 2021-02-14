@@ -1,6 +1,6 @@
 namespace VideoConverter.Options
 {
-    public class QueueRemoveOption : QueueShowOption
-    {
-    }
+	public class QueueRemoveOption : QueueShowOption
+	{
+	}
 }

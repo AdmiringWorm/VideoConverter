@@ -3,7 +3,7 @@ namespace VideoConverter.Commands
 	using System;
 	using System.Collections.Generic;
 	using System.Threading.Tasks;
-	using Spectre.Cli;
+	using Spectre.Console.Cli;
 	using Spectre.Console;
 	using VideoConverter.Options;
 	using VideoConverter.Storage.Models;
@@ -38,7 +38,11 @@ namespace VideoConverter.Commands
 				}
 
 				if (item.Status == QueueStatus.Encoding)
-					throw new Exception($"We were unable to remove the item with the id {settings.Identifiers[i]}! It is already being encoded!");
+				{
+					throw new Exception(
+						$"We were unable to remove the item with the id {settings.Identifiers[i]}! It is already being encoded!"
+					);
+				}
 
 				await queueRepo.RemoveQueueItemAsync(item.Id).ConfigureAwait(false);
 
@@ -49,7 +53,10 @@ namespace VideoConverter.Commands
 
 			foreach (var index in removed)
 			{
-				this.console.MarkupLine("[darkcyan]We successfully removed the queue item with the identifier {0} from the queue![/]", index);
+				this.console.MarkupLine(
+					"[darkcyan]We successfully removed the queue item with the identifier {0} from the queue![/]",
+					index
+				);
 			}
 
 			return 0;
