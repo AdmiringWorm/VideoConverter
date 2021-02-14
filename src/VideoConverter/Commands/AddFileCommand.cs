@@ -562,7 +562,7 @@ namespace VideoConverter.Commands
 			if (prompt == 's')
 			{
 				episodeData.Series = "SKIP";
-				return false;
+				return true;
 			}
 			else if (prompt == 'y')
 			{
@@ -571,7 +571,7 @@ namespace VideoConverter.Commands
 
 			if (cancellationToken.IsCancellationRequested)
 			{
-				return false;
+				return true;
 			}
 
 			this.console.MarkupLine("Okay then, please enter the correct information!");
@@ -588,7 +588,7 @@ namespace VideoConverter.Commands
 
 			if (cancellationToken.IsCancellationRequested)
 			{
-				return false;
+				return true;
 			}
 
 			await criteriaCommand.ExecuteAsync(context, settings).ConfigureAwait(false);
