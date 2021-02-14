@@ -1,11 +1,11 @@
 namespace VideoConverter.Core.Services
 {
-    using VideoConverter.Core.Models;
+	using VideoConverter.Core.Models;
 
-    public interface IConfigurationService
-    {
-        Configuration GetConfiguration();
+	public interface IConfigurationService
+	{
+		Configuration GetConfiguration();
 
-        void SetConfiguration(Configuration config);
-    }
+		void SetConfiguration(Configuration config);
+	}
 }

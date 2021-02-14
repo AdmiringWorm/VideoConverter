@@ -30,11 +30,23 @@ namespace VideoConverter.Commands
 			if (config.Prefixes is null)
 				config.Prefixes = new List<PrefixConfiguration>();
 
-			var prefixConfig = config.Prefixes.Find(p => string.Equals(p.Prefix, settings.Prefix, StringComparison.OrdinalIgnoreCase));
+			var prefixConfig = config.Prefixes.Find(
+				p => string.Equals(p.Prefix, settings.Prefix, StringComparison.OrdinalIgnoreCase)
+			);
 			if (prefixConfig is null)
-				config.Prefixes.Add(new PrefixConfiguration { Prefix = settings.Prefix, Path = Path.GetFullPath(settings.DirectoryPath) });
+			{
+				config.Prefixes.Add(
+					new PrefixConfiguration
+					{
+						Prefix = settings.Prefix,
+						Path = Path.GetFullPath(settings.DirectoryPath)
+					}
+				);
+			}
 			else
+			{
 				prefixConfig.Path = Path.GetFullPath(settings.DirectoryPath);
+			}
 
 			this.configService.SetConfiguration(config);
 

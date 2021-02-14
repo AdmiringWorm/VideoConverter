@@ -44,7 +44,9 @@ namespace VideoConverter
 							.WithAlias("dir")
 							.WithAlias("dir")
 							.WithAlias("d")
-							.WithDescription("Adds files in the specified directory/directories to the existing queue. If they are parsable!");
+							.WithDescription(
+								"Adds files in the specified directory/directories to the existing queue. If they are parsable!"
+							);
 
 						add.AddCommand<AddFileCommand>("file")
 							.WithAlias("files")
@@ -91,11 +93,24 @@ namespace VideoConverter
 
 		private static IContainer CreateContainer()
 		{
-			var container = new Container(rules => rules.WithTrackingDisposableTransients().WithCaptureContainerDisposeStackTrace());
+			var container = new Container(
+				rules => rules
+					.WithTrackingDisposableTransients()
+					.WithCaptureContainerDisposeStackTrace()
+			);
 			var ansiSupport = Console.IsOutputRedirected ? AnsiSupport.No : AnsiSupport.Detect;
 			var colorSupport = Console.IsOutputRedirected ? ColorSystemSupport.NoColors : ColorSystemSupport.Detect;
 
-			container.RegisterDelegate(_ => AnsiConsole.Create(new AnsiConsoleSettings { Ansi = ansiSupport, ColorSystem = colorSupport }), Reuse.Singleton);
+			container.RegisterDelegate(
+				_ => AnsiConsole.Create
+				(new AnsiConsoleSettings
+				{
+					Ansi = ansiSupport,
+					ColorSystem = colorSupport
+				}
+				),
+				Reuse.Singleton
+			);
 			container.RegisterDelegate(RegisterConfigurationRepository, Reuse.Singleton);
 			container.RegisterDelegate(RegisterConfiguration, Reuse.Singleton);
 			container.Register<DatabaseFactory>(Reuse.Singleton);
@@ -107,7 +122,11 @@ namespace VideoConverter
 
 		private static IConfigurationService RegisterConfigurationRepository(IResolverContext arg)
 		{
-			var configPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "VideoConverter", "config.xml");
+			var configPath = Path.Combine(
+				Environment.GetFolderPath(
+					Environment.SpecialFolder.LocalApplicationData),
+				"VideoConverter",
+				"config.xml");
 
 			return new XmlConfigurationService(configPath);
 		}
@@ -121,7 +140,11 @@ namespace VideoConverter
 			if (string.IsNullOrEmpty(config.MapperDatabase))
 
 			{
-				config.MapperDatabase = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "VideoConverter", "storage.db");
+				config.MapperDatabase = Path.Combine(
+					Environment.GetFolderPath(
+						Environment.SpecialFolder.LocalApplicationData),
+					"VideoConverter",
+					"storage.db");
 				repository.SetConfiguration(config);
 			}
 

@@ -18,8 +18,11 @@ namespace VideoConverter.DependencyInjection
 		{
 			var result = this.container.Resolve(type);
 
-			if (type.GetImplementedTypes().Any(t => t.IsGenericType && (t.GetGenericTypeDefinition() == typeof(AsyncCommand<>) || t.GetGenericTypeDefinition() == typeof(Command<>))))
-
+			if (type.GetImplementedTypes().Any(
+					t => t.IsGenericType &&
+					(t.GetGenericTypeDefinition() == typeof(AsyncCommand<>) ||
+					t.GetGenericTypeDefinition() == typeof(Command<>)))
+			)
 			{
 				this.container.InjectPropertiesAndFields(result);
 			}

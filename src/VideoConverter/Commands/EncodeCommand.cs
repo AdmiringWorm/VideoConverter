@@ -93,7 +93,13 @@ namespace VideoConverter.Commands
 
 			using var pbMain = new ProgressBar(count, string.Empty, progressOptions);
 
-			var mapperDb = this.config.MapperDatabase ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "VideoConverter", "storage.db");
+			var mapperDb = this.config.MapperDatabase
+				?? Path.Combine(
+					Environment.GetFolderPath(
+						Environment.SpecialFolder.LocalApplicationData),
+					"VideoConverter",
+					"storage.db"
+			);
 			var dbDirectory = Path.GetDirectoryName(mapperDb) ?? Environment.CurrentDirectory;
 			var fileName = Path.GetFileName(mapperDb);
 
@@ -201,24 +207,51 @@ namespace VideoConverter.Commands
 					{
 						if (stream is IVideoStream videoStream)
 						{
-							if (settings.UseEncodingCopy && string.Equals(videoStream.Codec, queue.VideoCodec ?? this.config.VideoCodec, StringComparison.OrdinalIgnoreCase))
+							if (settings.UseEncodingCopy &&
+								string.Equals(
+									videoStream.Codec,
+									queue.VideoCodec ?? this.config.VideoCodec,
+									StringComparison.OrdinalIgnoreCase)
+							)
+							{
 								videoStream.SetCodec(VideoCodec.copy);
+							}
 							else
+							{
 								videoStream.SetCodec(queue.VideoCodec ?? this.config.VideoCodec);
+							}
 						}
 						else if (stream is IAudioStream audioStream)
 						{
-							if (settings.UseEncodingCopy && string.Equals(audioStream.Codec, queue.AudioCodec ?? this.config.AudioCodec, StringComparison.OrdinalIgnoreCase))
+							if (settings.UseEncodingCopy &&
+								string.Equals(
+									audioStream.Codec,
+									queue.AudioCodec ?? this.config.AudioCodec,
+									StringComparison.OrdinalIgnoreCase)
+							)
+							{
 								audioStream.SetCodec(AudioCodec.copy);
+							}
 							else
+							{
 								audioStream.SetCodec(queue.AudioCodec ?? this.config.AudioCodec);
+							}
 						}
 						else if (stream is ISubtitleStream subtitleStream)
 						{
-							if (settings.UseEncodingCopy && string.Equals(subtitleStream.Codec, queue.SubtitleCodec ?? this.config.SubtitleCodec, StringComparison.OrdinalIgnoreCase))
+							if (settings.UseEncodingCopy &&
+								string.Equals(
+									subtitleStream.Codec,
+									queue.SubtitleCodec ?? this.config.SubtitleCodec,
+									StringComparison.OrdinalIgnoreCase)
+							)
+							{
 								subtitleStream.SetCodec(SubtitleCodec.copy);
+							}
 							else
+							{
 								subtitleStream.SetCodec(queue.SubtitleCodec ?? this.config.SubtitleCodec);
+							}
 						}
 
 						conversion.AddStream(stream);
@@ -241,8 +274,14 @@ namespace VideoConverter.Commands
 					if (!parameters.Contains("faststart") && !parameters.Contains("movflags"))
 						parameters = "-movflags +faststart " + parameters;
 
-					if (queue.OutputPath.EndsWith(".mk3d", StringComparison.OrdinalIgnoreCase) || queue.OutputPath.EndsWith(".mkv3d", StringComparison.Ordinal))
+					if (queue.OutputPath.EndsWith(
+							".mk3d",
+							StringComparison.OrdinalIgnoreCase) ||
+							queue.OutputPath.EndsWith(".mkv3d", StringComparison.Ordinal)
+					)
+					{
 						conversion.SetOutputFormat(Format.matroska);
+					}
 
 					string parameters3D = string.Empty;
 					string stereo3d = string.Empty;
@@ -340,7 +379,11 @@ namespace VideoConverter.Commands
 						if (cancellationToken.IsCancellationRequested)
 						{
 							failed = true;
-							await queueRepo.UpdateQueueStatusAsync(queue.Id, QueueStatus.Pending, "Progress was cancelled by user").ConfigureAwait(false);
+							await queueRepo.UpdateQueueStatusAsync(
+								queue.Id,
+								QueueStatus.Pending,
+								"Progress was cancelled by user"
+							).ConfigureAwait(false);
 							stepChild.ForegroundColor = ConsoleColor.DarkGray;
 							stepChild.Tick(stepChild.CurrentTick, $"Encoding Cancelled for '{newFileName}'");
 							if (File.Exists(tempWorkPath))
@@ -399,8 +442,16 @@ namespace VideoConverter.Commands
 
 								var thumbnailAt = this.rand.Next((int)firstVideoStream.Duration.TotalMilliseconds + 1);
 								var fanArtAt = this.rand.Next((int)firstVideoStream.Duration.TotalMilliseconds + 1);
-								var thumbConversion = await FFmpeg.Conversions.FromSnippet.Snapshot(tempWorkPath, newThumbPath, TimeSpan.FromMilliseconds(thumbnailAt)).ConfigureAwait(false);
-								var fanArtConversion = await FFmpeg.Conversions.FromSnippet.Snapshot(tempWorkPath, newFanArtPath, TimeSpan.FromMilliseconds(fanArtAt)).ConfigureAwait(false);
+								var thumbConversion = await FFmpeg.Conversions.FromSnippet.Snapshot(
+									tempWorkPath,
+									newThumbPath,
+									TimeSpan.FromMilliseconds(thumbnailAt)
+								).ConfigureAwait(false);
+								var fanArtConversion = await FFmpeg.Conversions.FromSnippet.Snapshot(
+									tempWorkPath,
+									newFanArtPath,
+									TimeSpan.FromMilliseconds(fanArtAt)
+								).ConfigureAwait(false);
 								if (!string.IsNullOrEmpty(stereo3d))
 								{
 									thumbConversion.AddParameter($"-vf \"stereo3d={stereo3d}:ml\"");
@@ -410,7 +461,10 @@ namespace VideoConverter.Commands
 								var thumbArgs = thumbConversion.Build();
 								var fanArtArgs = fanArtConversion.Build();
 
-								await Task.WhenAll(thumbConversion.Start(cancellationToken), fanArtConversion.Start(cancellationToken)).ConfigureAwait(false);
+								await Task.WhenAll(
+									thumbConversion.Start(cancellationToken),
+									fanArtConversion.Start(cancellationToken)
+								).ConfigureAwait(false);
 
 								stepChild.Tick($"Moving encoded file to new location '{newFileName}'");
 
@@ -436,7 +490,11 @@ namespace VideoConverter.Commands
 						failed = true;
 						if (cancellationToken.IsCancellationRequested)
 						{
-							await queueRepo.UpdateQueueStatusAsync(queue.Id, QueueStatus.Pending, "Progress was cancelled by user").ConfigureAwait(false);
+							await queueRepo.UpdateQueueStatusAsync(
+								queue.Id,
+								QueueStatus.Pending,
+								"Progress was cancelled by user"
+							).ConfigureAwait(false);
 							stepChild.ForegroundColor = ConsoleColor.DarkGray;
 							stepChild.Tick(stepChild.CurrentTick, $"Encoding Cancelled for '{newFileName}'");
 						}
