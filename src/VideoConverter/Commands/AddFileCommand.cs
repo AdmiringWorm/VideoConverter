@@ -239,14 +239,8 @@ namespace VideoConverter.Commands
 
 					if (subtitleStreams.Count > 1)
 					{
-						var table = new Table()
-							.SetDefaults()
-							.AddColumns(
-								new TableColumn("Index").RightAligned(),
-								new TableColumn("Language").Centered(),
-								new TableColumn("Title").Centered(),
-								new TableColumn("Codec").Centered()
-						);
+						var prompt = new MultiSelectionPrompt<(int, string, string, string)>()
+							.Title("Which subtitle streams do you wish to use?");
 
 						foreach (var stream in subtitleStreams)
 						{
@@ -259,17 +253,27 @@ namespace VideoConverter.Commands
 							{
 								// Ignore any excetpion on purpose
 							}
-							table.AddColorRow(
-								stream.Index,
-								ci?.EnglishName ?? stream.Language,
-								stream.Title,
-								stream.Codec
+
+							prompt = prompt.AddChoice(
+								(
+									stream.Index,
+									ci?.EnglishName ?? stream.Language,
+									stream.Title,
+									stream.Codec
+								)
 							);
 						}
 
-						this.console.RenderTable(table, "SUBTITLE STREAMS");
+						var selectedStreams = this.console.Prompt(prompt).Select(i => i.Item1);
 
-						streams.AddRange(AskAndSelectStreams(subtitleStreams, "subtitle streams"));
+						if (!selectedStreams.Any())
+						{
+							streams.AddRange(mediaInfo.VideoStreams.Select(i => i.Index));
+						}
+						else
+						{
+							streams.AddRange(selectedStreams);
+						}
 
 						if (this.tokenSource.IsCancellationRequested)
 							break;
