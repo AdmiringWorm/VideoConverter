@@ -33,6 +33,7 @@ namespace VideoConverter
 
 				app.Configure(config =>
 				{
+					config.ConfigureConsole(container.Resolve<IAnsiConsole>());
 					config.AddBranch("add", add =>
 					{
 						config.UseStrictParsing();

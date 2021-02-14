@@ -2,6 +2,7 @@ namespace VideoConverter.DependencyInjection
 {
 	using System;
 	using DryIoc;
+	using Spectre.Console;
 	using Spectre.Console.Cli;
 
 	public class TypeRegistrar : ITypeRegistrar
@@ -25,6 +26,10 @@ namespace VideoConverter.DependencyInjection
 
 		public void RegisterInstance(Type service, object implementation)
 		{
+			// We do not want to register multiple ansi consoles
+			if (service == typeof(IAnsiConsole))
+				return;
+
 			this.container.RegisterInstance(service, implementation);
 		}
 	}

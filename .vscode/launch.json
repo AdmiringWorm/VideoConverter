@@ -11,7 +11,7 @@
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
             "program": "${workspaceFolder}/src/VideoConverter/bin/Debug/net5.0/VideoConverter.dll",
-			"args": ["add", "file", "/home/kim/Videos/sewayaki kitsune no senko-san/senko-22252323.gif", "--output", "/mnt/Seagate/Videos/Movies/senko-22252323.mkv", "--re-encode", "--extension", "mkv", "--repeat", "0:0:30"],
+			"args": ["queue", "list"],
 			//"args":["add", "file", "/mnt/Seagate/Videos/Movies/7731206.mkv", "--re-encode", "--use-copy", "--repeat", "0:0:30", "--extension", "mp4"],
 			//"args": ["encode", "--id", "2064"],
             "cwd": "${workspaceFolder}/src/VideoConverter",
