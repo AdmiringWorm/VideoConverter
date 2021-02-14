@@ -1,3 +1,4 @@
+using System;
 namespace VideoConverter.Commands
 {
 	using System;
@@ -100,15 +101,15 @@ namespace VideoConverter.Commands
 						if (episodeData is null)
 						{
 							var relativePath = settings.OutputDir ?? Environment.CurrentDirectory;
-							this.console.MarkupLine(
-								"File '[fuchsia]{0}[/]'...\n" +
-								"We were unable to extract necessary information. Please input the location of the file to save,\n" +
-								"Relative to the path ([fuchsia]{0}[/]), er press {{Enter}} to skip the file.",
-								file.EscapeMarkup(),
-								relativePath.EscapeMarkup()
+							var path = this.console.Prompt(
+								new TextPrompt<string>(
+									$"File '[fuchsia]{file.EscapeMarkup()}[/]'...\n" +
+									"We were unable to extract necessary information. Please input the location of the file to save,\n" +
+									$"[grey][[Optional]][/] Relative to the path ([fuchsia]{relativePath.EscapeMarkup()}[/]):"
+								)
+								.AllowEmpty()
 							);
 
-							var path = Console.ReadLine();
 							if (string.IsNullOrWhiteSpace(path))
 								break;
 							else if (path.StartsWith('/'))
@@ -153,28 +154,31 @@ namespace VideoConverter.Commands
 
 					if (videoStreams.Count > 1)
 					{
-						var table = new Table()
-							.SetDefaults()
-							.AddColumns(
-								new TableColumn("Index").RightAligned(),
-								new TableColumn("Codec").Centered(),
-								new TableColumn("Framerate").Centered(),
-								new TableColumn("Duration").Centered()
-							);
+						var prompt = new MultiSelectionPrompt<(int, string, string, TimeSpan)>()
+							.Title("Which video streams do you wish to use?")
+							.NotRequired();
 
 						foreach (var stream in videoStreams)
 						{
-							table.AddColorRow(
-								stream.Index,
-								stream.Codec,
-								stream.Framerate + "fps",
-								stream.Duration
+							prompt = prompt.AddChoice(
+								(
+									stream.Index,
+									stream.Codec,
+									stream.Framerate + "fps",
+									stream.Duration
+								)
 							);
 						}
 
-						this.console.RenderTable(table, "VIDEO STREAMS");
-
-						streams.AddRange(AskAndSelectStreams(videoStreams, "video streams"));
+						var selectedStreams = this.console.Prompt(prompt).Select(i => i.Item1);
+						if (!selectedStreams.Any())
+						{
+							streams.AddRange(mediaInfo.VideoStreams.Select(i => i.Index));
+						}
+						else
+						{
+							streams.AddRange(selectedStreams);
+						}
 
 						if (this.tokenSource.IsCancellationRequested)
 							break;
@@ -190,15 +194,9 @@ namespace VideoConverter.Commands
 
 					if (audioStreams.Count > 1)
 					{
-						var table = new Table()
-							.SetDefaults()
-							.AddColumns(
-								new TableColumn("Index").RightAligned(),
-								new TableColumn("Language").Centered(),
-								new TableColumn("Codec").Centered(),
-								new TableColumn("Channels").Centered(),
-								new TableColumn("Sample Rate").Centered()
-							);
+						var prompt = new MultiSelectionPrompt<(int, string, string, int, string)>()
+							.Title("Which audio streams to you wish to use?")
+							.NotRequired();
 
 						foreach (var stream in audioStreams)
 						{
@@ -211,19 +209,26 @@ namespace VideoConverter.Commands
 							{
 								// Ignore any excetpion on purpose
 							}
-
-							table.AddColorRow(
-								stream.Index,
-								ci?.EnglishName ?? stream.Language,
-								stream.Codec,
-								stream.Channels,
-								stream.SampleRate + " Hz"
+							prompt.AddChoice(
+								(
+									stream.Index,
+									ci?.EnglishName ?? stream.Language,
+									stream.Codec,
+									stream.Channels,
+									stream.SampleRate + " Hz"
+								)
 							);
 						}
 
-						this.console.RenderTable(table, "AUDIO STREAMS");
-
-						streams.AddRange(AskAndSelectStreams(audioStreams, "audio streams"));
+						var selectedStreams = this.console.Prompt(prompt).Select(i => i.Item1);
+						if (!selectedStreams.Any())
+						{
+							streams.AddRange(mediaInfo.AudioStreams.Select(i => i.Index));
+						}
+						else
+						{
+							streams.AddRange(selectedStreams);
+						}
 
 						if (this.tokenSource.Token.IsCancellationRequested)
 							break;
@@ -544,42 +549,32 @@ namespace VideoConverter.Commands
 
 			this.console.MarkupLine("Do this information look correct? (Y/n/s) ");
 
-			var key = Console.ReadKey();
-			this.console.WriteLine();
+			var prompt = this.console.Prompt(new TextPrompt<string>("Do this information look correct?")
+				.DefaultValue("Yes")
+				.AddChoices(
+					new[] { "Yes", "No", "Skip" }
+				));
 
-			if (key.KeyChar == 's' || key.KeyChar == 'S')
+			if (string.Equals(prompt, "skip", StringComparison.OrdinalIgnoreCase))
+			{
 				episodeData.Series = "SKIP";
-			if (key.KeyChar != 'n' && key.KeyChar != 'N')
+			}
+			else if (string.Equals(prompt, "no", StringComparison.OrdinalIgnoreCase))
+			{
 				return true;
+			}
 
 			this.console.MarkupLine("Okay then, please enter the correct information!");
 			this.console.MarkupLine("[italic]Press {{Enter}} with an empty line to use default values[/]");
 			this.console.WriteLine();
-			this.console.Markup("[aqua] Name of Series: [/]");
 
 			var settings = new AddCriteriaOption
 			{
 				FilePath = episodeData.FileName,
-				SeriesName = Console.ReadLine()
+				SeriesName = this.console.Prompt(new TextPrompt<string>("Name of Series").DefaultValue(episodeData.Series)),
+				SeasonNumber = this.console.Prompt(new TextPrompt<int>("Season Number").DefaultValue(episodeData.SeasonNumber ?? 1)),
+				EpisodeNumber = this.console.Prompt(new TextPrompt<int>("Episode Number").DefaultValue(episodeData.EpisodeNumber))
 			};
-			if (string.IsNullOrEmpty(settings.SeriesName))
-				settings.SeriesName = episodeData.Series;
-
-			this.console.Markup("[aqua] Season Number: [/]");
-			var input = Console.ReadLine();
-
-			if (int.TryParse(input, out var season))
-				settings.SeasonNumber = season;
-			else
-				settings.SeasonNumber = episodeData.SeasonNumber;
-
-			this.console.Markup("[aqua] Episode Number: [/]");
-			input = Console.ReadLine();
-
-			if (int.TryParse(input, out var episode))
-				settings.EpisodeNumber = episode;
-			else
-				settings.EpisodeNumber = episodeData.EpisodeNumber;
 
 			await criteriaCommand.ExecuteAsync(context, settings).ConfigureAwait(false);
 
@@ -627,9 +622,7 @@ namespace VideoConverter.Commands
 
 		private async Task UpdateEpisodeDataAsync(Core.Models.EpisodeData episodeData)
 		{
-			var criterias = this.criteriaRepo.GetEpisodeCriteriasAsync(episodeData.Series);
-
-			await foreach (var criteria in criterias)
+			await foreach (var criteria in this.criteriaRepo.GetEpisodeCriteriasAsync(episodeData.Series))
 			{
 				if (criteria.UpdateEpisodeData(episodeData) && criteria.SeriesName is not null)
 					break;
