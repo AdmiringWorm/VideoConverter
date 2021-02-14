@@ -1,4 +1,3 @@
-using System;
 namespace VideoConverter.Commands
 {
 	using System;
@@ -128,7 +127,7 @@ namespace VideoConverter.Commands
 						if (this.tokenSource.Token.IsCancellationRequested)
 							break;
 
-						isAccepted = await AskAcceptableAsync(context, episodeData).ConfigureAwait(false);
+						isAccepted = await AskAcceptableAsync(context, episodeData, this.tokenSource.Token).ConfigureAwait(false);
 					}
 
 					if (this.tokenSource.Token.IsCancellationRequested)
@@ -543,25 +542,32 @@ namespace VideoConverter.Commands
 			return videoStreams.Where(a => indexes.Contains(a.Index)).Select(i => i.Index);
 		}
 
-		private async Task<bool> AskAcceptableAsync(CommandContext context, Core.Models.EpisodeData episodeData)
+		private async Task<bool> AskAcceptableAsync(CommandContext context, Core.Models.EpisodeData episodeData, CancellationToken cancellationToken)
 		{
+			const string INVALID_CHOICE_MESSAGE = "[red]Please select one of the available options[/]";
 			DisplayEpisodeData(episodeData);
 
-			this.console.MarkupLine("Do this information look correct? (Y/n/s) ");
-
-			var prompt = this.console.Prompt(new TextPrompt<string>("Do this information look correct?")
-				.DefaultValue("Yes")
+			var prompt = this.console.Prompt(new TextPrompt<char>("Do this information look correct?")
+				.DefaultValue('y')
+				.InvalidChoiceMessage(INVALID_CHOICE_MESSAGE)
+				.ValidationErrorMessage(INVALID_CHOICE_MESSAGE)
 				.AddChoices(
-					new[] { "Yes", "No", "Skip" }
+					new[] { 'y', 'n', 's' }
 				));
 
-			if (string.Equals(prompt, "skip", StringComparison.OrdinalIgnoreCase))
+			if (prompt == 's')
 			{
 				episodeData.Series = "SKIP";
+				return false;
 			}
-			else if (string.Equals(prompt, "no", StringComparison.OrdinalIgnoreCase))
+			else if (prompt == 'y')
 			{
 				return true;
+			}
+
+			if (cancellationToken.IsCancellationRequested)
+			{
+				return false;
 			}
 
 			this.console.MarkupLine("Okay then, please enter the correct information!");
@@ -575,6 +581,11 @@ namespace VideoConverter.Commands
 				SeasonNumber = this.console.Prompt(new TextPrompt<int>("Season Number").DefaultValue(episodeData.SeasonNumber ?? 1)),
 				EpisodeNumber = this.console.Prompt(new TextPrompt<int>("Episode Number").DefaultValue(episodeData.EpisodeNumber))
 			};
+
+			if (cancellationToken.IsCancellationRequested)
+			{
+				return false;
+			}
 
 			await criteriaCommand.ExecuteAsync(context, settings).ConfigureAwait(false);
 
