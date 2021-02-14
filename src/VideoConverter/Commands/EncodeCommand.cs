@@ -10,7 +10,7 @@ namespace VideoConverter.Commands
 	using System.Threading.Tasks;
 	using Humanizer;
 	using ShellProgressBar;
-	using Spectre.Cli;
+	using Spectre.Console.Cli;
 	using Spectre.Console;
 	using System.Security.Cryptography;
 	using System.Text;

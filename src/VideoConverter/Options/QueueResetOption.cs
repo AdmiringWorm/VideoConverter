@@ -2,7 +2,8 @@ namespace VideoConverter.Options
 {
 	using System;
 	using System.ComponentModel;
-	using Spectre.Cli;
+	using Spectre.Console;
+	using Spectre.Console.Cli;
 	using VideoConverter.Storage.Models;
 
 	public sealed class QueueResetOption : CommandSettings

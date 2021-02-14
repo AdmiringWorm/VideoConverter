@@ -4,7 +4,7 @@ namespace VideoConverter.Commands
 	using System;
 	using System.Collections.Generic;
 	using System.IO;
-	using Spectre.Cli;
+	using Spectre.Console.Cli;
 	using Spectre.Console;
 	using VideoConverter.Core.Models;
 	using VideoConverter.Core.Services;

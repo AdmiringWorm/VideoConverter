@@ -5,7 +5,7 @@ namespace VideoConverter.Commands
 	using System.Linq;
 	using System.Reflection;
 	using Humanizer;
-	using Spectre.Cli;
+	using Spectre.Console.Cli;
 	using Spectre.Console;
 	using VideoConverter.Core.Models;
 	using VideoConverter.Core.Services;
@@ -119,8 +119,8 @@ namespace VideoConverter.Commands
 			}
 
 			var panel = new Panel(table)
-				.NoBorder()
-				.Header("Available Configurations", new Style(Color.Aqua), Justify.Center);
+				.NoBorder();
+			panel.Header = new PanelHeader("[aqua]Available Configuations[/]", Justify.Center);
 
 			console.Render(panel);
 		}

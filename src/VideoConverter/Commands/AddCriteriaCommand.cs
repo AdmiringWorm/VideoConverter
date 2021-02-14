@@ -1,7 +1,7 @@
 namespace VideoConverter.Commands
 {
 	using VideoConverter.Options;
-	using Spectre.Cli;
+	using Spectre.Console.Cli;
 	using VideoConverter.Storage.Repositories;
 	using VideoConverter.Core.Parsers;
 	using Spectre.Console;

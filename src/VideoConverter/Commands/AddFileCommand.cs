@@ -13,7 +13,7 @@ namespace VideoConverter.Commands
 	using System.Text.RegularExpressions;
 	using System.Threading.Tasks;
 	using Humanizer;
-	using Spectre.Cli;
+	using Spectre.Console.Cli;
 	using Spectre.Console;
 	using VideoConverter.Core.Extensions;
 	using VideoConverter.Core.Models;

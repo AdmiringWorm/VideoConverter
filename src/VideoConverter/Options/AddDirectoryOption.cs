@@ -3,7 +3,8 @@ namespace VideoConverter.Options
 	using System;
 	using System.ComponentModel;
 	using System.Globalization;
-	using Spectre.Cli;
+	using Spectre.Console;
+	using Spectre.Console.Cli;
 	using VideoConverter.Core.Models;
 	using VideoConverter.Storage.Models;
 

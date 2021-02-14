@@ -85,8 +85,8 @@ namespace VideoConverter.Extensions
 		public static void RenderTable(this IAnsiConsole console, Table table, string header)
 		{
 			var panel = new Panel(table)
-				.Header(header, new Style(Color.Teal, decoration: Decoration.Bold | Decoration.Underline), Justify.Center)
 				.NoBorder();
+			panel.Header = new PanelHeader("[teal bold underscore]" + header + "[/]", Justify.Center);
 
 			console.Render(panel);
 		}

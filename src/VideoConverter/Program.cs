@@ -5,8 +5,8 @@ namespace VideoConverter
 	using System.Text;
 	using System.Threading.Tasks;
 	using DryIoc;
-	using Spectre.Cli;
 	using Spectre.Console;
+	using Spectre.Console.Cli;
 	using VideoConverter.Commands;
 	using VideoConverter.Core.Models;
 	using VideoConverter.Core.Services;

@@ -3,7 +3,7 @@ namespace VideoConverter.Commands
 	using System;
 	using System.IO;
 	using System.Threading.Tasks;
-	using Spectre.Cli;
+	using Spectre.Console.Cli;
 	using Spectre.Console;
 	using VideoConverter.Extensions;
 	using VideoConverter.Options;
