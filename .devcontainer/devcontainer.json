@@ -6,7 +6,7 @@
 		"dockerfile": "Dockerfile",
 		"args": {
 			// Update 'VARIANT' to pick a .NET Core version: 2.1, 3.1
-			"VARIANT": "3.1",
+			"VARIANT": "5.0",
 			// Options
 			"INSTALL_NODE": "false",
 			"NODE_VERSION": "lts/*",
@@ -33,7 +33,8 @@
 		"kreativ-software.csharpextensions",
 		"derivitec-ltd.vscode-dotnet-adapter",
 		"hbenl.vscode-test-explorer",
-		"przemyslawonak.pimp-my-avalonia"
+		"przemyslawonak.pimp-my-avalonia",
+		"cake-build.cake-vscode"
 	],
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
@@ -57,7 +58,7 @@
 	},
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "dotnet-cake --bootstrap && dotnet-cake",
+	"postCreateCommand": "dotnet tool restore && dotnet-cake",
 
 	// Uncomment to connect as a non-root user. See https://aka.ms/vscode-remote/containers/non-root.
 	"remoteUser": "vscode"
