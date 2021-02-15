@@ -12,6 +12,7 @@ namespace VideoConverter.Storage.Models
 	public sealed class Criteria<TCriteria> : Criteria
 		where TCriteria : VideoCriteria
 	{
+#pragma warning disable CA2227
 		public List<TCriteria> Criterias { get; set; } = new List<TCriteria>();
 	}
 }

@@ -4,6 +4,7 @@ namespace VideoConverter.Core.Models
 	using System.IO;
 	using System.Linq;
 
+#pragma warning disable CA1724
 	public class Configuration
 	{
 		private readonly List<PrefixConfiguration> prefixes;
@@ -28,6 +29,7 @@ namespace VideoConverter.Core.Models
 
 		public string ExtraEncodingParameters { get; set; } = string.Empty;
 
+#pragma warning disable CA2227
 		public List<PrefixConfiguration> Prefixes
 		{
 			get => prefixes;

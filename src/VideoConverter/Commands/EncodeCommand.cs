@@ -593,7 +593,9 @@ namespace VideoConverter.Commands
 
 		private static async Task<string> GetSHA1Async(string file, CancellationToken cancellationToken)
 		{
+#pragma warning disable CA5350
 			using var algo = SHA1.Create();
+#pragma warning restore CA5350
 			using var stream = File.OpenRead(file);
 			var sb = new StringBuilder();
 

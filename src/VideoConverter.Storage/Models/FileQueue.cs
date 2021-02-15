@@ -1,3 +1,5 @@
+
+#pragma warning disable CA2227
 namespace VideoConverter.Storage.Models
 {
 	using System.Collections.Generic;
