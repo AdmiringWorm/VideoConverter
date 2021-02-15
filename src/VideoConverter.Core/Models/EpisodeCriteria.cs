@@ -44,6 +44,7 @@ namespace VideoConverter.Core.Models
 		public static bool operator !=(EpisodeData data, EpisodeCriteria criteria)
 			=> !(data == criteria);
 
+#pragma warning disable CA2225
 		public static bool operator >(EpisodeData data, EpisodeCriteria criteria)
 		{
 			criteria.IsNotNull();
@@ -79,6 +80,8 @@ namespace VideoConverter.Core.Models
 		{
 			return data < criteria || data == criteria;
 		}
+
+#pragma warning restore CA2225
 
 		public override bool Equals(object? obj)
 		{

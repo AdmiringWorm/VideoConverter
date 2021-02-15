@@ -1,5 +1,3 @@
-using System.Threading.Tasks;
-using System.ComponentModel.DataAnnotations;
 namespace VideoConverter.Commands
 {
 	using System;
@@ -527,33 +525,7 @@ namespace VideoConverter.Commands
 
 		private async Task<bool> AskAcceptableAsync(CommandContext context, Core.Models.EpisodeData episodeData, CancellationToken cancellationToken)
 		{
-			const string INVALID_CHOICE_MESSAGE = "[red]Please select one of the available options[/]";
 			DisplayEpisodeData(episodeData);
-
-			// var prompt = this.console.Prompt(new TextPrompt<char>("Do this information look correct?")
-			// 	.DefaultValue('y')
-			// 	.AddChoices(
-			// 		new[] { 'y', 'n', 's' }
-			// 	)
-			// 	.Validate(answer =>
-			// 	{
-			// 		if (cancellationToken.IsCancellationRequested)
-			// 			return ValidationResult.Success();
-
-			// 		switch (answer)
-			// 		{
-			// 			case 'y':
-			// 			case 'Y':
-			// 			case 'n':
-			// 			case 'N':
-			// 			case 's':
-			// 			case 'S':
-			// 				return ValidationResult.Success();
-
-			// 			default:
-			// 				return ValidationResult.Error(INVALID_CHOICE_MESSAGE);
-			// 		}
-			// 	}));
 
 			var prompt = this.console.Prompt(new YesNoPrompt("Do this information look correct?"));
 
@@ -612,25 +584,34 @@ namespace VideoConverter.Commands
 
 		private void DisplayEpisodeData(Core.Models.EpisodeData episodeData)
 		{
-			var table = new Table()
-				.SetDefaults()
-				.AddColumns(
-					new TableColumn("Series").Centered(),
-					new TableColumn("Season").Centered(),
-					new TableColumn("Episode").Centered(),
-					new TableColumn("Old Name").Centered(),
-					new TableColumn("New Name").Centered()
+			var grid = new Grid()
+				.AddColumn(new GridColumn().RightAligned())
+				.AddColumn(new GridColumn().PadLeft(1))
+				.AddEmptyRow()
+				.AddRow(
+					new Text("Series Name:"),
+					episodeData.Series.GetAnsiText()
+				)
+				.AddRow(
+					new Text("Season:"),
+					episodeData.SeasonNumber.GetAnsiText()
+				)
+				.AddRow(
+					new Text("Episode:"),
+					episodeData.EpisodeNumber.GetAnsiText()
+				)
+				.AddRow(
+					new Text("Old File Name:"),
+					episodeData.FileName.GetAnsiText()
+				)
+				.AddRow(
+					new Text("New File Name:"),
+					episodeData.GetAnsiText()
 				);
 
-			table.AddColorRow(
-				episodeData.Series,
-				episodeData.SeasonNumber,
-				episodeData.EpisodeNumber,
-				episodeData.FileName,
-				episodeData
-			);
-
-			this.console.RenderTable(table, "New Episode Data");
+			var panel = new Panel(grid)
+				.Header("New Episode Data", Justify.Center);
+			this.console.Render(panel);
 		}
 
 		private async Task UpdateEpisodeDataAsync(Core.Models.EpisodeData episodeData)

@@ -1,9 +1,7 @@
-using System.Globalization;
-using System.Drawing;
 namespace VideoConverter.Extensions
 {
 	using System;
-	using System.Collections.Generic;
+	using System.Globalization;
 	using Humanizer;
 	using Spectre.Console;
 	using VideoConverter.Core.Models;
@@ -11,29 +9,6 @@ namespace VideoConverter.Extensions
 
 	public static class TableExtensions
 	{
-		public static Table SetDefaults(this Table table)
-			=> table
-				.BorderColor(Color.Silver)
-				.DoubleEdgeBorder();
-
-		public static Table AddColorRow(this Table table, params object?[] columns)
-		{
-			if (table is null)
-				throw new ArgumentNullException(nameof(table));
-
-			var coloredColumns = new List<Text>();
-
-			if (columns is not null)
-			{
-				foreach (var column in columns)
-				{
-					coloredColumns.Add(column.GetAnsiText());
-				}
-			}
-
-			return table.AddRow(coloredColumns.ToArray());
-		}
-
 		public static Text GetAnsiText(this QueueStatus status)
 		{
 			var color = status switch

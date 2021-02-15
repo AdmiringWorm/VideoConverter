@@ -16,7 +16,6 @@ namespace VideoConverter.Prompts
 	{
 		private readonly string _prompt;
 
-
 		public PromptResponse DefaultResponse { get; set; }
 
 		public YesNoPrompt(string prompt)
