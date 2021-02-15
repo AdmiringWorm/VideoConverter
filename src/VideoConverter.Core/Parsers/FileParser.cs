@@ -1,7 +1,7 @@
-using System.Globalization;
 namespace VideoConverter.Core.Parsers
 {
 	using System.Collections.Generic;
+	using System.Globalization;
 	using System.Text.RegularExpressions;
 	using VideoConverter.Core.Assertions;
 	using VideoConverter.Core.Extensions;
@@ -9,10 +9,11 @@ namespace VideoConverter.Core.Parsers
 
 	public static class FileParser
 	{
-		private readonly static LinkedList<string> episodeRegexes = new LinkedList<string>();
+		private readonly static LinkedList<string> episodeRegexes = new();
 
 		static FileParser()
 		{
+			// editorconfig-checker-disable
 			episodeRegexes.AddLast(@"^[\s_]*[\[\(][\s_]*(?<Fansubber>[^\]\)]+)[\s_]*[\]\)][\s_]*(?<Series>.+)[\s_]*S(?<Season>\d+)[\s_]*-[\s_]*(?<Episode>\d+|(?:OVA|OAV) ?\d*)[^\.]*\.(?<Extension>[a-z\d]+)$");
 			episodeRegexes.AddLast(@"^[\s_]*[\[\(][\s_]*(?<Fansubber>[^\]\)]+)[\s_]*[\]\)][\s_]*(?<Series>.+)[\s_]*-[\s_]*(?<Episode>\d+|(?:OVA|OAV) ?\d*)[^\.]*\.(?<Extension>[a-z\d]+)$");
 			episodeRegexes.AddLast(@"^[\s_]*[\[\(][\s_]*(?<Fansubber>[^\]\)]+)[\s_]*[\]\)][\s_]*(?<Series>.+)[\s_]*-[\s_]*S(?<Season>\d+)E(?<Episode>\d+)(?:[\s_]*-[\s_]*(?<EpisodeName>[^\.]+)[\s_]*|[^\.]*)\.(?<Extension>[a-z\d]+)$");
@@ -24,6 +25,7 @@ namespace VideoConverter.Core.Parsers
 			episodeRegexes.AddLast(@"^[\s_]*[\[\(][\s_]*(?<Fansubber>[^\]\)]+)[\s_]*[\]\)][\s_]*(?<Series>[^\[]+)[\s_]+(?<Episode>\d+|(?:OVA|OAV) ?\d*)[^\.]*\.(?<Extension>[a-z\d]+)$");
 			episodeRegexes.AddLast(@"^(?:[\s_]*[\[\(][\s_]*(?<Fansubber>[^\]\)]+)[\s_]*[\]\)][\s_]*)?(?<Series>.+)(?<Season>\d+)x(?<Episode>\d+)(?:[\s_]*-[\s_]*(?<EpisodeName>[^\.]+)[\s_]*|[^\.]*)\.(?<Extension>[a-z\d]+)$");
 			episodeRegexes.AddLast(@"^(?:[\s_]*[\[\(][\s_]*(?<Fansubber>[^\]\)]+)[\s_]*[\]\)][\s_]*)?(?<Series>.+)S(?<Season>\d+)E(?<Episode>\d+)(?:[\s_]*-[\s_]*(?<EpisodeName>[^\.]+)[\s_]*|[^\.]*)\.(?<Extension>[a-z\d]+)$");
+			// editorconfig-checker-enable
 		}
 
 		public static EpisodeData? ParseEpisode(string fileName)
@@ -38,7 +40,11 @@ namespace VideoConverter.Core.Parsers
 
 			foreach (var regex in episodeRegexes)
 			{
-				var m = Regex.Match(fileName, regex, RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+				var m = Regex.Match(
+					fileName,
+					regex,
+					RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase
+				);
 				if (!m.Success)
 					continue;
 

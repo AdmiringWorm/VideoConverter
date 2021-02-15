@@ -1,15 +1,16 @@
-using System.IO;
 namespace VideoConverter.Commands
 {
 	using System;
+	using System.IO;
 	using System.Linq;
 	using System.Reflection;
 	using Humanizer;
 	using Spectre.Console.Cli;
 	using Spectre.Console;
-	using VideoConverter.Core.Models;
 	using VideoConverter.Core.Services;
 	using VideoConverter.Options;
+	using System.Diagnostics.CodeAnalysis;
+	using VideoConverter.Core.Models;
 
 	public class ConfigCommand : Command<ConfigOption>
 	{
@@ -22,11 +23,8 @@ namespace VideoConverter.Commands
 			this.console = console ?? throw new ArgumentNullException(nameof(console));
 		}
 
-		public override int Execute(CommandContext context, ConfigOption settings)
+		public override int Execute([NotNull] CommandContext context, [NotNull] ConfigOption settings)
 		{
-			if (settings is null)
-				throw new ArgumentNullException(nameof(settings));
-
 			try
 			{
 				var config = service.GetConfiguration();

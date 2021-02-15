@@ -23,9 +23,12 @@ namespace VideoConverter.Extensions
 
 			var coloredColumns = new List<Text>();
 
-			foreach (var column in columns)
+			if (columns is not null)
 			{
-				coloredColumns.Add(column.GetAnsiText());
+				foreach (var column in columns)
+				{
+					coloredColumns.Add(column.GetAnsiText());
+				}
 			}
 
 			return table.AddRow(coloredColumns.ToArray());

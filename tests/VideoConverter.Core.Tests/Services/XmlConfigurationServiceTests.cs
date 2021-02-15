@@ -35,6 +35,7 @@ namespace VideoConverter.Core.Tests.Services
 		public void Should_Save_Configuration_With_Expected_Content()
 		{
 			var path = Path.Combine(Environment.CurrentDirectory, Guid.NewGuid() + ".xml");
+			// editorconfig-checker-disable
 			const string expected = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <Configuration xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">
   <IncludeFansubber>true</IncludeFansubber>
@@ -46,6 +47,7 @@ namespace VideoConverter.Core.Tests.Services
   <ExtraEncodingParameters />
   <Prefixes />
 </Configuration>";
+			// editorconfig-checker-enable
 			using var service = new XmlConfigurationService(path);
 			var config = new Configuration();
 
@@ -68,7 +70,11 @@ namespace VideoConverter.Core.Tests.Services
 			var path = Path.Combine(Environment.CurrentDirectory, Guid.NewGuid() + ".xml");
 			var expected = new Configuration
 			{
-				MapperDatabase = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "VideoConverter", "storage.db"),
+				MapperDatabase = Path.Combine(
+					Environment.GetFolderPath(
+						Environment.SpecialFolder.LocalApplicationData),
+					"VideoConverter",
+					"storage.db"),
 			};
 			using var service = new XmlConfigurationService(path);
 
@@ -86,6 +92,7 @@ namespace VideoConverter.Core.Tests.Services
 				MapperDatabase = "/tmp/storage.db",
 				AudioCodec = "opus"
 			};
+			// editorconfig-checker-disable
 			File.WriteAllText(path, @"<?xml version=""1.0"" encoding=""utf-8""?>
 <Configuration xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">
   <IncludeFansubber>true</IncludeFansubber>
@@ -98,6 +105,7 @@ namespace VideoConverter.Core.Tests.Services
   <ExtraEncodingParameters />
   <Prefixes />
 </Configuration>");
+			// editorconfig-checker-enable
 			using var service = new XmlConfigurationService(path);
 
 			var actual = service.GetConfiguration();
@@ -119,7 +127,11 @@ namespace VideoConverter.Core.Tests.Services
 			var expected = new Configuration
 			{
 				VideoCodec = "libx264",
-				MapperDatabase = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "VideoConverter", "storage.db"),
+				MapperDatabase = Path.Combine(
+					Environment.GetFolderPath(
+						Environment.SpecialFolder.LocalApplicationData),
+					"VideoConverter",
+					"storage.db"),
 			};
 			var config = new Configuration();
 			using var service = new XmlConfigurationService(path);
@@ -127,6 +139,7 @@ namespace VideoConverter.Core.Tests.Services
 
 			config.Should().NotBeEquivalentTo(expected);
 
+			// editorconfig-checker-disable
 			File.WriteAllText(path, @"<?xml version=""1.0"" encoding=""utf-8""?>
 <Configuration xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">
   <IncludeFansubber>true</IncludeFansubber>
@@ -138,6 +151,7 @@ namespace VideoConverter.Core.Tests.Services
   <ExtraEncodingParameters />
   <Prefixes />
 </Configuration>");
+			// editorconfig-checker-enable
 
 			Thread.Sleep(TimeSpan.FromSeconds(2));
 

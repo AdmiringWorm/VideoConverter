@@ -441,13 +441,13 @@ namespace VideoConverter.Commands
 						if (TimeSpan.TryParse(settings.Repeat, CultureInfo.InvariantCulture, out var ts))
 						{
 							int repeatTimes = 0;
-							if (videoStreams.First().Duration.TotalMilliseconds > 0)
+							if (videoStreams[0].Duration.TotalMilliseconds > 0)
 							{
-								repeatTimes = (int)Math.Ceiling(ts.TotalMilliseconds / videoStreams.First().Duration.TotalMilliseconds);
+								repeatTimes = (int)Math.Ceiling(ts.TotalMilliseconds / videoStreams[0].Duration.TotalMilliseconds);
 							}
-							else if (videoStreams.First().Duration.TotalSeconds > 0)
+							else if (videoStreams[0].Duration.TotalSeconds > 0)
 							{
-								repeatTimes = (int)Math.Ceiling(ts.TotalSeconds / videoStreams.First().Duration.TotalSeconds);
+								repeatTimes = (int)Math.Ceiling(ts.TotalSeconds / videoStreams[0].Duration.TotalSeconds);
 							}
 							else
 							{

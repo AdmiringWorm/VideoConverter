@@ -75,7 +75,11 @@ namespace VideoConverter.Storage.Database
 		private void EnsureDatabase()
 		{
 			if (this.database is null)
-				this.database = new LiteDatabaseAsync($"Filename={this.configuration.MapperDatabase};Connection=shared;Upgrade=true", bsonMapper);
+			{
+				this.database = new LiteDatabaseAsync(
+					$"Filename={this.configuration.MapperDatabase};Connection=shared;Upgrade=true", bsonMapper
+				);
+			}
 		}
 
 		public void Dispose()

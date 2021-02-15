@@ -2,5 +2,6 @@
 	"powershell.codeFormatting.addWhitespaceAroundPipe": true,
 	"omnisharp.enableRoslynAnalyzers": true,
 	"omnisharp.enableEditorConfigSupport": true,
-	"prettier.useEditorConfig": true
+	"prettier.useEditorConfig": true,
+	"editor.rulers": [120]
 }

@@ -21,12 +21,24 @@ namespace VideoConverter.Core.Models
 			criteria.IsNotNull();
 			data.IsNotNull();
 
-			if (criteria.SeriesName is null && criteria.Season is null && criteria.Episode is null && criteria.NewEpisode is null)
+			if (criteria.SeriesName is null &&
+				criteria.Season is null &&
+				criteria.Episode is null &&
+				criteria.NewEpisode is null)
+			{
 				return false;
+			}
 
-			return (criteria.SeriesName is null || string.Equals(criteria.SeriesName, data.Series, StringComparison.OrdinalIgnoreCase)) &&
-				   (criteria.Season is null || criteria.Season == data.SeasonNumber || (criteria.Season == 0 && data.SeasonNumber is null)) &&
-				   (criteria.Episode is null || criteria.Episode == data.EpisodeNumber);
+			return
+				(criteria.SeriesName is null ||
+					string.Equals(
+						criteria.SeriesName,
+						data.Series,
+						StringComparison.OrdinalIgnoreCase)) &&
+				(criteria.Season is null ||
+					criteria.Season == data.SeasonNumber ||
+					(criteria.Season == 0 && data.SeasonNumber is null)) &&
+				(criteria.Episode is null || criteria.Episode == data.EpisodeNumber);
 		}
 
 		public static bool operator !=(EpisodeData data, EpisodeCriteria criteria)
@@ -40,8 +52,9 @@ namespace VideoConverter.Core.Models
 			if (criteria.Season is null && criteria.Episode is null)
 				return false;
 
-			return (criteria.Season is null || data.SeasonNumber > criteria.Season) &&
-				   (criteria.Episode is null || data.EpisodeNumber > criteria.Episode);
+			return
+				(criteria.Season is null || data.SeasonNumber > criteria.Season) &&
+				(criteria.Episode is null || data.EpisodeNumber > criteria.Episode);
 		}
 
 		public static bool operator <(EpisodeData data, EpisodeCriteria criteria)
@@ -52,8 +65,9 @@ namespace VideoConverter.Core.Models
 			if (criteria.Season is null && criteria.Episode is null)
 				return false;
 
-			return (criteria.Season is null || data.SeasonNumber < criteria.Season) &&
-				   (criteria.Episode is null || data.EpisodeNumber < criteria.Episode);
+			return
+				(criteria.Season is null || data.SeasonNumber < criteria.Season) &&
+				(criteria.Episode is null || data.EpisodeNumber < criteria.Episode);
 		}
 
 		public static bool operator >=(EpisodeData data, EpisodeCriteria criteria)
@@ -68,13 +82,14 @@ namespace VideoConverter.Core.Models
 
 		public override bool Equals(object? obj)
 		{
-			return (obj is EpisodeData data && data == this) ||
+			return
+				(obj is EpisodeData data && data == this) ||
 				(obj is EpisodeCriteria criteria &&
-				 criteria.Episode == Episode &&
-				 criteria.NewSeason == NewSeason &&
-				 criteria.NewSeries == NewSeries &&
-				 criteria.Season == Season &&
-				 criteria.SeriesName == SeriesName);
+					criteria.Episode == Episode &&
+					criteria.NewSeason == NewSeason &&
+					criteria.NewSeries == NewSeries &&
+					criteria.Season == Season &&
+					criteria.SeriesName == SeriesName);
 		}
 
 		public override int GetHashCode()

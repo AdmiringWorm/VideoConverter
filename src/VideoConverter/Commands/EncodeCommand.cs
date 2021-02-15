@@ -28,7 +28,7 @@ namespace VideoConverter.Commands
 		private readonly Configuration config;
 		private readonly CancellationToken cancellationToken;
 		private readonly IAnsiConsole console;
-		private readonly Random rand = new Random();
+		private readonly Random rand = new();
 
 		public EncodeCommand(QueueRepository queueRepo, Configuration config, IAnsiConsole console)
 		{

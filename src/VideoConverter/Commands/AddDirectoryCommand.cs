@@ -66,7 +66,7 @@ namespace VideoConverter.Commands
 				"wmv",
 			};
 
-			EnumerationOptions options = new EnumerationOptions
+			EnumerationOptions options = new()
 			{
 				MatchCasing = MatchCasing.CaseInsensitive,
 				IgnoreInaccessible = true,

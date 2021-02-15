@@ -35,7 +35,11 @@ namespace VideoConverter.Storage.Repositories
 
 			var prefixedPath = ReplaceWithPrefix(path);
 
-			var queue = await col.Query().Where(q => q.Path == prefixedPath || q.OutputPath == prefixedPath).FirstOrDefaultAsync().ConfigureAwait(false);
+			var queue = await col
+				.Query()
+				.Where(q => q.Path == prefixedPath || q.OutputPath == prefixedPath)
+				.FirstOrDefaultAsync()
+				.ConfigureAwait(false);
 
 			return ReplacePrefixes(queue);
 		}
@@ -86,7 +90,11 @@ namespace VideoConverter.Storage.Repositories
 
 			var queueCol = this.dbFactory.GetCollection<FileQueue>(TABLE_NAME);
 			string path = ReplaceWithPrefix(queueItem.Path);
-			var nextQueue = await queueCol.Query().Where(q => q.Path == path).FirstOrDefaultAsync().ConfigureAwait(false);
+			var nextQueue = await queueCol
+				.Query()
+				.Where(q => q.Path == path)
+				.FirstOrDefaultAsync()
+				.ConfigureAwait(false);
 			await this.dbFactory.EnsureTransactionAsync().ConfigureAwait(false);
 
 			if (nextQueue is not null)
@@ -147,7 +155,11 @@ namespace VideoConverter.Storage.Repositories
 		{
 			var queueCol = this.dbFactory.GetCollection<FileQueue>(TABLE_NAME);
 			var prefixedPath = ReplaceWithPrefix(path);
-			var queueItem = await queueCol.Query().Where(q => q.Path == prefixedPath).FirstOrDefaultAsync().ConfigureAwait(false);
+			var queueItem = await queueCol
+				.Query()
+				.Where(q => q.Path == prefixedPath)
+				.FirstOrDefaultAsync()
+				.ConfigureAwait(false);
 			if (queueItem is not null)
 			{
 				await this.dbFactory.EnsureTransactionAsync().ConfigureAwait(false);
@@ -164,7 +176,11 @@ namespace VideoConverter.Storage.Repositories
 		{
 			var queueCol = this.dbFactory.GetCollection<FileQueue>(TABLE_NAME);
 			var prefixedPath = ReplaceWithPrefix(path);
-			var queueItem = await queueCol.Query().Where(q => q.Path == prefixedPath).FirstOrDefaultAsync().ConfigureAwait(false);
+			var queueItem = await queueCol
+				.Query()
+				.Where(q => q.Path == prefixedPath)
+				.FirstOrDefaultAsync()
+				.ConfigureAwait(false);
 			if (queueItem is not null)
 			{
 				await this.dbFactory.EnsureTransactionAsync().ConfigureAwait(false);
@@ -223,7 +239,8 @@ namespace VideoConverter.Storage.Repositories
 		public async Task<FileQueue?> GetNextQueueItemAsync()
 		{
 			var queueCol = this.dbFactory.GetCollection<FileQueue>(TABLE_NAME);
-			var queueItem = await queueCol.Query().Where(q => q.Status == QueueStatus.Pending).FirstOrDefaultAsync().ConfigureAwait(false);
+			var queueItem = await queueCol
+				.Query().Where(q => q.Status == QueueStatus.Pending).FirstOrDefaultAsync().ConfigureAwait(false);
 
 			if (queueItem is not null)
 			{
@@ -323,8 +340,11 @@ namespace VideoConverter.Storage.Repositories
 				if (prefixedPath.StartsWith($"{{{prefix.Prefix.TrimEnd('/')}}}", StringComparison.OrdinalIgnoreCase))
 
 				{
-					var path = prefixedPath.Replace($"{{{prefix.Prefix.TrimEnd('/')}}}", prefix.Path, StringComparison.OrdinalIgnoreCase);
-					return path;
+					return prefixedPath.Replace(
+						$"{{{prefix.Prefix.TrimEnd('/')}}}",
+						prefix.Path,
+						StringComparison.OrdinalIgnoreCase
+					);
 				}
 			}
 

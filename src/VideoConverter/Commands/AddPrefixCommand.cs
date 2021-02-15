@@ -1,4 +1,3 @@
-using System.Linq;
 namespace VideoConverter.Commands
 {
 	using System;
@@ -9,6 +8,7 @@ namespace VideoConverter.Commands
 	using VideoConverter.Core.Models;
 	using VideoConverter.Core.Services;
 	using VideoConverter.Options;
+	using System.Diagnostics.CodeAnalysis;
 
 	public sealed class AddPrefixCommand : Command<AddPrefixOption>
 	{
@@ -21,11 +21,8 @@ namespace VideoConverter.Commands
 			this.console = console;
 		}
 
-		public override int Execute(CommandContext context, AddPrefixOption settings)
+		public override int Execute([NotNull] CommandContext context, [NotNull] AddPrefixOption settings)
 		{
-			if (settings is null)
-				throw new ArgumentNullException(nameof(settings));
-
 			var config = this.configService.GetConfiguration();
 			if (config.Prefixes is null)
 				config.Prefixes = new List<PrefixConfiguration>();

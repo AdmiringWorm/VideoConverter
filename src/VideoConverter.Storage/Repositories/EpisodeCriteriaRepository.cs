@@ -31,7 +31,9 @@ namespace VideoConverter.Storage.Repositories
 
 			foreach (var criteriaName in criterias)
 			{
-				foreach (var criteria in criteriaName.Criterias.OrderByDescending(c => c.OldEpisode).ThenByDescending(c => c.OldSeason))
+				foreach (var criteria in criteriaName.Criterias
+					.OrderByDescending(c => c.OldEpisode)
+					.ThenByDescending(c => c.OldSeason))
 				{
 					yield return new CoreEpisodeCriteria
 					{
@@ -81,7 +83,8 @@ namespace VideoConverter.Storage.Repositories
 			}
 			else
 			{
-				var actualCriteria = existingCriteria.Criterias.Find(c => c.NewSeason is null || (c.OldSeason is null && c.OldEpisode is null));
+				var actualCriteria = existingCriteria.Criterias
+					.Find(c => c.NewSeason is null || (c.OldSeason is null && c.OldEpisode is null));
 				if (actualCriteria is null)
 				{
 					actualCriteria = new EpisodeCriteria

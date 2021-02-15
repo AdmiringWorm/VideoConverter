@@ -1,44 +1,43 @@
 {
-   // Use IntelliSense to find out which attributes exist for C# debugging
-   // Use hover for the description of the existing attributes
-   // For further information visit https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md
-   "version": "0.2.0",
-   "configurations": [
-        {
-            "name": ".NET Core Launch (console)",
-            "type": "coreclr",
-            "request": "launch",
-            "preLaunchTask": "build",
-            // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/src/VideoConverter/bin/Debug/net5.0/VideoConverter.dll",
+	// Use IntelliSense to find out which attributes exist for C# debugging
+	// Use hover for the description of the existing attributes
+	// For further information visit https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": ".NET Core Launch (console)",
+			"type": "coreclr",
+			"request": "launch",
+			"preLaunchTask": "build",
+			// If you have changed target frameworks, make sure to update the program path.
+			"program": "${workspaceFolder}/src/VideoConverter/bin/Debug/net5.0/VideoConverter.dll",
 			"args": ["queue", "list"],
-			//"args":["add", "file", "/mnt/Seagate/Videos/Movies/7731206.mkv", "--re-encode", "--use-copy", "--repeat", "0:0:30", "--extension", "mp4"],
 			//"args": ["encode", "--id", "2064"],
-            "cwd": "${workspaceFolder}/src/VideoConverter",
-            // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
-            "console": "integratedTerminal",
+			"cwd": "${workspaceFolder}/src/VideoConverter",
+			// For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
+			"console": "integratedTerminal",
 			"stopAtEntry": false
-        },
-        {
-            "name": ".NET Core Attach",
-            "type": "coreclr",
-            "request": "attach",
-            "processId": "${command:pickProcess}"
 		},
 		{
-            "name": ".NET Cake Launch (console)",
-            "type": "coreclr",
-            "request": "launch",
-            // If you have changed target frameworks, make sure to update the program path.
-            "program": "dotnet-cake",
-            "windows": {
-                "program": "dotnet-cake.exe"
-            },
-            "args": ["build.cake", "--debug"],
-            "cwd": "${workspaceFolder}",
-            // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
-            "console": "internalConsole",
+			"name": ".NET Core Attach",
+			"type": "coreclr",
+			"request": "attach",
+			"processId": "${command:pickProcess}"
+		},
+		{
+			"name": ".NET Cake Launch (console)",
+			"type": "coreclr",
+			"request": "launch",
+			// If you have changed target frameworks, make sure to update the program path.
+			"program": "dotnet-cake",
+			"windows": {
+				"program": "dotnet-cake.exe"
+			},
+			"args": ["build.cake", "--debug"],
+			"cwd": "${workspaceFolder}",
+			// For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
+			"console": "internalConsole",
 			"stopAtEntry": true
-        }
-   ]
+		}
+	]
 }

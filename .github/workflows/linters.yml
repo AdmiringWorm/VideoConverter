@@ -7,7 +7,7 @@ on:
 
 jobs:
   super_linter:
-    name: List with Super Linter
+    name: Lint with Super Linter
     runs-on: ubuntu-latest
 
     steps:

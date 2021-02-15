@@ -28,7 +28,8 @@
 		"derivitec-ltd.vscode-dotnet-adapter",
 		"hbenl.vscode-test-explorer",
 		"przemyslawonak.pimp-my-avalonia",
-		"cake-build.cake-vscode"
+		"cake-build.cake-vscode",
+		"foxundermoon.shell-format"
 	],
 
 	"postCreateCommand": "dotnet tool restore && dotnet-cake",

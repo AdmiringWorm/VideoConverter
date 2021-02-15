@@ -7,6 +7,7 @@ namespace VideoConverter.Core.Tests.Parsers
 
 	public class FileParserTests
 	{
+		// editorconfig-checker-disable
 		[TestCase("[HorribleSubs] Darwin's Game - 5 [1080p].mkv", "Darwin's Game", null, 5, "Matroska")]
 		[TestCase("[HorribleSubs] Haikyuu!! S1 - 3 [1080p].mkv", "Haikyuu!!", 1, 3, "Matroska")]
 		[TestCase("[Judas] Re Zero kara Hajimeru Isekai Seikatsu - S02E2.mkv", "Re Zero kara Hajimeru Isekai Seikatsu", 2, 2, "Matroska")]
@@ -21,7 +22,14 @@ namespace VideoConverter.Core.Tests.Parsers
 		[TestCase("[GSK_kun] Kaguya-sama Love Is War 08 [BDRip 1920x1080 HEVC FLAC] [84C8F965].mkv", "Kaguya-sama Love Is War", null, 8, "Matroska")]
 		[TestCase("Clannad 1x05.mkv", "Clannad", "1", "5", "Matroska")]
 		[TestCase("K-ON! S01E12 Light Music!.mkv", "K-ON!", 1, 12, "Matroska")]
-		public void ShouldParseCorrectEpisodeData(string fileName, string expectedSeries, int? expectedSeason, int expectedEpisode, string container)
+		// editorconfig-checker-enable
+		public void ShouldParseCorrectEpisodeData(
+			string fileName,
+			string expectedSeries,
+			int? expectedSeason,
+			int expectedEpisode,
+			string container
+		)
 		{
 			var result = FileParser.ParseEpisode(fileName);
 
