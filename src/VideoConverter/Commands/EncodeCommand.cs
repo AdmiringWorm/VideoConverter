@@ -106,22 +106,32 @@ namespace VideoConverter.Commands
 						monitor.EnableRaisingEvents = false;
 						int newCount;
 						if (count == 0 || originalHold)
-							newCount = GetPendingCountAsync(mainTask.Value, settings.Indexes).GetAwaiter().GetResult();
+							newCount = GetPendingCountAsync(
+								mainTask.Value,
+								settings.Indexes
+							).GetAwaiter().GetResult();
 						else
-							newCount = GetPendingCountAsync(mainTask.Value + 1, settings.Indexes).GetAwaiter().GetResult();
+							newCount = GetPendingCountAsync(
+								mainTask.Value + 1,
+								settings.Indexes)
+							.GetAwaiter().GetResult();
 
 						if (newCount != count)
 						{
 							count = newCount;
 							mainTask.MaxValue = (double)count;
-							mainTask.Description = $"[green]Processing [fuchsia]{(int)mainTask.Value + 1} / {count}[/]...[/]";
+							mainTask.Description =
+								$"[green]Processing [fuchsia]{(int)mainTask.Value + 1} / {count}[/]...[/]";
 						}
 						monitor.EnableRaisingEvents = true;
 					};
 
 				monitorStart:
 
-					(FileQueue? queue, int indexCount) = await GetNextQueueItemAsync(settings.Indexes, 0).ConfigureAwait(false);
+					(FileQueue? queue, int indexCount) = await GetNextQueueItemAsync(
+						settings.Indexes,
+						0
+					).ConfigureAwait(false);
 					monitor.EnableRaisingEvents = true;
 
 					while (queue != null)
@@ -157,7 +167,8 @@ namespace VideoConverter.Commands
 									return;
 								}
 
-								mainTask.Description = $"[green]Processing [fuchsia]{(int)mainTask.Value + 1} / {(int)mainTask.MaxValue}[/]...[/]";
+								mainTask.Description =
+									$"[green]Processing [fuchsia]{(int)mainTask.Value + 1} / {(int)mainTask.MaxValue}[/]...[/]";
 								mainTask.Increment(1.0);
 
 								var newFileName = Path.GetFileNameWithoutExtension(queue.OutputPath);
@@ -257,7 +268,10 @@ namespace VideoConverter.Commands
 									if (!Directory.Exists(this.config.WorkDirectory))
 										Directory.CreateDirectory(this.config.WorkDirectory);
 
-									var tempWorkPath = Path.Combine(this.config.WorkDirectory, Guid.NewGuid() + Path.GetExtension(queue.OutputPath));
+									var tempWorkPath = Path.Combine(
+										this.config.WorkDirectory,
+										Guid.NewGuid() + Path.GetExtension(queue.OutputPath)
+									);
 
 									var firstVideoStream = mediaInfo.VideoStreams.First();
 
@@ -417,9 +431,11 @@ namespace VideoConverter.Commands
 											{
 												var newSize = new FileInfo(tempWorkPath).Length;
 												if (newSize > initialSize)
-													queue.StatusMessage = $"Lost {(newSize - initialSize).Bytes().Humanize("#.##", CultureInfo.CurrentCulture)}";
+													queue.StatusMessage =
+														$"Lost {(newSize - initialSize).Bytes().Humanize("#.##", CultureInfo.CurrentCulture)}";
 												else if (newSize < initialSize)
-													queue.StatusMessage = $"Saved {(initialSize - newSize).Bytes().Humanize("#.##", CultureInfo.CurrentCulture)}";
+													queue.StatusMessage =
+														$"Saved {(initialSize - newSize).Bytes().Humanize("#.##", CultureInfo.CurrentCulture)}";
 												else
 													queue.StatusMessage = "No loss or gain in size";
 											}
