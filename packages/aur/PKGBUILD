@@ -1,0 +1,50 @@
+# Maintainer: Kim Nordmo <kim.nordmo@gmail.com>
+pkgname=videoconverter-git
+pkgver="0.4.0alpha.1.8+3efa44effdcb11d524f0a5aa89afd6fb2bd96885"
+pkgrel=1
+pkgdesc="Small utility for converting video files"
+arch=(x86_64)
+url="https://github.com/AdmiringWorm/VideoConverter"
+license=('MIT')
+#groups=()
+depends=('ffmpeg')
+makedepends=('git' 'jq' "dotnet-runtime>=5.0" "dotnet-sdk>=5.0") # 'bzr', 'git', 'mercurial' or 'subversion'
+provides=("${pkgname%-git}")
+conflicts=("${pkgname%-git}")
+options=(!strip)
+source=("${pkgname%-git}::git+${url}#branch=master")
+md5sums=('SKIP')
+
+# Please refer to the 'USING VCS SOURCES' section of the PKGBUILD man page for
+# a description of each element in the source array.
+
+pkgver() {
+	cd "$srcdir/${pkgname%-git}"
+
+	# Git, no tags available
+	#printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+	dotnet ccvarn parse >/dev/null
+	cat CCVARN.json | jq .version.fullSemVer | sed 's/-//g'
+	rm CCVARN.json >/dev/null
+}
+
+build() {
+	cd "$srcdir/${pkgname%-git}"
+	sh ./build.sh --target=Publish --exclusive --single-file --runtime=arch-x64
+}
+
+check() {
+	cd "$srcdir/${pkgname%-git}"
+	sh ./build.sh --target=Test --exclusive --single-file --runtime=arch-x64
+}
+
+package() {
+	name="${pkgname%-git}"
+	cd "$srcdir/$name"
+	install -Dm0755 "$srcdir/${name}/.artifacts/output/VideoConverter" "$pkgdir/usr/bin/${name}"
+	#	dest="$pkgdir/opt/${name}"
+	#	install -d "$dest"
+	#	cp -aT "$srcdir/$name/.artifacts/output" "$dest"
+	#	install -d "$pkgdir/usr/bin"
+	#	ln -s "/opt/$name/VideoConverter" "$pkgdir/usr/bin/$name"
+}
