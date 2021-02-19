@@ -11,9 +11,9 @@
 			"preLaunchTask": "build",
 			// If you have changed target frameworks, make sure to update the program path.
 			"program": "${workspaceFolder}/src/VideoConverter/bin/Debug/net5.0/VideoConverter.dll",
-			"args": ["add", "dir", "/mnt/Videos/Anime Unsorted", "--dir", "/mnt/Videos/Anime/TV Series"],
+			//"args": ["add", "dir", "/mnt/Videos/Anime Unsorted", "--dir", "/mnt/Videos/Anime/TV Series"],
 			//"args":["add", "file", "/mnt/Seagate/Videos/Movies/7731206.mkv", "--re-encode", "--use-copy", "--repeat", "0:0:30", "--extension", "mp4"],
-			//"args": ["encode", "--id", "2064"],
+			"args": ["encode"],
 			"cwd": "${workspaceFolder}/src/VideoConverter",
 			// For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
 			"console": "integratedTerminal",
