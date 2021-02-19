@@ -139,440 +139,446 @@ namespace VideoConverter.Commands
 					while (queue != null)
 					{
 						await this.console.Progress()
-							.StartAsync(async ctx =>
+							.AutoClear(false)
+							.Columns(new ProgressColumn[]
 							{
-
-								mainTask.Description =
-									$"[green]Processing {Path.GetFileNameWithoutExtension(queue.OutputPath)} [fuchsia]{(int)mainTask.Value + 1} / {count}[/]...[/]";
-								const double parseStep = 17.0;
-								const double hashStep = 50.0;
-								const double moveStep = 25.0;
-								var parseTask = ctx.AddTask("Aquiring information...");
-								parseTask.MaxValue = 102;
-								var hashTask = ctx.AddTask("Calculating hash...");
-								var encodeTask = ctx.AddTask("Encoding video...");
-								var moveTask = ctx.AddTask("Moving video to new location...");
-								parseTask.StartTask();
-
-								try
+								new SpinnerColumn(),
+								new TaskDescriptionColumn(),
+								new ProgressBarColumn(),
+								new PercentageColumn(),
+								new RemainingTimeColumn(),
+								})
+								.StartAsync(async ctx =>
 								{
-									monitor.EnableRaisingEvents = false;
-									await queueRepo.SaveChangesAsync().ConfigureAwait(false);
-									monitor.EnableRaisingEvents = true;
-								}
-								catch (Exception ex)
-								{
-									this.console.WriteException(ex);
-									throw;
-								}
+									const double parseStep = 17.0;
+									const double hashStep = 50.0;
+									const double moveStep = 25.0;
+									var parseTask = ctx.AddTask("Aquiring information...");
+									parseTask.MaxValue = 102;
+									var hashTask = ctx.AddTask("Calculating hash...");
+									var encodeTask = ctx.AddTask("Encoding video...");
+									var moveTask = ctx.AddTask("Moving video to new location...");
+									parseTask.StartTask();
 
-								if (cancellationToken.IsCancellationRequested)
-								{
-									exitCode = 1;
-									return;
-								}
-
-								mainTask.Description =
-										$"[green]Processing [aqua]{Path.GetFileNameWithoutExtension(queue.OutputPath)}[/] [fuchsia]{(int)mainTask.Value + 1} / {count}[/]...[/]";
-								mainTask.Increment(1.0);
-
-								var newFileName = Path.GetFileNameWithoutExtension(queue.OutputPath);
-
-								try
-								{
-									hashTask.StartTask();
-									var oldHash = await GetSHA1Async(queue.Path, cancellationToken).ConfigureAwait(false);
-									hashTask.Increment(hashStep);
-									//hashTask.StopTask();
-									parseTask.Increment(parseStep);
-
-									var exists = await queueRepo.FileExistsAsync(queue.Path, oldHash).ConfigureAwait(false);
-									queue.OldHash = oldHash;
-
-									parseTask.Increment(parseStep);
-
-									if (exists && settings.IgnoreDuplicates)
+									try
 									{
-										queue.Status = QueueStatus.Completed;
-										queue.StatusMessage = "Duplicate file...";
+										monitor.EnableRaisingEvents = false;
+										await queueRepo.SaveChangesAsync().ConfigureAwait(false);
+										monitor.EnableRaisingEvents = true;
+									}
+									catch (Exception ex)
+									{
+										this.console.WriteException(ex);
+										throw;
+									}
+
+									if (cancellationToken.IsCancellationRequested)
+									{
+										exitCode = 1;
+										return;
+									}
+
+									mainTask.Description =
+										$"[green]Processing [aqua]{Path.GetFileNameWithoutExtension(queue.OutputPath)}[/] [fuchsia]{(int)mainTask.Value + 1} / {count}[/]...[/]";
+									mainTask.Increment(1.0);
+
+									var newFileName = Path.GetFileNameWithoutExtension(queue.OutputPath);
+
+									try
+									{
+										hashTask.StartTask();
+										var oldHash = await GetSHA1Async(queue.Path, cancellationToken).ConfigureAwait(false);
+										hashTask.Increment(hashStep);
+										//hashTask.StopTask();
+										parseTask.Increment(parseStep);
+
+										var exists = await queueRepo.FileExistsAsync(queue.Path, oldHash).ConfigureAwait(false);
+										queue.OldHash = oldHash;
+
+										parseTask.Increment(parseStep);
+
+										if (exists && settings.IgnoreDuplicates)
+										{
+											queue.Status = QueueStatus.Completed;
+											queue.StatusMessage = "Duplicate file...";
+											await queueRepo.UpdateQueueAsync(queue).ConfigureAwait(false);
+											monitor.EnableRaisingEvents = false;
+											await queueRepo.SaveChangesAsync().ConfigureAwait(false);
+											monitor.EnableRaisingEvents = true;
+											return;
+										}
+
+										var mediaInfo = await FFmpeg.GetMediaInfo(queue.Path).ConfigureAwait(false);
+
+										parseTask.Increment(parseStep);
+
+										var directory = Path.GetDirectoryName(queue.OutputPath) ?? Environment.CurrentDirectory;
+										if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+											Directory.CreateDirectory(directory);
+
+										var streams = mediaInfo.Streams.Where(s => queue.Streams.Contains(s.Index));
+
+										var conversion = FFmpeg.Conversions.New();
+
+										foreach (var stream in streams)
+										{
+											if (stream is IVideoStream videoStream)
+											{
+												if (settings.UseEncodingCopy &&
+													string.Equals(
+														videoStream.Codec,
+														queue.VideoCodec ?? this.config.VideoCodec,
+														StringComparison.OrdinalIgnoreCase)
+												)
+												{
+													videoStream.SetCodec(VideoCodec.copy);
+												}
+												else
+												{
+													videoStream.SetCodec(queue.VideoCodec ?? this.config.VideoCodec);
+												}
+											}
+											else if (stream is IAudioStream audioStream)
+											{
+												if (settings.UseEncodingCopy &&
+													string.Equals(
+														audioStream.Codec,
+														queue.AudioCodec ?? this.config.AudioCodec,
+														StringComparison.OrdinalIgnoreCase)
+												)
+												{
+													audioStream.SetCodec(AudioCodec.copy);
+												}
+												else
+												{
+													audioStream.SetCodec(queue.AudioCodec ?? this.config.AudioCodec);
+												}
+											}
+											else if (stream is ISubtitleStream subtitleStream)
+											{
+												if (settings.UseEncodingCopy &&
+													string.Equals(
+														subtitleStream.Codec,
+														queue.SubtitleCodec ?? this.config.SubtitleCodec,
+														StringComparison.OrdinalIgnoreCase)
+												)
+												{
+													subtitleStream.SetCodec(SubtitleCodec.copy);
+												}
+												else
+												{
+													subtitleStream.SetCodec(queue.SubtitleCodec ?? this.config.SubtitleCodec);
+												}
+											}
+
+											conversion.AddStream(stream);
+										}
+
+										parseTask.Increment(parseStep);
+
+										if (!Directory.Exists(this.config.WorkDirectory))
+											Directory.CreateDirectory(this.config.WorkDirectory);
+
+										var tempWorkPath = Path.Combine(
+											this.config.WorkDirectory,
+											Guid.NewGuid() + Path.GetExtension(queue.OutputPath)
+										);
+
+										var firstVideoStream = mediaInfo.VideoStreams.First();
+
+										string parameters = string.Empty;
+
+										if (!string.IsNullOrEmpty(queue.Parameters))
+											parameters = queue.Parameters;
+										else
+											parameters = this.config.ExtraEncodingParameters;
+
+										if (!parameters.Contains("faststart") && !parameters.Contains("movflags"))
+											parameters = "-movflags +faststart " + parameters;
+
+										if (queue.OutputPath.EndsWith(
+												".mk3d",
+												StringComparison.OrdinalIgnoreCase) ||
+												queue.OutputPath.EndsWith(".mkv3d", StringComparison.Ordinal)
+										)
+										{
+											conversion.SetOutputFormat(Format.matroska);
+										}
+
+										string parameters3D = string.Empty;
+										string stereo3d = string.Empty;
+
+										switch (queue.StereoMode)
+										{
+											case StereoScopicMode.Mono:
+												if (!parameters.Contains("v360") && !settings.NoStereoModeMetadata)
+													parameters3D = "-metadata:s:v stereo_mode=mono";
+												break;
+											case StereoScopicMode.AboveBelowLeft:
+												if (parameters.Contains("v360"))
+													parameters = Regex.Replace(parameters, "v360=([^\\s\"])", "v360=$1:in_stereo=tb:out_stereo=tb");
+												else
+													parameters3D = "-vf \"stereo3d=tbl:tbl\"";
+												if (!settings.NoStereoModeMetadata)
+													parameters3D += " -metadata:s:v stereo_mode=top_bottom";
+												stereo3d = "tbl";
+												break;
+											case StereoScopicMode.AboveBelowRight:
+												parameters3D = "-vf \"stereo3d=tbr:tbl\"";
+												if (!settings.NoStereoModeMetadata)
+													parameters3D += " -metadata:s:v stereo_mode=top_bottom";
+												stereo3d = "tbl";
+												break;
+											case StereoScopicMode.AboveBelowLeftHalf:
+												parameters3D = "-vf \"stereo3d=tb2l:tb2l\"";
+												if (!settings.NoStereoModeMetadata)
+													parameters3D += " -metadata:s:v stereo_mode=top_bottom";
+												stereo3d = "tb2l";
+												break;
+											case StereoScopicMode.AboveBelowRightHalf:
+												parameters3D = "-vf \"stereo3d=tb2r:tb2l\"";
+												if (!settings.NoStereoModeMetadata)
+													parameters3D += " -metadata:s:v stereo_mode=top_bottom";
+												stereo3d = "tb2l";
+												break;
+											case StereoScopicMode.SideBySideLeft:
+												if (parameters.Contains("v360"))
+													parameters = Regex.Replace(parameters, "v360=([^\\s\"]+)", "v360=$1:in_stereo=sbs:out_stereo=sbs");
+												else
+													parameters3D = "-vf \"stereo3d=sbsl:sbsl\"";
+												if (!settings.NoStereoModeMetadata)
+													parameters3D += " -metadata:s:v stereo_mode=left_right";
+												stereo3d = "sbsl";
+												break;
+											case StereoScopicMode.SideBySideLeftHalf:
+												parameters3D = "-vf \"stereo3d=sbs2l:sbs2l\"";
+												if (!settings.NoStereoModeMetadata)
+													parameters3D += " -metadata:s:v stereo_mode=left_right";
+												stereo3d = "sbs2l";
+												break;
+											case StereoScopicMode.SideBySideRight:
+												parameters3D = "-vf \"stereo3d=sbsr:sbsl\"";
+												if (!settings.NoStereoModeMetadata)
+													parameters3D += " -metadata:s:v stereo_mode=left_right";
+												stereo3d = "sbsl";
+												break;
+											case StereoScopicMode.SideBySideRightHalf:
+												parameters3D = "-vf \"stereo3d=sbs2r:sbs2l\"";
+												if (!settings.NoStereoModeMetadata)
+													parameters3D += " -metadata:s:v stereo_mode=left_right";
+												stereo3d = "sbs2l";
+												break;
+										}
+
+										if (!string.IsNullOrEmpty(queue.InputParameters))
+											conversion.AddParameter(queue.InputParameters, ParameterPosition.PreInput);
+
+										conversion.AddParameter($"{parameters} {parameters3D}")
+											.SetOverwriteOutput(true)
+											.SetOutput(tempWorkPath);
+
+										parseTask.Increment(parseStep);
+										//parseTask.StopTask();
+
+										var result = conversion.Build();
+
+										encodeTask.StartTask();
+										queue.Status = QueueStatus.Encoding;
 										await queueRepo.UpdateQueueAsync(queue).ConfigureAwait(false);
 										monitor.EnableRaisingEvents = false;
 										await queueRepo.SaveChangesAsync().ConfigureAwait(false);
 										monitor.EnableRaisingEvents = true;
-										return;
-									}
+										var lastSeconds = 0.0;
 
-									var mediaInfo = await FFmpeg.GetMediaInfo(queue.Path).ConfigureAwait(false);
-
-									parseTask.Increment(parseStep);
-
-									var directory = Path.GetDirectoryName(queue.OutputPath) ?? Environment.CurrentDirectory;
-									if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-										Directory.CreateDirectory(directory);
-
-									var streams = mediaInfo.Streams.Where(s => queue.Streams.Contains(s.Index));
-
-									var conversion = FFmpeg.Conversions.New();
-
-									foreach (var stream in streams)
-									{
-										if (stream is IVideoStream videoStream)
+										conversion.OnProgress += (sender, args) =>
 										{
-											if (settings.UseEncodingCopy &&
-												string.Equals(
-													videoStream.Codec,
-													queue.VideoCodec ?? this.config.VideoCodec,
-													StringComparison.OrdinalIgnoreCase)
-											)
-											{
-												videoStream.SetCodec(VideoCodec.copy);
-											}
-											else
-											{
-												videoStream.SetCodec(queue.VideoCodec ?? this.config.VideoCodec);
-											}
-										}
-										else if (stream is IAudioStream audioStream)
+											encodeTask.MaxValue = args.TotalLength.TotalSeconds;
+											//encodeTask.Value = args.Duration.TotalSeconds;
+											encodeTask.Increment(args.Duration.TotalSeconds - lastSeconds);
+											lastSeconds = args.Duration.TotalSeconds;
+										};
+
+										try
 										{
-											if (settings.UseEncodingCopy &&
-												string.Equals(
-													audioStream.Codec,
-													queue.AudioCodec ?? this.config.AudioCodec,
-													StringComparison.OrdinalIgnoreCase)
-											)
+											var initialSize = new FileInfo(queue.Path).Length;
+											await conversion.Start(cancellationToken).ConfigureAwait(false);
+											//encodeTask.StopTask();
+
+											if (cancellationToken.IsCancellationRequested)
 											{
-												audioStream.SetCodec(AudioCodec.copy);
-											}
-											else
-											{
-												audioStream.SetCodec(queue.AudioCodec ?? this.config.AudioCodec);
-											}
-										}
-										else if (stream is ISubtitleStream subtitleStream)
-										{
-											if (settings.UseEncodingCopy &&
-												string.Equals(
-													subtitleStream.Codec,
-													queue.SubtitleCodec ?? this.config.SubtitleCodec,
-													StringComparison.OrdinalIgnoreCase)
-											)
-											{
-												subtitleStream.SetCodec(SubtitleCodec.copy);
-											}
-											else
-											{
-												subtitleStream.SetCodec(queue.SubtitleCodec ?? this.config.SubtitleCodec);
-											}
-										}
-
-										conversion.AddStream(stream);
-									}
-
-									parseTask.Increment(parseStep);
-
-									if (!Directory.Exists(this.config.WorkDirectory))
-										Directory.CreateDirectory(this.config.WorkDirectory);
-
-									var tempWorkPath = Path.Combine(
-										this.config.WorkDirectory,
-										Guid.NewGuid() + Path.GetExtension(queue.OutputPath)
-									);
-
-									var firstVideoStream = mediaInfo.VideoStreams.First();
-
-									string parameters = string.Empty;
-
-									if (!string.IsNullOrEmpty(queue.Parameters))
-										parameters = queue.Parameters;
-									else
-										parameters = this.config.ExtraEncodingParameters;
-
-									if (!parameters.Contains("faststart") && !parameters.Contains("movflags"))
-										parameters = "-movflags +faststart " + parameters;
-
-									if (queue.OutputPath.EndsWith(
-											".mk3d",
-											StringComparison.OrdinalIgnoreCase) ||
-											queue.OutputPath.EndsWith(".mkv3d", StringComparison.Ordinal)
-									)
-									{
-										conversion.SetOutputFormat(Format.matroska);
-									}
-
-									string parameters3D = string.Empty;
-									string stereo3d = string.Empty;
-
-									switch (queue.StereoMode)
-									{
-										case StereoScopicMode.Mono:
-											if (!parameters.Contains("v360") && !settings.NoStereoModeMetadata)
-												parameters3D = "-metadata:s:v stereo_mode=mono";
-											break;
-										case StereoScopicMode.AboveBelowLeft:
-											if (parameters.Contains("v360"))
-												parameters = Regex.Replace(parameters, "v360=([^\\s\"])", "v360=$1:in_stereo=tb:out_stereo=tb");
-											else
-												parameters3D = "-vf \"stereo3d=tbl:tbl\"";
-											if (!settings.NoStereoModeMetadata)
-												parameters3D += " -metadata:s:v stereo_mode=top_bottom";
-											stereo3d = "tbl";
-											break;
-										case StereoScopicMode.AboveBelowRight:
-											parameters3D = "-vf \"stereo3d=tbr:tbl\"";
-											if (!settings.NoStereoModeMetadata)
-												parameters3D += " -metadata:s:v stereo_mode=top_bottom";
-											stereo3d = "tbl";
-											break;
-										case StereoScopicMode.AboveBelowLeftHalf:
-											parameters3D = "-vf \"stereo3d=tb2l:tb2l\"";
-											if (!settings.NoStereoModeMetadata)
-												parameters3D += " -metadata:s:v stereo_mode=top_bottom";
-											stereo3d = "tb2l";
-											break;
-										case StereoScopicMode.AboveBelowRightHalf:
-											parameters3D = "-vf \"stereo3d=tb2r:tb2l\"";
-											if (!settings.NoStereoModeMetadata)
-												parameters3D += " -metadata:s:v stereo_mode=top_bottom";
-											stereo3d = "tb2l";
-											break;
-										case StereoScopicMode.SideBySideLeft:
-											if (parameters.Contains("v360"))
-												parameters = Regex.Replace(parameters, "v360=([^\\s\"]+)", "v360=$1:in_stereo=sbs:out_stereo=sbs");
-											else
-												parameters3D = "-vf \"stereo3d=sbsl:sbsl\"";
-											if (!settings.NoStereoModeMetadata)
-												parameters3D += " -metadata:s:v stereo_mode=left_right";
-											stereo3d = "sbsl";
-											break;
-										case StereoScopicMode.SideBySideLeftHalf:
-											parameters3D = "-vf \"stereo3d=sbs2l:sbs2l\"";
-											if (!settings.NoStereoModeMetadata)
-												parameters3D += " -metadata:s:v stereo_mode=left_right";
-											stereo3d = "sbs2l";
-											break;
-										case StereoScopicMode.SideBySideRight:
-											parameters3D = "-vf \"stereo3d=sbsr:sbsl\"";
-											if (!settings.NoStereoModeMetadata)
-												parameters3D += " -metadata:s:v stereo_mode=left_right";
-											stereo3d = "sbsl";
-											break;
-										case StereoScopicMode.SideBySideRightHalf:
-											parameters3D = "-vf \"stereo3d=sbs2r:sbs2l\"";
-											if (!settings.NoStereoModeMetadata)
-												parameters3D += " -metadata:s:v stereo_mode=left_right";
-											stereo3d = "sbs2l";
-											break;
-									}
-
-									if (!string.IsNullOrEmpty(queue.InputParameters))
-										conversion.AddParameter(queue.InputParameters, ParameterPosition.PreInput);
-
-									conversion.AddParameter($"{parameters} {parameters3D}")
-										.SetOverwriteOutput(true)
-										.SetOutput(tempWorkPath);
-
-									parseTask.Increment(parseStep);
-									//parseTask.StopTask();
-
-									var result = conversion.Build();
-
-									encodeTask.StartTask();
-									queue.Status = QueueStatus.Encoding;
-									await queueRepo.UpdateQueueAsync(queue).ConfigureAwait(false);
-									monitor.EnableRaisingEvents = false;
-									await queueRepo.SaveChangesAsync().ConfigureAwait(false);
-									monitor.EnableRaisingEvents = true;
-									var lastSeconds = 0.0;
-
-									conversion.OnProgress += (sender, args) =>
-									{
-										encodeTask.MaxValue = args.TotalLength.TotalSeconds;
-										//encodeTask.Value = args.Duration.TotalSeconds;
-										encodeTask.Increment(args.Duration.TotalSeconds - lastSeconds);
-										lastSeconds = args.Duration.TotalSeconds;
-									};
-
-									try
-									{
-										var initialSize = new FileInfo(queue.Path).Length;
-										await conversion.Start(cancellationToken).ConfigureAwait(false);
-										//encodeTask.StopTask();
-
-										if (cancellationToken.IsCancellationRequested)
-										{
-											failed = true;
-											await queueRepo.UpdateQueueStatusAsync(
-												queue.Id,
-												QueueStatus.Pending,
-												"Progress was cancelled by user"
-											).ConfigureAwait(false);
-											encodeTask.Description = "[grey]Encoding cancelled...[/]";
-											if (File.Exists(tempWorkPath))
-												File.Delete(tempWorkPath);
-										}
-										else
-										{
-											hashTask.StartTask();
-											var newHash = await GetSHA1Async(tempWorkPath, CancellationToken.None).ConfigureAwait(false);
-											hashTask.Increment(hashStep);
-											queue.NewHash = newHash;
-											//hashTask.StopTask();
-
-											moveTask.StartTask();
-
-											var isDuplicate = await queueRepo.FileExistsAsync(queue.Path, newHash).ConfigureAwait(false);
-											queue.Status = QueueStatus.Completed;
-
-											if (isDuplicate)
-											{
-												queue.StatusMessage = "Duplicate file...";
-												if (settings.IgnoreDuplicates)
-												{
+												failed = true;
+												await queueRepo.UpdateQueueStatusAsync(
+													queue.Id,
+													QueueStatus.Pending,
+													"Progress was cancelled by user"
+												).ConfigureAwait(false);
+												encodeTask.Description = "[grey]Encoding cancelled...[/]";
+												if (File.Exists(tempWorkPath))
 													File.Delete(tempWorkPath);
-												}
 											}
-
-											if (!isDuplicate || !settings.IgnoreDuplicates)
+											else
 											{
-												var newSize = new FileInfo(tempWorkPath).Length;
-												if (newSize > initialSize)
+												hashTask.StartTask();
+												var newHash = await GetSHA1Async(tempWorkPath, CancellationToken.None).ConfigureAwait(false);
+												hashTask.Increment(hashStep);
+												queue.NewHash = newHash;
+												//hashTask.StopTask();
+
+												moveTask.StartTask();
+
+												var isDuplicate = await queueRepo.FileExistsAsync(queue.Path, newHash).ConfigureAwait(false);
+												queue.Status = QueueStatus.Completed;
+
+												if (isDuplicate)
 												{
-													queue.StatusMessage =
-														$"Lost {(newSize - initialSize).Bytes().Humanize("#.##", CultureInfo.CurrentCulture)}";
+													queue.StatusMessage = "Duplicate file...";
+													if (settings.IgnoreDuplicates)
+													{
+														File.Delete(tempWorkPath);
+													}
 												}
-												else if (newSize < initialSize)
+
+												if (!isDuplicate || !settings.IgnoreDuplicates)
 												{
-													queue.StatusMessage =
-														$"Saved {(initialSize - newSize).Bytes().Humanize("#.##", CultureInfo.CurrentCulture)}";
+													var newSize = new FileInfo(tempWorkPath).Length;
+													if (newSize > initialSize)
+													{
+														queue.StatusMessage =
+															$"Lost {(newSize - initialSize).Bytes().Humanize("#.##", CultureInfo.CurrentCulture)}";
+													}
+													else if (newSize < initialSize)
+													{
+														queue.StatusMessage =
+															$"Saved {(initialSize - newSize).Bytes().Humanize("#.##", CultureInfo.CurrentCulture)}";
+													}
+													else
+													{
+														queue.StatusMessage = "No loss or gain in size";
+													}
+												}
+
+												await queueRepo.UpdateQueueAsync(queue).ConfigureAwait(false);
+
+												//this.queueRepo.UpdateQueueStatus(queue.Id, QueueStatus.Completed, statusMessage);
+												if (!isDuplicate || !settings.IgnoreDuplicates)
+												{
+													var newThumbPath = Path.ChangeExtension(queue.OutputPath, "-thumb.jpg").Replace(".-thumb", "-thumb");
+													var newFanArtPath = Path.ChangeExtension(queue.OutputPath, "-fanart.jpg").Replace(".-fanart", "-fanart");
+
+													if (File.Exists(newThumbPath))
+														File.Delete(newThumbPath);
+
+													if (File.Exists(newFanArtPath))
+														File.Delete(newFanArtPath);
+													moveTask.Increment(moveStep);
+
+													mediaInfo = await FFmpeg.GetMediaInfo(tempWorkPath).ConfigureAwait(false);
+													firstVideoStream = mediaInfo.VideoStreams.First();
+													parseTask.Increment(parseStep);
+
+													var thumbnailAt = this.rand.Next((int)firstVideoStream.Duration.TotalMilliseconds + 1);
+													var fanArtAt = this.rand.Next((int)firstVideoStream.Duration.TotalMilliseconds + 1);
+													var thumbConversion = await FFmpeg.Conversions.FromSnippet.Snapshot(
+														tempWorkPath,
+														newThumbPath,
+														TimeSpan.FromMilliseconds(thumbnailAt)
+													).ConfigureAwait(false);
+													var fanArtConversion = await FFmpeg.Conversions.FromSnippet.Snapshot(
+														tempWorkPath,
+														newFanArtPath,
+														TimeSpan.FromMilliseconds(fanArtAt)
+													).ConfigureAwait(false);
+													if (!string.IsNullOrEmpty(stereo3d))
+													{
+														thumbConversion.AddParameter($"-vf \"stereo3d={stereo3d}:ml\"");
+														fanArtConversion.AddParameter($"-vf \"stereo3d={stereo3d}:mr\"");
+													}
+
+													var thumbArgs = thumbConversion.Build();
+													var fanArtArgs = fanArtConversion.Build();
+
+													await Task.WhenAll(
+														thumbConversion.Start(cancellationToken),
+														fanArtConversion.Start(cancellationToken)
+													).ConfigureAwait(false);
+
+													moveTask.Increment(moveStep);
+
+													if (File.Exists(queue.OutputPath))
+														File.Delete(queue.OutputPath);
+
+													File.Move(tempWorkPath, queue.OutputPath);
+
+													moveTask.Increment(moveStep);
 												}
 												else
 												{
-													queue.StatusMessage = "No loss or gain in size";
+													moveTask.Increment(moveStep * 3);
+													parseTask.Increment(parseStep);
 												}
-											}
 
-											await queueRepo.UpdateQueueAsync(queue).ConfigureAwait(false);
-
-											//this.queueRepo.UpdateQueueStatus(queue.Id, QueueStatus.Completed, statusMessage);
-											if (!isDuplicate || !settings.IgnoreDuplicates)
-											{
-												var newThumbPath = Path.ChangeExtension(queue.OutputPath, "-thumb.jpg").Replace(".-thumb", "-thumb");
-												var newFanArtPath = Path.ChangeExtension(queue.OutputPath, "-fanart.jpg").Replace(".-fanart", "-fanart");
-
-												if (File.Exists(newThumbPath))
-													File.Delete(newThumbPath);
-
-												if (File.Exists(newFanArtPath))
-													File.Delete(newFanArtPath);
-												moveTask.Increment(moveStep);
-
-												mediaInfo = await FFmpeg.GetMediaInfo(tempWorkPath).ConfigureAwait(false);
-												firstVideoStream = mediaInfo.VideoStreams.First();
-												parseTask.Increment(parseStep);
-
-												var thumbnailAt = this.rand.Next((int)firstVideoStream.Duration.TotalMilliseconds + 1);
-												var fanArtAt = this.rand.Next((int)firstVideoStream.Duration.TotalMilliseconds + 1);
-												var thumbConversion = await FFmpeg.Conversions.FromSnippet.Snapshot(
-													tempWorkPath,
-													newThumbPath,
-													TimeSpan.FromMilliseconds(thumbnailAt)
-												).ConfigureAwait(false);
-												var fanArtConversion = await FFmpeg.Conversions.FromSnippet.Snapshot(
-													tempWorkPath,
-													newFanArtPath,
-													TimeSpan.FromMilliseconds(fanArtAt)
-												).ConfigureAwait(false);
-												if (!string.IsNullOrEmpty(stereo3d))
+												if (settings.RemoveOldFiles)
 												{
-													thumbConversion.AddParameter($"-vf \"stereo3d={stereo3d}:ml\"");
-													fanArtConversion.AddParameter($"-vf \"stereo3d={stereo3d}:mr\"");
+													if (queue.Path != queue.OutputPath && File.Exists(queue.Path))
+														File.Delete(queue.Path);
 												}
-
-												var thumbArgs = thumbConversion.Build();
-												var fanArtArgs = fanArtConversion.Build();
-
-												await Task.WhenAll(
-													thumbConversion.Start(cancellationToken),
-													fanArtConversion.Start(cancellationToken)
+												moveTask.Increment(moveStep);
+												/*moveTask.StopTask();
+												parseTask.StopTask();*/
+											}
+										}
+										catch (Exception ex)
+										{
+											failed = true;
+											if (cancellationToken.IsCancellationRequested)
+											{
+												await queueRepo.UpdateQueueStatusAsync(
+													queue.Id,
+													QueueStatus.Pending,
+													"Progress was cancelled by user"
 												).ConfigureAwait(false);
-
-												moveTask.Increment(moveStep);
-
-												if (File.Exists(queue.OutputPath))
-													File.Delete(queue.OutputPath);
-
-												File.Move(tempWorkPath, queue.OutputPath);
-
-												moveTask.Increment(moveStep);
 											}
 											else
 											{
-												moveTask.Increment(moveStep * 3);
-												parseTask.Increment(parseStep);
+												await queueRepo.UpdateQueueStatusAsync(queue.Id, QueueStatus.Failed, ex).ConfigureAwait(false);
 											}
 
-											if (settings.RemoveOldFiles)
-											{
-												if (queue.Path != queue.OutputPath && File.Exists(queue.Path))
-													File.Delete(queue.Path);
-											}
-											moveTask.Increment(moveStep);
-											/*moveTask.StopTask();
-											parseTask.StopTask();*/
+											if (File.Exists(tempWorkPath))
+												File.Delete(tempWorkPath);
 										}
 									}
 									catch (Exception ex)
 									{
+										await queueRepo.UpdateQueueStatusAsync(queue.Id, QueueStatus.Failed, ex).ConfigureAwait(false);
 										failed = true;
-										if (cancellationToken.IsCancellationRequested)
-										{
-											await queueRepo.UpdateQueueStatusAsync(
-												queue.Id,
-												QueueStatus.Pending,
-												"Progress was cancelled by user"
-											).ConfigureAwait(false);
-										}
-										else
-										{
-											await queueRepo.UpdateQueueStatusAsync(queue.Id, QueueStatus.Failed, ex).ConfigureAwait(false);
-										}
-
-										if (File.Exists(tempWorkPath))
-											File.Delete(tempWorkPath);
 									}
-								}
-								catch (Exception ex)
-								{
-									await queueRepo.UpdateQueueStatusAsync(queue.Id, QueueStatus.Failed, ex).ConfigureAwait(false);
-									failed = true;
-								}
 
-								try
-								{
-									monitor.EnableRaisingEvents = false;
-									await queueRepo.SaveChangesAsync().ConfigureAwait(false);
-									monitor.EnableRaisingEvents = true;
-
-
-									if (!cancellationToken.IsCancellationRequested)
+									try
 									{
-										(queue, indexCount) = await GetNextQueueItemAsync(settings.Indexes, indexCount).ConfigureAwait(false);
-									}
-								}
-								catch (Exception ex)
-								{
-									if (queue?.Status == QueueStatus.Encoding)
-									{
-										queue.Status = QueueStatus.Pending;
-										await queueRepo.UpdateQueueAsync(queue).ConfigureAwait(false);
+										monitor.EnableRaisingEvents = false;
 										await queueRepo.SaveChangesAsync().ConfigureAwait(false);
-									}
+										monitor.EnableRaisingEvents = true;
 
-									this.console.WriteException(ex);
-									exitCode = 1;
-									return;
-								}
-							}).ConfigureAwait(false);
+
+										if (!cancellationToken.IsCancellationRequested)
+										{
+											(queue, indexCount) = await GetNextQueueItemAsync(settings.Indexes, indexCount).ConfigureAwait(false);
+										}
+									}
+									catch (Exception ex)
+									{
+										if (queue?.Status == QueueStatus.Encoding)
+										{
+											queue.Status = QueueStatus.Pending;
+											await queueRepo.UpdateQueueAsync(queue).ConfigureAwait(false);
+											await queueRepo.SaveChangesAsync().ConfigureAwait(false);
+										}
+
+										this.console.WriteException(ex);
+										exitCode = 1;
+										return;
+									}
+								}).ConfigureAwait(false);
 
 						if (exitCode != 0)
 							return;
