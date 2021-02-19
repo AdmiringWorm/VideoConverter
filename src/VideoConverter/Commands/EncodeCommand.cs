@@ -559,7 +559,6 @@ namespace VideoConverter.Commands
 										await queueRepo.SaveChangesAsync().ConfigureAwait(false);
 										monitor.EnableRaisingEvents = true;
 
-
 										if (!cancellationToken.IsCancellationRequested)
 										{
 											(queue, indexCount) = await GetNextQueueItemAsync(settings.Indexes, indexCount).ConfigureAwait(false);
