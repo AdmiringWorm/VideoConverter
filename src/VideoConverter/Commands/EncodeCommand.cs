@@ -187,12 +187,16 @@ namespace VideoConverter.Commands
 									try
 									{
 										hashTask.StartTask();
-										var oldHash = await GetSHA1Async(queue.Path, cancellationToken).ConfigureAwait(false);
+										var oldHash = queue.OldHash;
+										if (oldHash is null)
+										{
+											oldHash = oldHash = await GetSHA1Async(queue.Path, cancellationToken).ConfigureAwait(false);
+										}
 										hashTask.Increment(hashStep);
-										//hashTask.StopTask();
 										parseTask.Increment(parseStep);
 
 										var exists = await queueRepo.FileExistsAsync(queue.Path, oldHash).ConfigureAwait(false);
+
 										queue.OldHash = oldHash;
 
 										parseTask.Increment(parseStep);
@@ -636,7 +640,7 @@ namespace VideoConverter.Commands
 			return (queue, newIndex);
 		}
 
-		private static async Task<string> GetSHA1Async(string file, CancellationToken cancellationToken)
+		internal static async Task<string> GetSHA1Async(string file, CancellationToken cancellationToken)
 		{
 #pragma warning disable CA5350
 			using var algo = SHA1.Create();

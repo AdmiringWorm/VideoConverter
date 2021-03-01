@@ -69,6 +69,8 @@ namespace VideoConverter.Commands
 						return 1;
 					}
 
+					var hash = await EncodeCommand.GetSHA1Async(file, tokenSource.Token).ConfigureAwait(false);
+
 					var existingFile = await this.queueRepository.GetQueueItemAsync(file).ConfigureAwait(false);
 
 					if (existingFile is not null && settings.IgnoreStatuses.Contains(existingFile.Status))
@@ -78,6 +80,15 @@ namespace VideoConverter.Commands
 							file.EscapeMarkup(), existingFile.Status
 						);
 						continue;
+					}
+					else if (settings.IgnoreDuplicates || settings.RemoveDuplicates)
+					{
+						var fileExists = await this.queueRepository.FileExistsAsync(file, hash).ConfigureAwait(false);
+						if (fileExists)
+						{
+							this.console.MarkupLine("[yellow]WARNING: [fuchsia]'{0}'[/] exists already exists. Ignoring...[/]", file.EscapeMarkup());
+							continue;
+						}
 					}
 
 					var mediaInfoTask = FFmpeg.GetMediaInfo(file, this.tokenSource.Token);
@@ -398,6 +409,7 @@ namespace VideoConverter.Commands
 							Path = file.Normalize()
 						};
 					}
+					queueItem.OldHash = hash;
 
 					var audioCodec = settings.AudioCodec ?? this.config.AudioCodec;
 					var videoCodec = settings.VideoCodec ?? this.config.VideoCodec;
