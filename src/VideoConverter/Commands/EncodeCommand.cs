@@ -179,7 +179,7 @@ namespace VideoConverter.Commands
 									}
 
 									mainTask.Description =
-										$"[green]Processing [aqua]{Path.GetFileNameWithoutExtension(queue.OutputPath)}[/] [fuchsia]{(int)mainTask.Value + 1} / {count}[/]...[/]";
+										$"[green]Processing [aqua]{Path.GetFileNameWithoutExtension(queue.OutputPath).EscapeMarkup()}[/] [fuchsia]{(int)mainTask.Value + 1} / {count}[/]...[/]";
 									mainTask.Increment(1.0);
 
 									var newFileName = Path.GetFileNameWithoutExtension(queue.OutputPath);
