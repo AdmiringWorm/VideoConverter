@@ -1,6 +1,6 @@
 # Maintainer: Kim Nordmo <kim.nordmo@gmail.com>
 pkgname=videoconverter-git
-pkgver="0.4.0alpha.1.8+3efa44effdcb11d524f0a5aa89afd6fb2bd96885"
+pkgver="0.4.0alpha.1.18+989f9971df413eb3798fd986880f293a0917caea"
 pkgrel=1
 pkgdesc="Small utility for converting video files"
 arch=(x86_64)
