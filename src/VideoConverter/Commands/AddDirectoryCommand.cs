@@ -46,7 +46,7 @@ namespace VideoConverter.Commands
 			return fileCommand.ExecuteAsync(context, fileSettings);
 		}
 
-		private static IEnumerable<string> FindVideoFiles(string directory, bool recursive)
+		internal static IEnumerable<string> FindVideoFiles(string directory, bool recursive)
 		{
 			var extensions = new[]
 			{

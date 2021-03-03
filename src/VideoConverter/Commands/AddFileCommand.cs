@@ -69,7 +69,8 @@ namespace VideoConverter.Commands
 						return 1;
 					}
 
-					var hash = await EncodeCommand.GetSHA1Async(file, tokenSource.Token).ConfigureAwait(false);
+					//var hash = await EncodeCommand.GetSHA1Async(file, tokenSource.Token).ConfigureAwait(false);
+					var hash = string.Empty;
 
 					var existingFile = await this.queueRepository.GetQueueItemAsync(file).ConfigureAwait(false);
 
@@ -107,11 +108,12 @@ namespace VideoConverter.Commands
 					{
 						episodeData = FileParser.ParseEpisode(file);
 
+						var relativePath = settings.OutputDir ?? Environment.CurrentDirectory;
+
 						if (settings.ReEncode)
 							break;
 						if (episodeData is null)
 						{
-							var relativePath = settings.OutputDir ?? Environment.CurrentDirectory;
 							var path = this.console.Prompt(
 								new TextPrompt<string>(
 									$"File '[fuchsia]{file.EscapeMarkup()}[/]'...\n" +
@@ -134,7 +136,7 @@ namespace VideoConverter.Commands
 						if (this.tokenSource.Token.IsCancellationRequested)
 							break;
 
-						await UpdateEpisodeDataAsync(episodeData).ConfigureAwait(false);
+						await UpdateEpisodeDataAsync(episodeData, relativePath).ConfigureAwait(false);
 
 						if (this.tokenSource.Token.IsCancellationRequested)
 							break;
@@ -349,18 +351,7 @@ namespace VideoConverter.Commands
 							else
 								episodeData.Container = this.config.FileType;
 
-							var seriesName = RemoveInvalidChars(episodeData.Series);
-							directory = Path.Combine(directory, seriesName);
-
-							if (!Directory.Exists(directory))
-							{
-								var yearDir = Directory.EnumerateDirectories(rootDir, seriesName + " (*)").FirstOrDefault();
-								if (yearDir is not null)
-									directory = yearDir;
-							}
-
-							if (episodeData.SeasonNumber is not null)
-								directory = Path.Combine(directory, "Season " + episodeData.SeasonNumber);
+							directory = GetOutputDir(episodeData, directory);
 
 							outputPath = Path.Combine(directory, RemoveInvalidChars(episodeData.ToString()));
 						}
@@ -626,7 +617,7 @@ namespace VideoConverter.Commands
 			this.console.Render(panel);
 		}
 
-		private async Task UpdateEpisodeDataAsync(Core.Models.EpisodeData episodeData)
+		private async Task UpdateEpisodeDataAsync(Core.Models.EpisodeData episodeData, string relativeParentDir)
 		{
 			await foreach (var criteria in this.criteriaRepo.GetEpisodeCriteriasAsync(episodeData.Series))
 			{
@@ -639,6 +630,67 @@ namespace VideoConverter.Commands
 
 			if (!config.IncludeFansubber)
 				episodeData.Fansubber = null;
+
+			var existingEpisodeData = GetMatchingEpisodeData(episodeData, GetOutputDir(episodeData, relativeParentDir));
+			if (existingEpisodeData is null)
+			{
+				return;
+			}
+
+			episodeData.EpisodeName = existingEpisodeData.EpisodeName;
+			episodeData.Fansubber = existingEpisodeData.Fansubber;
+		}
+
+		private static string GetOutputDir(EpisodeData episodeData, string relativeParentDir)
+		{
+			var newDirectory = relativeParentDir;
+			var seriesName = RemoveInvalidChars(episodeData.Series);
+			newDirectory = Path.Combine(newDirectory, seriesName);
+			if (!Directory.Exists(newDirectory))
+			{
+				var yearDir = Directory.EnumerateDirectories(relativeParentDir, seriesName + " (*)").FirstOrDefault();
+				if (yearDir is not null)
+					newDirectory = yearDir;
+			}
+
+			if (episodeData.SeasonNumber is not null)
+			{
+				if (episodeData.SeasonNumber == 0)
+				{
+					newDirectory = Path.Combine(newDirectory, "Specials");
+				}
+				else
+				{
+					newDirectory = Path.Combine(newDirectory, "Season " + episodeData.SeasonNumber);
+				}
+			}
+
+			return newDirectory;
+		}
+
+		private static EpisodeData? GetMatchingEpisodeData(EpisodeData episodeData, string outputDir)
+		{
+			if (!Directory.Exists(outputDir))
+			{
+				return null;
+			}
+
+			var trimmedName = RemoveInvalidChars(episodeData.Series);
+
+			foreach (var file in AddDirectoryCommand.FindVideoFiles(outputDir, false).Select(f => FileParser.ParseEpisode(f)).Where(ed => ed is not null))
+			{
+				var fileTrimmed = RemoveInvalidChars(file!.Series);
+				if (!string.Equals(trimmedName, fileTrimmed, StringComparison.OrdinalIgnoreCase))
+				{
+					continue;
+				}
+				else if (file.EpisodeNumber == episodeData.EpisodeNumber && file.SeasonNumber == episodeData.SeasonNumber)
+				{
+					return file;
+				}
+			}
+
+			return null;
 		}
 
 		public void Dispose()
