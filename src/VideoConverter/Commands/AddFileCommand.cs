@@ -554,7 +554,7 @@ namespace VideoConverter.Commands
 			var settings = new AddCriteriaOption
 			{
 				FilePath = episodeData.FileName,
-				SeriesName = this.console.Prompt(new TextPrompt<string>("Name of Series").DefaultValue(episodeData.Series)),
+				SeriesName = this.console.Prompt(new TextPrompt<string>("Name of Series").DefaultValue(episodeData.Series.EscapeMarkup())),
 				SeasonNumber = this.console.Prompt(new TextPrompt<int>("Season Number").DefaultValue(episodeData.SeasonNumber ?? 1)),
 				EpisodeNumber = this.console.Prompt(new TextPrompt<int>("Episode Number").DefaultValue(episodeData.EpisodeNumber))
 			};
