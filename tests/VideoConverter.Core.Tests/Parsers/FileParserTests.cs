@@ -22,6 +22,7 @@ namespace VideoConverter.Core.Tests.Parsers
 		[TestCase("[GSK_kun] Kaguya-sama Love Is War 08 [BDRip 1920x1080 HEVC FLAC] [84C8F965].mkv", "Kaguya-sama Love Is War", null, 8, "Matroska")]
 		[TestCase("Clannad 1x05.mkv", "Clannad", "1", "5", "Matroska")]
 		[TestCase("K-ON! S01E12 Light Music!.mkv", "K-ON!", 1, 12, "Matroska")]
+		[TestCase("Death Note - 01x29 - Father.mkv", "Death Note", 1, 29, "Matroska")]
 		// editorconfig-checker-enable
 		public void ShouldParseCorrectEpisodeData(
 			string fileName,
