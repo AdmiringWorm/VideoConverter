@@ -32,5 +32,13 @@ namespace VideoConverter.DependencyInjection
 
 			this.container.RegisterInstance(service, implementation);
 		}
+
+		public void RegisterLazy(Type service, Func<object> factory)
+		{
+			if (service == typeof(IAnsiConsole))
+				return;
+
+			this.container.RegisterDelegate(service, (_) => factory());
+		}
 	}
 }
