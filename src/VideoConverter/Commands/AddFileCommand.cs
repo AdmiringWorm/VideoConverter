@@ -454,13 +454,15 @@ namespace VideoConverter.Commands
 						if (TimeSpan.TryParse(settings.Repeat, CultureInfo.InvariantCulture, out var ts))
 						{
 							int repeatTimes = 0;
-							if (videoStreams[0].Duration.TotalMilliseconds > 0)
+							var firstStream = videoStreams.FirstOrDefault();
+
+							if (firstStream?.Duration.TotalMilliseconds > 0)
 							{
-								repeatTimes = (int)Math.Ceiling(ts.TotalMilliseconds / videoStreams[0].Duration.TotalMilliseconds);
+								repeatTimes = (int)Math.Ceiling(ts.TotalMilliseconds / firstStream.Duration.TotalMilliseconds);
 							}
-							else if (videoStreams[0].Duration.TotalSeconds > 0)
+							else if (firstStream?.Duration.TotalSeconds > 0)
 							{
-								repeatTimes = (int)Math.Ceiling(ts.TotalSeconds / videoStreams[0].Duration.TotalSeconds);
+								repeatTimes = (int)Math.Ceiling(ts.TotalSeconds / firstStream.Duration.TotalSeconds);
 							}
 							else
 							{
