@@ -1,6 +1,6 @@
 # Maintainer: Kim Nordmo <kim.nordmo@gmail.com>
 pkgname=videoconverter-git
-pkgver="0.4.0alpha.1.18+989f9971df413eb3798fd986880f293a0917caea"
+pkgver="0.4.1alpha.1.7+3a7f5958fda18f271517767586cd383d6e56bc6e"
 pkgrel=1
 pkgdesc="Small utility for converting video files"
 arch=(x86_64)
@@ -30,12 +30,12 @@ pkgver() {
 
 build() {
 	cd "$srcdir/${pkgname%-git}"
-	sh ./build.sh --target=Publish --exclusive --single-file --runtime=arch-x64
+	sh ./build.sh --target=Publish --exclusive --single-file
 }
 
 check() {
 	cd "$srcdir/${pkgname%-git}"
-	sh ./build.sh --target=Test --exclusive --single-file --runtime=arch-x64
+	sh ./build.sh --target=Test --exclusive --single-file
 }
 
 package() {
