@@ -495,14 +495,14 @@ namespace VideoConverter.Commands
 						}
 						catch
 						{
-							this.console.WriteLine($"Adder or updated '{file}' to the encoding queue!", new Style(Color.Fuchsia));
+							this.console.WriteLine($"Added or updated '{file.EscapeMarkup()}' to the encoding queue!", new Style(Color.Fuchsia));
 						}
 					}
 					else
 					{
 						await queueRepository.AbortChangesAsync().ConfigureAwait(false);
 						this.console.WriteLine(
-							$"WARNING: Unable to update '{file}'. Encoding have already started on the file!",
+							$"WARNING: Unable to update '{file.EscapeMarkup()}'. Encoding have already started on the file!",
 							new Style(Color.Yellow, Color.Black)
 						);
 					}
