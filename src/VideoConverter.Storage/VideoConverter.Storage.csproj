@@ -6,6 +6,7 @@
 		<nullable>enable</nullable>
 		<IsTrimmable>true</IsTrimmable>
 		<TrimMode>link</TrimMode>
+		<DebugType>embedded</DebugType>
 	</PropertyGroup>
 
 	<ItemGroup>

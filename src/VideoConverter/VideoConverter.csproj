@@ -9,6 +9,7 @@
 		<PublishSingleFile Condition="'$(PublishSingleFile)'==''">false</PublishSingleFile>
 		<TrimMode>CopyUsed</TrimMode>
 		<NoWarn>CA9998;CA1031;CA1819;$(NoWarn)</NoWarn>
+		<DebugType>embedded</DebugType>
 	</PropertyGroup>
 
 	<ItemGroup>
