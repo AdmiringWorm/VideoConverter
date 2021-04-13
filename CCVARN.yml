@@ -5,63 +5,69 @@ next-version: 0.1.0
 # The pre-release tag to use as a default for non-tagged releases (tagged releases will override this option).
 tag: alpha
 types:
-- description:
-    plural: Features
-    singular: Feature
-  type: feat
-  bump: Minor
-- description:
-    plural: Bug Fixes
-    singular: Bug fix
-  type: fix
-  bump: Patch
-- description:
-    singular: Performance Improvements
-  type: perf
-  bump: Minor
-- description:
-    plural: Improvements
-    singular: Improvement
-  type: improvement
-  bump: Minor
-- description:
-    singular: Reverts
-  type: revert
-- description:
-    singular: Documentation
-  changelog: false
-  type: docs
-- description:
-    plural: Styles
-    singular: Style
-  changelog: false
-  type: style
-- description:
-    singular: Code Refactoring
-  changelog: false
-  type: refactor
-- description:
-    plural: Tests
-    singular: Test
-  changelog: false
-  type: test
-- description:
-    singular: Chore
-  changelog: false
-  type: chore
-- description:
-    plural: Builds
-    singular: Build
-  changelog: false
-  type: build
-- description:
-    singular: Continuous Integration
-  changelog: false
-  type: ci
-- description:
-    plural: Dependencies
-    singular: Dependency
-  changelog: true
-  scope: deps
-  type: chore
-  bump: Patch
+  - description:
+      plural: Features
+      singular: Feature
+    type: feat
+    bump: Minor
+  - description:
+      plural: Bug Fixes
+      singular: Bug fix
+    type: fix
+    bump: Patch
+  - description:
+      singular: Performance Improvements
+    type: perf
+    bump: Minor
+  - description:
+      plural: Improvements
+      singular: Improvement
+    type: improvement
+    bump: Minor
+  - description:
+      singular: Reverts
+    type: revert
+  - description:
+      singular: Documentation
+    changelog: false
+    type: docs
+  - description:
+      plural: Styles
+      singular: Style
+    changelog: false
+    type: style
+  - description:
+      singular: Code Refactoring
+    changelog: false
+    type: refactor
+  - description:
+      plural: Tests
+      singular: Test
+    changelog: false
+    type: test
+  - description:
+      singular: Chore
+    changelog: false
+    type: chore
+  - description:
+      plural: Builds
+      singular: Build
+    changelog: false
+    type: build
+  - description:
+      singular: Continuous Integration
+    changelog: false
+    type: ci
+  - description:
+      plural: Dependencies
+      singular: Dependency
+    changelog: true
+    scope: deps
+    type: fix
+    bump: Patch
+  - description:
+      plural: Development Dependencies
+      singular: Development Dependency
+    changelog: false
+    scope: deps
+    type: chore
