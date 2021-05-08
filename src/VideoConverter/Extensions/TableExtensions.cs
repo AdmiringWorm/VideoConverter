@@ -66,7 +66,7 @@ namespace VideoConverter.Extensions
 				.NoBorder();
 			panel.Header = new PanelHeader("[teal bold underline]" + header + "[/]", Justify.Center);
 
-			console.Render(panel);
+			console.Write(panel);
 		}
 	}
 }

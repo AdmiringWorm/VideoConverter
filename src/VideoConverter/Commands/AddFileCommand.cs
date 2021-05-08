@@ -616,7 +616,7 @@ namespace VideoConverter.Commands
 
 			var panel = new Panel(grid)
 				.Header("New Episode Data", Justify.Center);
-			this.console.Render(panel);
+			this.console.Write(panel);
 		}
 
 		private async Task UpdateEpisodeDataAsync(Core.Models.EpisodeData episodeData, string relativeParentDir)

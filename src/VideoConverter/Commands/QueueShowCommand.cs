@@ -77,7 +77,7 @@ namespace VideoConverter.Commands
 					var panel = new Panel(item.StatusMessage.EscapeMarkup())
 						.NoBorder();
 					panel.Header = new PanelHeader("[aqua]Status Message[/]", Justify.Center);
-					this.console.Render(panel);
+					this.console.Write(panel);
 				}
 			}
 

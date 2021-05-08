@@ -146,7 +146,7 @@ namespace VideoConverter.Commands
 				.NoBorder();
 			panel.Header = new PanelHeader("[aqua]Available Configuations[/]", Justify.Center);
 
-			console.Render(panel);
+			console.Write(panel);
 		}
 	}
 }
