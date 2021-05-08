@@ -8,17 +8,48 @@ namespace VideoConverter.Options
 
 	public sealed class QueueResetOption : CommandSettings
 	{
+		private QueueStatus[] queueStatuses = Array.Empty<QueueStatus>();
+		private int[] identifiers = Array.Empty<int>();
+
 		[CommandArgument(0, "[QUEUE_STATUS]")]
 		[Description("The queue statuses to reset the progress of (can be specificed multiple times)")]
-		public QueueStatus[] QueueStatuses { get; set; } = Array.Empty<QueueStatus>();
+		public QueueStatus[] QueueStatuses
+		{
+			get => queueStatuses;
+			set
+			{
+				if (value is null)
+				{
+					queueStatuses = Array.Empty<QueueStatus>();
+				}
+				else
+				{
+					queueStatuses = value;
+				}
+			}
+		}
 
 		[CommandOption("--id <IDENTIFIER>")]
 		[Description("The identefier of the item to reset the progress of (can be specified multiple times)")]
-		public int[] Identifieres { get; set; } = Array.Empty<int>();
+		public int[] Identifiers
+		{
+			get => identifiers;
+			set
+			{
+				if (value is null)
+				{
+					identifiers = Array.Empty<int>();
+				}
+				else
+				{
+					identifiers = value;
+				}
+			}
+		}
 
 		public override ValidationResult Validate()
 		{
-			if (QueueStatuses.Length == 0 && Identifieres.Length == 0)
+			if (QueueStatuses.Length == 0 && Identifiers.Length == 0)
 				return ValidationResult.Error("A status or an identifier must be specified!");
 
 			return base.Validate();

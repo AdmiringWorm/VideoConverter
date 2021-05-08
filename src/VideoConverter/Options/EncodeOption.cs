@@ -6,13 +6,29 @@ namespace VideoConverter.Options
 
 	public class EncodeOption : CommandSettings
 	{
+		private int[] indexes = Array.Empty<int>();
+
 		[CommandOption("--include-failed|--include-failing|--failed|--failing")]
 		[Description("Also include files that previously failed encoding")]
 		public bool IncludeFailing { get; set; }
 
 		[CommandOption("--id|--ids")]
 		[Description("Only encode the following indexes")]
-		public int[] Indexes { get; set; } = Array.Empty<int>();
+		public int[] Indexes
+		{
+			get => indexes;
+			set
+			{
+				if (value is null)
+				{
+					indexes = Array.Empty<int>();
+				}
+				else
+				{
+					indexes = value;
+				}
+			}
+		}
 
 		[CommandOption("-r|--remove|--remove-file|--remove-old")]
 		[Description("Remove any old file when there is a successful encoding")]

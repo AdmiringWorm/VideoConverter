@@ -25,7 +25,7 @@ namespace VideoConverter.Commands
 			if (settings is null)
 				throw new ArgumentNullException(nameof(settings));
 
-			foreach (var identifier in settings.Identifieres)
+			foreach (var identifier in settings.Identifiers)
 			{
 				await queueRepo.UpdateQueueStatusAsync(identifier, QueueStatus.Pending).ConfigureAwait(false);
 			}
@@ -34,7 +34,7 @@ namespace VideoConverter.Commands
 			{
 				await foreach (var item in queueRepo.GetQueueItemsAsync(status).ConfigureAwait(false))
 				{
-					if (settings.Identifieres.Contains(item.Id))
+					if (settings.Identifiers.Contains(item.Id))
 						continue;
 					item.Status = QueueStatus.Pending;
 					item.StatusMessage = string.Empty;
