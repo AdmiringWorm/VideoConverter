@@ -160,6 +160,19 @@ Task("Publish")
 	});
 });
 
+Task("Create-Tag")
+	.Does<BuildVersion>((version) =>
+{
+	var plainTextNotes = System.IO.File.ReadAllLines(plainTextReleaseNotes.ToString(), System.Text.Encoding.UTF8).Skip(2);
+
+	StartProcess("git", new ProcessSettings().WithArguments(args =>
+		args.Append("tag")
+			.Append(version.MajorMinorPatch)
+			.Append("-a")
+			.AppendSwitchQuoted("-m", string.Join("\n", plainTextNotes).Trim())
+	));
+});
+
 Task("Default")
 	.IsDependentOn("Coverage")
 	.IsDependentOn("Publish");
