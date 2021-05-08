@@ -4,7 +4,7 @@
 	"labels": ["dependencies"],
 	"packageRules": [
 		{
-			"matchPackagePrefix": ["LiteDB"],
+			"matchPackagePrefixes": ["LiteDB"],
 			"groupName": "litedb packages",
 			"semanticCommitType": "fix",
 			"addLabels": ["enhancement"]
