@@ -1,3 +1,35 @@
 {
-	"extends": ["config:base"]
+	"extends": ["config:base", "group:dotNetCore"],
+	"semanticCommits": "enabled",
+	"labels": ["dependencies"],
+	"packageRules": [
+		{
+			"matchPackagePrefix": ["LiteDB"],
+			"groupName": "litedb packages",
+			"semanticCommitType": "fix",
+			"addLabels": ["enhancement"]
+		},
+		{
+			"matchPackageNames": [
+				"DryIoc",
+				"Humanizer",
+				"Newtonsoft.Json",
+				"Spectre.Console",
+				"system.Linq.Async",
+				"Xabe.FFmpeg"
+			],
+			"semanticCommitType": "fix",
+			"addLabels": ["enhancement"]
+		},
+		{
+			"matchPaths": ["*.Tests.csproj", "dotnet-tools.json", "*.cake", "*.yml"],
+			"addLabels": ["build"],
+			"automerge": true
+		},
+		{
+			"matchPackagePatterns": [".*Analyzers$"],
+			"addLabels": ["build"],
+			"automerge": true
+		}
+	]
 }
