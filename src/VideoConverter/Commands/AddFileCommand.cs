@@ -163,140 +163,34 @@ namespace VideoConverter.Commands
 					if (this.tokenSource.Token.IsCancellationRequested)
 						break;
 
-					var streams = new List<int>();
+					var streams = new List<IStream>();
 
-					if (videoStreams.Count > 1)
-					{
-						var prompt = new MultiSelectionPrompt<(int, string, string, TimeSpan)>()
-							.Title("Which video streams do you wish to use ([fuchsia]Select no streams to use all streams)[/]?")
-							.NotRequired();
-
-						foreach (var stream in videoStreams)
-						{
-							prompt = prompt.AddChoice(
-								(
-									stream.Index,
-									stream.Codec,
-									stream.Framerate + "fps",
-									stream.Duration
+					if (!AddStreams(
+						streams,
+						mediaInfo.VideoStreams
+							.Where(v =>
+								!string.Equals(
+									v.Codec, "mjpeg",
+									StringComparison.OrdinalIgnoreCase)
 								)
-							);
-						}
-
-						var selectedStreams = this.console.Prompt(prompt).Select(i => i.Item1);
-						if (!selectedStreams.Any())
-						{
-							streams.AddRange(mediaInfo.VideoStreams.Select(i => i.Index));
-						}
-						else
-						{
-							streams.AddRange(selectedStreams);
-						}
-
-						if (this.tokenSource.IsCancellationRequested)
-							break;
-					}
-					else if (videoStreams.Count == 0)
+							.ToArray()
+						)
+					)
 					{
-						streams.AddRange(mediaInfo.VideoStreams.Select(i => i.Index));
+						streams.AddRange(mediaInfo.VideoStreams);
 					}
-					else
+					else if (tokenSource.Token.IsCancellationRequested)
 					{
-						streams.AddRange(videoStreams.Select(i => i.Index));
+						break;
 					}
 
-					if (audioStreams.Count > 1)
+					AddStreams(streams, mediaInfo.AudioStreams);
+					if (tokenSource.Token.IsCancellationRequested)
 					{
-						var prompt = new MultiSelectionPrompt<(int, string, string, int, string)>()
-							.Title("Which audio streams to you wish to use ([fuchsia]Select no streams to use all streams)[/]?")
-							.NotRequired();
-
-						foreach (var stream in audioStreams)
-						{
-							CultureInfo? ci = null;
-							try
-							{
-								ci = new CultureInfo(stream.Language);
-							}
-							catch
-							{
-								// Ignore any excetpion on purpose
-							}
-							prompt.AddChoice(
-								(
-									stream.Index,
-									ci?.EnglishName ?? stream.Language,
-									stream.Codec,
-									stream.Channels,
-									stream.SampleRate + " Hz"
-								)
-							);
-						}
-
-						var selectedStreams = this.console.Prompt(prompt).Select(i => i.Item1);
-						if (!selectedStreams.Any())
-						{
-							streams.AddRange(mediaInfo.AudioStreams.Select(i => i.Index));
-						}
-						else
-						{
-							streams.AddRange(selectedStreams);
-						}
-
-						if (this.tokenSource.Token.IsCancellationRequested)
-							break;
-					}
-					else
-					{
-						streams.AddRange(audioStreams.Select(a => a.Index));
+						break;
 					}
 
-					if (subtitleStreams.Count > 1)
-					{
-						var prompt = new MultiSelectionPrompt<(int, string, string, string)>()
-							.Title("Which subtitle streams do you wish to use ([fuchsia]Select no streams to use all streams)[/]?")
-							.NotRequired();
-
-						foreach (var stream in subtitleStreams)
-						{
-							CultureInfo? ci = null;
-							try
-							{
-								ci = new CultureInfo(stream.Language);
-							}
-							catch
-							{
-								// Ignore any excetpion on purpose
-							}
-
-							prompt = prompt.AddChoice(
-								(
-									stream.Index,
-									ci?.EnglishName ?? stream.Language,
-									stream.Title,
-									stream.Codec
-								)
-							);
-						}
-
-						var selectedStreams = this.console.Prompt(prompt).Select(i => i.Item1);
-
-						if (!selectedStreams.Any())
-						{
-							streams.AddRange(mediaInfo.VideoStreams.Select(i => i.Index));
-						}
-						else
-						{
-							streams.AddRange(selectedStreams);
-						}
-
-						if (this.tokenSource.IsCancellationRequested)
-							break;
-					}
-					else
-					{
-						streams.AddRange(subtitleStreams.Select(s => s.Index));
-					}
+					AddStreams(streams, mediaInfo.SubtitleStreams);
 
 					if (this.tokenSource.IsCancellationRequested)
 						break;
@@ -410,8 +304,10 @@ namespace VideoConverter.Commands
 					{
 						if (!string.Equals(audioCodec, "copy", StringComparison.OrdinalIgnoreCase) &&
 							mediaInfo.AudioStreams
-								.Where(a => streams.Contains(a.Index))
-								.All(a => string.Equals(a.Codec, audioCodec, StringComparison.OrdinalIgnoreCase))
+								.Where(a => streams.Any(s => s.Index == a.Index))
+								.All(a =>
+									string.Equals(a.Codec, audioCodec, StringComparison.OrdinalIgnoreCase)
+								)
 						)
 						{
 							audioCodec = "copy";
@@ -419,7 +315,7 @@ namespace VideoConverter.Commands
 
 						if (!string.Equals(videoCodec, "copy", StringComparison.OrdinalIgnoreCase) &&
 							mediaInfo.VideoStreams
-								.Where(v => streams.Contains(v.Index))
+								.Where(v => streams.Any(s => s.Index == v.Index))
 								.All(v => string.Equals(v.Codec, videoCodec, StringComparison.OrdinalIgnoreCase))
 						)
 						{
@@ -428,7 +324,7 @@ namespace VideoConverter.Commands
 
 						if (!string.Equals(subtitleCodec, "copy", StringComparison.OrdinalIgnoreCase) &&
 							mediaInfo.SubtitleStreams
-								.Where(s => streams.Contains(s.Index))
+								.Where(ss => streams.Any(s => s.Index == ss.Index))
 								.All(s => string.Equals(s.Codec, subtitleCodec, StringComparison.OrdinalIgnoreCase))
 						)
 						{
@@ -445,7 +341,7 @@ namespace VideoConverter.Commands
 					queueItem.Status = QueueStatus.Pending;
 					queueItem.StatusMessage = string.Empty;
 					queueItem.StereoMode = settings.StereoMode;
-					queueItem.Streams = streams;
+					queueItem.Streams = streams.Select(s => s.Index).ToList();
 					queueItem.SubtitleCodec = subtitleCodec;
 					queueItem.VideoCodec = videoCodec;
 
@@ -515,6 +411,42 @@ namespace VideoConverter.Commands
 			}
 
 			return this.tokenSource.Token.IsCancellationRequested ? 1 : 0;
+		}
+
+		private bool AddStreams<T>(List<IStream> addedStreams, IEnumerable<T> streams)
+		where T : IStream
+		{
+			var streamCount = streams.Count();
+			if (streamCount == 0)
+			{
+				return false;
+			}
+			if (streamCount == 1)
+			{
+				addedStreams.Add(streams.First());
+				return true;
+			}
+
+			if (streams is IEnumerable<IVideoStream> videoStreams)
+			{
+				var prompt = new VideoStreamPrompt()
+					.AddStreams(videoStreams);
+				addedStreams.AddRange(prompt.Show(console));
+			}
+			else if (streams is IEnumerable<IAudioStream> audioStreams)
+			{
+				var prompt = new AudioStreamPrompt()
+					.AddStreams(audioStreams);
+				addedStreams.AddRange(prompt.Show(console));
+			}
+			else if (streams is IEnumerable<ISubtitleStream> subtitleStreams)
+			{
+				var prompt = new SubtitleStreamPrompt()
+					.AddStreams(subtitleStreams);
+				addedStreams.AddRange(prompt.Show(console));
+			}
+
+			return true;
 		}
 
 		private void CancelProcessing(object? sender, ConsoleCancelEventArgs e)
