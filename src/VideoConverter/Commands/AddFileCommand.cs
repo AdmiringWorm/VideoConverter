@@ -306,7 +306,9 @@ namespace VideoConverter.Commands
 							mediaInfo.AudioStreams
 								.Where(a => streams.Any(s => s.Index == a.Index))
 								.All(a =>
-									string.Equals(a.Codec, audioCodec, StringComparison.OrdinalIgnoreCase)
+									string.Equals(a.Codec, audioCodec, StringComparison.OrdinalIgnoreCase) ||
+									string.Equals("lib" + a.Codec, audioCodec, StringComparison.OrdinalIgnoreCase) ||
+									string.Equals(a.Codec, "lib" + audioCodec, StringComparison.OrdinalIgnoreCase)
 								)
 						)
 						{
@@ -316,7 +318,11 @@ namespace VideoConverter.Commands
 						if (!string.Equals(videoCodec, "copy", StringComparison.OrdinalIgnoreCase) &&
 							mediaInfo.VideoStreams
 								.Where(v => streams.Any(s => s.Index == v.Index))
-								.All(v => string.Equals(v.Codec, videoCodec, StringComparison.OrdinalIgnoreCase))
+								.All(v =>
+									string.Equals(v.Codec, videoCodec, StringComparison.OrdinalIgnoreCase) ||
+									string.Equals("lib" + v.Codec, videoCodec, StringComparison.OrdinalIgnoreCase) ||
+									string.Equals(v.Codec, "lib" + videoCodec, StringComparison.OrdinalIgnoreCase)
+								)
 						)
 						{
 							videoCodec = "copy";
@@ -325,7 +331,11 @@ namespace VideoConverter.Commands
 						if (!string.Equals(subtitleCodec, "copy", StringComparison.OrdinalIgnoreCase) &&
 							mediaInfo.SubtitleStreams
 								.Where(ss => streams.Any(s => s.Index == ss.Index))
-								.All(s => string.Equals(s.Codec, subtitleCodec, StringComparison.OrdinalIgnoreCase))
+								.All(s =>
+									string.Equals(s.Codec, subtitleCodec, StringComparison.OrdinalIgnoreCase) ||
+									string.Equals("lib" + s.Codec, subtitleCodec, StringComparison.OrdinalIgnoreCase) ||
+									string.Equals(s.Codec, "lib" + subtitleCodec, StringComparison.OrdinalIgnoreCase)
+								)
 						)
 						{
 							subtitleCodec = "copy";
