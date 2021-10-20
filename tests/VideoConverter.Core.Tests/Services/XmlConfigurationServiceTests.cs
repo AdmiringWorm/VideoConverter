@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Text;
 using System;
@@ -27,7 +28,11 @@ namespace VideoConverter.Core.Tests.Services
 			}
 			finally
 			{
-				File.Delete(path);
+				try
+				{
+					File.Delete(path);
+				}
+				catch { }
 			}
 		}
 
@@ -36,17 +41,24 @@ namespace VideoConverter.Core.Tests.Services
 		{
 			var path = Path.Combine(Environment.CurrentDirectory, Guid.NewGuid() + ".xml");
 			// editorconfig-checker-disable
-			const string expected = @"<?xml version=""1.0"" encoding=""utf-8""?>
+			string tmp = Path.GetTempPath();
+			string expected = $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <Configuration xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">
   <IncludeFansubber>true</IncludeFansubber>
   <VideoCodec>hevc</VideoCodec>
   <AudioCodec>libopus</AudioCodec>
   <SubtitleCodec>copy</SubtitleCodec>
-  <WorkDirectory>/tmp/</WorkDirectory>
+  <WorkDirectory>{tmp}</WorkDirectory>
   <FileType>Matroska</FileType>
   <ExtraEncodingParameters />
   <Prefixes />
 </Configuration>";
+
+			if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+			{
+				expected = expected.Replace("\n", "\r\n");
+			}
+
 			// editorconfig-checker-enable
 			using var service = new XmlConfigurationService(path);
 			var config = new Configuration();
@@ -60,7 +72,11 @@ namespace VideoConverter.Core.Tests.Services
 			}
 			finally
 			{
-				File.Delete(path);
+				try
+				{
+					File.Delete(path);
+				}
+				catch { }
 			}
 		}
 
@@ -87,21 +103,23 @@ namespace VideoConverter.Core.Tests.Services
 		public void Should_Read_Configuration_From_File_Path()
 		{
 			var path = Path.Combine(Environment.CurrentDirectory, Guid.NewGuid() + ".xml");
+			string temp = Path.GetTempPath();
+			string storagePath = Path.Combine(temp, "storage.db");
 			var expected = new Configuration
 			{
-				MapperDatabase = "/tmp/storage.db",
+				MapperDatabase = storagePath,
 				AudioCodec = "opus"
 			};
 			// editorconfig-checker-disable
-			File.WriteAllText(path, @"<?xml version=""1.0"" encoding=""utf-8""?>
+			File.WriteAllText(path, $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <Configuration xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">
   <IncludeFansubber>true</IncludeFansubber>
   <VideoCodec>hevc</VideoCodec>
   <AudioCodec>opus</AudioCodec>
   <SubtitleCodec>copy</SubtitleCodec>
-  <WorkDirectory>/tmp/</WorkDirectory>
+  <WorkDirectory>{temp}</WorkDirectory>
   <FileType>Matroska</FileType>
-  <MapperDatabase>/tmp/storage.db</MapperDatabase>
+  <MapperDatabase>{storagePath}</MapperDatabase>
   <ExtraEncodingParameters />
   <Prefixes />
 </Configuration>");
@@ -133,6 +151,7 @@ namespace VideoConverter.Core.Tests.Services
 					"VideoConverter",
 					"storage.db"),
 			};
+			var temp = Path.GetTempPath();
 			var config = new Configuration();
 			using var service = new XmlConfigurationService(path);
 			service.SetConfiguration(config);
@@ -140,13 +159,13 @@ namespace VideoConverter.Core.Tests.Services
 			config.Should().NotBeEquivalentTo(expected);
 
 			// editorconfig-checker-disable
-			File.WriteAllText(path, @"<?xml version=""1.0"" encoding=""utf-8""?>
+			File.WriteAllText(path, $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <Configuration xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">
   <IncludeFansubber>true</IncludeFansubber>
   <VideoCodec>libx264</VideoCodec>
   <AudioCodec>libopus</AudioCodec>
   <SubtitleCodec>copy</SubtitleCodec>
-  <WorkDirectory>/tmp/</WorkDirectory>
+  <WorkDirectory>{temp}</WorkDirectory>
   <FileType>Matroska</FileType>
   <ExtraEncodingParameters />
   <Prefixes />

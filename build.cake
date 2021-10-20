@@ -139,7 +139,7 @@ Task("Coverage")
 
 Task("Publish")
 	.IsDependentOn("Test")
-	.WithCriteria(IsRunningOnLinux)
+	//.WithCriteria(IsRunningOnLinux)
 	.Does<BuildVersion>((version) =>
 {
 	var outputDirectory = artifactsDir.Combine("output");

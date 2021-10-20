@@ -48,20 +48,26 @@ namespace VideoConverter.Core.Services
 
 		private static void UpdateConfiguration(Configuration config, string configPath)
 		{
-			using var reader = new StreamReader(configPath, Encoding.UTF8);
-			using var xmlReader = XmlReader.Create(reader);
-			var serializer = new XmlSerializer(typeof(Configuration));
+			try
+			{
+				using var reader = new StreamReader(configPath, Encoding.UTF8);
+				using var xmlReader = XmlReader.Create(reader);
+				var serializer = new XmlSerializer(typeof(Configuration));
 
-			var tempConfig = serializer.Deserialize(xmlReader) as Configuration ?? new Configuration();
+				var tempConfig = serializer.Deserialize(xmlReader) as Configuration ?? new Configuration();
 
-			config.AudioCodec = tempConfig.AudioCodec;
-			config.FileType = tempConfig.FileType;
-			config.IncludeFansubber = tempConfig.IncludeFansubber;
-			config.MapperDatabase = tempConfig.MapperDatabase ?? GetMapperDatabase();
-			config.Prefixes = tempConfig.Prefixes;
-			config.SubtitleCodec = tempConfig.SubtitleCodec;
-			config.VideoCodec = tempConfig.VideoCodec;
-			config.WorkDirectory = tempConfig.WorkDirectory;
+				config.AudioCodec = tempConfig.AudioCodec;
+				config.FileType = tempConfig.FileType;
+				config.IncludeFansubber = tempConfig.IncludeFansubber;
+				config.MapperDatabase = tempConfig.MapperDatabase ?? GetMapperDatabase();
+				config.Prefixes = tempConfig.Prefixes;
+				config.SubtitleCodec = tempConfig.SubtitleCodec;
+				config.VideoCodec = tempConfig.VideoCodec;
+				config.WorkDirectory = tempConfig.WorkDirectory;
+			}
+			catch
+			{
+			}
 		}
 
 		public void SetConfiguration(Configuration config)
