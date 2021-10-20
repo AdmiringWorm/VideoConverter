@@ -10,22 +10,24 @@ namespace VideoConverter.Core.Parsers
 	public static class FileParser
 	{
 		private readonly static LinkedList<string> episodeRegexes = new();
+		private const string SPACE = @"[\s_]*";
 
 		static FileParser()
 		{
 			// editorconfig-checker-disable
-			episodeRegexes.AddLast(@"^[\s_]*[\[\(][\s_]*(?<Fansubber>[^\]\)]+)[\s_]*[\]\)][\s_]*(?<Series>.+)[\s_]*S(?<Season>\d+)[\s_]*-[\s_]*(?<Episode>\d+|(?:OVA|OAV) ?\d*)[^\.]*\.(?<Extension>[a-z\d]+)$");
-			episodeRegexes.AddLast(@"^[\s_]*[\[\(][\s_]*(?<Fansubber>[^\]\)]+)[\s_]*[\]\)][\s_]*(?<Series>.+)[\s_]*-[\s_]*(?<Episode>\d+|(?:OVA|OAV) ?\d*)[^\.]*\.(?<Extension>[a-z\d]+)$");
-			episodeRegexes.AddLast(@"^[\s_]*[\[\(][\s_]*(?<Fansubber>[^\]\)]+)[\s_]*[\]\)][\s_]*(?<Series>.+)[\s_]*-[\s_]*S(?<Season>\d+)E(?<Episode>\d+)(?:[\s_]*-[\s_]*(?<EpisodeName>[^\.]+)[\s_]*|[^\.]*)\.(?<Extension>[a-z\d]+)$");
-			episodeRegexes.AddLast(@"^[\s_]*(?<Series>.+)[\s_]*-[\s_]*S(?<Season>\d+)E(?<Episode>\d+)[\s_]*-[\s_]*(?<EpisodeName>[^\.]+)\.(?<Extension>[a-z\d]+)$");
-			episodeRegexes.AddLast(@"^(?<Series>.+)[\s_]*(?:S(?<Season>\d+))[\s_]*-[\s_]*(?<Episode>\d+)[\s_]*\.(?<Extension>[a-z\d]+)$");
-			episodeRegexes.AddLast(@"^[\s_]*(?<Series>.+)[\s_]*S(?<Season>\d+)[\s_]*-[\s_]*(?<Episode>\d+|(?:OVA|OAV) ?\d*)[^\.]*\.(?<Extension>[a-z\d]+)$");
-			episodeRegexes.AddLast(@"^(?:[\s_]*[\[\(][\s_]*(?<Fansubber>[^\]\)]+)[\s_]*[\]\)][\s_]*)?(?<Series>.+)\s*-\s*(?<Season>\d+)x(?<Episode>\d+)(?:[\s_]*-[\s_]*(?<EpisodeName>[^\.]+)[\s_]*|[^\.]*)\.(?<Extension>[a-z\d]+)$");
-			episodeRegexes.AddLast(@"^[\s_]*(?<Series>.+)[\s_]*-[\s_]*(?<Episode>\d+|(?:OVA|OAV) ?\d*)[^\.]*\.(?<Extension>[a-z\d]+)$");
-			episodeRegexes.AddLast(@"^[\s_]*(?<Series>.+)[\s_]*-[\s_]*S(?<Season>\d+)E(?<Episode>\d+)(?:[\s_]*-[\s_]*(?<EpisodeName>[^\.]+)[\s_]*|[^\.]*)\.(?<Extension>[a-z\d]+)$");
-			episodeRegexes.AddLast(@"^[\s_]*[\[\(][\s_]*(?<Fansubber>[^\]\)]+)[\s_]*[\]\)][\s_]*(?<Series>[^\[]+)[\s_]+(?<Episode>\d+|(?:OVA|OAV) ?\d*)[^\.]*\.(?<Extension>[a-z\d]+)$");
-			episodeRegexes.AddLast(@"^(?:[\s_]*[\[\(][\s_]*(?<Fansubber>[^\]\)]+)[\s_]*[\]\)][\s_]*)?(?<Series>.+)(?<Season>\d+)x(?<Episode>\d+)(?:[\s_]*-[\s_]*(?<EpisodeName>[^\.]+)[\s_]*|[^\.]*)\.(?<Extension>[a-z\d]+)$");
-			episodeRegexes.AddLast(@"^(?:[\s_]*[\[\(][\s_]*(?<Fansubber>[^\]\)]+)[\s_]*[\]\)][\s_]*)?(?<Series>.+)S(?<Season>\d+)E(?<Episode>\d+)(?:[\s_]*-[\s_]*(?<EpisodeName>[^\.]+)[\s_]*|[^\.]*)\.(?<Extension>[a-z\d]+)$");
+			episodeRegexes.AddLast($@"^{SPACE}[\[\(]{SPACE}(?<Fansubber>[^\]\)]+)[\s*_]*[\]\)]{SPACE}(?<Series>.+){SPACE}S(?<Season>\d+){SPACE}-{SPACE}(?<Episode>\d+)[^\.]*(H\.265[^\.]*)?\.(?<Extension>[a-z\d]+)$");
+			episodeRegexes.AddLast($@"^{SPACE}[\[\(]{SPACE}(?<Fansubber>[^\]\)]+){SPACE}[\]\)]{SPACE}(?<Series>.+){SPACE}S(?<Season>\d+){SPACE}-{SPACE}(?<Episode>\d+|(?:OVA|OAV) ?\d*)[^\.]*\.(?<Extension>[a-z\d]+)$");
+			episodeRegexes.AddLast($@"^{SPACE}[\[\(]{SPACE}(?<Fansubber>[^\]\)]+){SPACE}[\]\)]{SPACE}(?<Series>.+){SPACE}-{SPACE}(?<Episode>\d+|(?:OVA|OAV) ?\d*)[^\.]*\.(?<Extension>[a-z\d]+)$");
+			episodeRegexes.AddLast($@"^{SPACE}[\[\(]{SPACE}(?<Fansubber>[^\]\)]+){SPACE}[\]\)]{SPACE}(?<Series>.+){SPACE}-{SPACE}S(?<Season>\d+)E(?<Episode>\d+)(?:{SPACE}-{SPACE}(?<EpisodeName>[^\.]+){SPACE}|[^\.]*)\.(?<Extension>[a-z\d]+)$");
+			episodeRegexes.AddLast($@"^{SPACE}(?<Series>.+){SPACE}-{SPACE}S(?<Season>\d+)E(?<Episode>\d+){SPACE}-{SPACE}(?<EpisodeName>[^\.]+)\.(?<Extension>[a-z\d]+)$");
+			episodeRegexes.AddLast($@"^(?<Series>.+){SPACE}(?:S(?<Season>\d+)){SPACE}-{SPACE}(?<Episode>\d+){SPACE}\.(?<Extension>[a-z\d]+)$");
+			episodeRegexes.AddLast($@"^{SPACE}(?<Series>.+){SPACE}S(?<Season>\d+){SPACE}-{SPACE}(?<Episode>\d+|(?:OVA|OAV) ?\d*)[^\.]*\.(?<Extension>[a-z\d]+)$");
+			episodeRegexes.AddLast($@"^(?:{SPACE}[\[\(]{SPACE}(?<Fansubber>[^\]\)]+){SPACE}[\]\)]{SPACE})?(?<Series>.+)\s*-\s*(?<Season>\d+)x(?<Episode>\d+)(?:{SPACE}-{SPACE}(?<EpisodeName>[^\.]+){SPACE}|[^\.]*)\.(?<Extension>[a-z\d]+)$");
+			episodeRegexes.AddLast($@"^{SPACE}(?<Series>.+){SPACE}-{SPACE}(?<Episode>\d+|(?:OVA|OAV) ?\d*)[^\.]*\.(?<Extension>[a-z\d]+)$");
+			episodeRegexes.AddLast($@"^{SPACE}(?<Series>.+){SPACE}-{SPACE}S(?<Season>\d+)E(?<Episode>\d+)(?:{SPACE}-{SPACE}(?<EpisodeName>[^\.]+){SPACE}|[^\.]*)\.(?<Extension>[a-z\d]+)$");
+			episodeRegexes.AddLast($@"^{SPACE}[\[\(]{SPACE}(?<Fansubber>[^\]\)]+){SPACE}[\]\)]{SPACE}(?<Series>[^\[]+)[\s_]+(?<Episode>\d+|(?:OVA|OAV) ?\d*)[^\.]*\.(?<Extension>[a-z\d]+)$");
+			episodeRegexes.AddLast($@"^(?:{SPACE}[\[\(]{SPACE}(?<Fansubber>[^\]\)]+){SPACE}[\]\)]{SPACE})?(?<Series>.+)(?<Season>\d+)x(?<Episode>\d+)(?:{SPACE}-{SPACE}(?<EpisodeName>[^\.]+){SPACE}|[^\.]*)\.(?<Extension>[a-z\d]+)$");
+			episodeRegexes.AddLast($@"^(?:{SPACE}[\[\(]{SPACE}(?<Fansubber>[^\]\)]+){SPACE}[\]\)]{SPACE})?(?<Series>.+)S(?<Season>\d+)E(?<Episode>\d+)(?:{SPACE}-{SPACE}(?<EpisodeName>[^\.]+){SPACE}|[^\.]*)\.(?<Extension>[a-z\d]+)$");
 			// editorconfig-checker-enable
 		}
 
