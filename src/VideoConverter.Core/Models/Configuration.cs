@@ -5,39 +5,50 @@ namespace VideoConverter.Core.Models
 	using System.Linq;
 
 #pragma warning disable CA1724
+
 	public class Configuration
 	{
-		private readonly List<PrefixConfiguration> prefixes;
+		private readonly List<FansubberConfiguration> _ignoreVideosWithFansubbers;
+		private readonly List<PrefixConfiguration> _prefixes;
 
 		public Configuration()
 		{
 			WorkDirectory = Path.GetTempPath();
-			prefixes = new List<PrefixConfiguration>();
+			_prefixes = new List<PrefixConfiguration>();
+			_ignoreVideosWithFansubbers = new List<FansubberConfiguration>();
 		}
 
-		public bool IncludeFansubber { get; set; } = true;
-
-		public string VideoCodec { get; set; } = "hevc";
 		public string AudioCodec { get; set; } = "libopus";
-		public string SubtitleCodec { get; set; } = "copy";
+		public string ExtraEncodingParameters { get; set; } = string.Empty;
+
+		public List<FansubberConfiguration> Fansubbers
+		{
+			get => _ignoreVideosWithFansubbers;
+			set
+			{
+				_ignoreVideosWithFansubbers.Clear();
+				_ignoreVideosWithFansubbers.AddRange(value.OrderBy(v => v.Name));
+			}
+		}
+
+		public string FileType { get; set; } = "Matroska";
+		public bool IncludeFansubber { get; set; } = true;
 
 		public string? MapperDatabase { get; set; }
 
-		public string WorkDirectory { get; set; }
-
-		public string FileType { get; set; } = "Matroska";
-
-		public string ExtraEncodingParameters { get; set; } = string.Empty;
-
-#pragma warning disable CA2227
 		public List<PrefixConfiguration> Prefixes
 		{
-			get => prefixes;
+			get => _prefixes;
 			set
 			{
-				prefixes.Clear();
-				prefixes.AddRange(value.OrderBy(v => v.Prefix));
+				_prefixes.Clear();
+				_prefixes.AddRange(value.OrderBy(v => v.Prefix));
 			}
 		}
+
+		public string SubtitleCodec { get; set; } = "copy";
+		public string VideoCodec { get; set; } = "hevc";
+		public string WorkDirectory { get; set; }
+#pragma warning disable CA2227
 	}
 }

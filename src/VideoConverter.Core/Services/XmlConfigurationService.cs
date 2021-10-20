@@ -1,10 +1,11 @@
 namespace VideoConverter.Core.Services
 {
-	using System.Xml;
-	using System.Xml.Serialization;
-	using System.Text;
 	using System;
 	using System.IO;
+	using System.Text;
+	using System.Xml;
+	using System.Xml.Serialization;
+
 	using VideoConverter.Core.Models;
 
 	public sealed class XmlConfigurationService : IConfigurationService, IDisposable
@@ -24,6 +25,11 @@ namespace VideoConverter.Core.Services
 			watcher = new FileSystemWatcher(dir, name);
 			watcher.Changed += OnFileChanged;
 			watcher.NotifyFilter = NotifyFilters.LastWrite;
+		}
+
+		public void Dispose()
+		{
+			this.watcher.Dispose();
 		}
 
 		public Configuration GetConfiguration()
@@ -64,6 +70,7 @@ namespace VideoConverter.Core.Services
 				config.SubtitleCodec = tempConfig.SubtitleCodec;
 				config.VideoCodec = tempConfig.VideoCodec;
 				config.WorkDirectory = tempConfig.WorkDirectory;
+				config.Fansubbers = tempConfig.Fansubbers;
 			}
 			catch
 			{
@@ -104,11 +111,6 @@ namespace VideoConverter.Core.Services
 				"VideoConverter",
 				"storage.db"
 			);
-		}
-
-		public void Dispose()
-		{
-			this.watcher.Dispose();
 		}
 	}
 }

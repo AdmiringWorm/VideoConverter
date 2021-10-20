@@ -1,21 +1,24 @@
 namespace VideoConverter.Commands
 {
 	using System;
+	using System.Diagnostics.CodeAnalysis;
 	using System.IO;
 	using System.Linq;
 	using System.Reflection;
+
 	using Humanizer;
-	using Spectre.Console.Cli;
+
 	using Spectre.Console;
+	using Spectre.Console.Cli;
+
+	using VideoConverter.Core.Models;
 	using VideoConverter.Core.Services;
 	using VideoConverter.Options;
-	using System.Diagnostics.CodeAnalysis;
-	using VideoConverter.Core.Models;
 
 	public class ConfigCommand : Command<ConfigOption>
 	{
-		private readonly IConfigurationService service;
 		private readonly IAnsiConsole console;
+		private readonly IConfigurationService service;
 
 		public ConfigCommand(IConfigurationService service, IAnsiConsole console)
 		{
@@ -37,7 +40,15 @@ namespace VideoConverter.Commands
 				if (settings.Name == "Prefixes")
 					throw new Exception("Prefixes can not be displayed at this time");
 
-				var property = GetProperty(settings.Name.Dehumanize());
+				string propertyName = settings.Name.Dehumanize();
+
+				if (string.Equals("Fansubber.Ignore", settings.Name, StringComparison.OrdinalIgnoreCase) ||
+					string.Equals("Fansubber.Include", settings.Name, StringComparison.OrdinalIgnoreCase))
+				{
+					propertyName = nameof(Configuration.Fansubbers);
+				}
+
+				var property = GetProperty(propertyName);
 
 				if (property is null)
 				{
@@ -55,6 +66,44 @@ namespace VideoConverter.Commands
 						property.Name.Humanize(),
 						property.GetValue(config) ?? string.Empty
 					);
+				}
+				else if (string.Equals(settings.Name, "Fansubber.Ignore"))
+				{
+					var fansubber = config.Fansubbers.Find(f => string.Equals(f.Name, settings.Value, StringComparison.Ordinal));
+
+					if (fansubber is null)
+					{
+						config.Fansubbers.Add(new FansubberConfiguration
+						{
+							Name = settings.Value,
+							IgnoreOnDuplicates = true
+						});
+						service.SetConfiguration(config);
+						this.console.MarkupLine(
+							"Added [aqua]{0}[/] to Ignore list",
+							settings.Value);
+					}
+					else
+					{
+						this.console.MarkupLine("[yellow on black] WARNING: No change in configuration value. Ignoring...[/]");
+					}
+				}
+				else if (string.Equals(settings.Name, "Fansubber.Include"))
+				{
+					var fansubber = config.Fansubbers.Find(f => string.Equals(f.Name, settings.Value, StringComparison.Ordinal));
+
+					if (fansubber is not null)
+					{
+						service.SetConfiguration(config);
+						fansubber.IgnoreOnDuplicates = false;
+						this.console.MarkupLine(
+							"Removed [aqua]{0}[/] from Ignore list",
+							settings.Value);
+					}
+					else
+					{
+						this.console.MarkupLine("[yellow on black] WARNING: No change in configuration value. Ignoring...[/]");
+					}
 				}
 				else if (string.Equals(property.GetValue(config), settings.Value))
 				{

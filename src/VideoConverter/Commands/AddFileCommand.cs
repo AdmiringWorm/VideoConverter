@@ -9,9 +9,12 @@ namespace VideoConverter.Commands
 	using System.Text.RegularExpressions;
 	using System.Threading;
 	using System.Threading.Tasks;
+
 	using Humanizer;
+
 	using Spectre.Console;
 	using Spectre.Console.Cli;
+
 	using VideoConverter.Core.Extensions;
 	using VideoConverter.Core.Models;
 	using VideoConverter.Core.Parsers;
@@ -20,6 +23,7 @@ namespace VideoConverter.Commands
 	using VideoConverter.Prompts;
 	using VideoConverter.Storage.Models;
 	using VideoConverter.Storage.Repositories;
+
 	using Xabe.FFmpeg;
 
 	public sealed class AddFileCommand : AsyncCommand<AddFileOption>, IDisposable
@@ -44,6 +48,11 @@ namespace VideoConverter.Commands
 			this.criteriaRepo = criteriaRepo;
 			this.queueRepository = queueRepository;
 			tokenSource = new CancellationTokenSource();
+		}
+
+		public void Dispose()
+		{
+			this.tokenSource?.Dispose();
 		}
 
 		public override async Task<int> ExecuteAsync(CommandContext context, AddFileOption settings)
@@ -87,7 +96,9 @@ namespace VideoConverter.Commands
 						var fileExists = await this.queueRepository.FileExistsAsync(file, hash).ConfigureAwait(false);
 						if (fileExists)
 						{
-							this.console.MarkupLine("[yellow]WARNING: [fuchsia]'{0}'[/] exists already exists. Ignoring...[/]", file.EscapeMarkup());
+							this.console.MarkupLine(
+								"[yellow]WARNING: [fuchsia]'{0}'[/] exists already exists. Ignoring...[/]",
+								file.EscapeMarkup());
 							continue;
 						}
 					}
@@ -136,7 +147,28 @@ namespace VideoConverter.Commands
 						if (this.tokenSource.Token.IsCancellationRequested)
 							break;
 
-						await UpdateEpisodeDataAsync(episodeData, relativePath).ConfigureAwait(false);
+						var fansubber = episodeData.Fansubber;
+
+						var foundFile = await UpdateEpisodeDataAsync(episodeData, relativePath).ConfigureAwait(false);
+
+						if (foundFile && !string.IsNullOrWhiteSpace(fansubber) && config.Fansubbers.Count > 0)
+						{
+							var fansubberConfig = config.Fansubbers
+								.Find(f =>
+									string.Equals(
+										f.Name,
+										fansubber,
+										StringComparison.OrdinalIgnoreCase));
+
+							if (fansubberConfig?.IgnoreOnDuplicates == true)
+							{
+								this.console.WriteLine(
+									$"WARNING: The file '{file}' already exist, and the fansubber '{fansubber}' is ignored for existing files...",
+									new Style(Color.Yellow));
+								episodeData.Series = "SKIP";
+								break;
+							}
+						}
 
 						if (this.tokenSource.Token.IsCancellationRequested)
 							break;
@@ -397,11 +429,15 @@ namespace VideoConverter.Commands
 						await queueRepository.SaveChangesAsync().ConfigureAwait(false);
 						try
 						{
-							this.console.MarkupLine("Added or updated '[fuchsia]{0}[/]' to the encoding queue!", file.EscapeMarkup());
+							this.console.MarkupLine(
+								"Added or updated '[fuchsia]{0}[/]' to the encoding queue!",
+								file.EscapeMarkup());
 						}
 						catch
 						{
-							this.console.WriteLine($"Added or updated '{file.EscapeMarkup()}' to the encoding queue!", new Style(Color.Fuchsia));
+							this.console.WriteLine(
+								$"Added or updated '{file.EscapeMarkup()}' to the encoding queue!",
+								new Style(Color.Fuchsia));
 						}
 					}
 					else
@@ -423,8 +459,77 @@ namespace VideoConverter.Commands
 			return this.tokenSource.Token.IsCancellationRequested ? 1 : 0;
 		}
 
+		private static EpisodeData? GetMatchingEpisodeData(EpisodeData episodeData, string outputDir)
+		{
+			if (!Directory.Exists(outputDir))
+			{
+				return null;
+			}
+
+			var trimmedName = RemoveInvalidChars(episodeData.Series);
+
+			foreach (var file in AddDirectoryCommand.FindVideoFiles(outputDir, false)
+				.Select(f => FileParser.ParseEpisode(f)).Where(ed => ed is not null))
+			{
+				var fileTrimmed = RemoveInvalidChars(file!.Series);
+				if (!string.Equals(trimmedName, fileTrimmed, StringComparison.OrdinalIgnoreCase))
+				{
+					continue;
+				}
+				else if (file.EpisodeNumber == episodeData.EpisodeNumber && file.SeasonNumber == episodeData.SeasonNumber)
+				{
+					return file;
+				}
+			}
+
+			return null;
+		}
+
+		private static string GetOutputDir(EpisodeData episodeData, string relativeParentDir)
+		{
+			var newDirectory = relativeParentDir;
+			var seriesName = RemoveInvalidChars(episodeData.Series);
+			newDirectory = Path.Combine(newDirectory, seriesName);
+			if (!Directory.Exists(newDirectory))
+			{
+				var yearDir = Directory.EnumerateDirectories(relativeParentDir, seriesName + " (*)").FirstOrDefault();
+				if (yearDir is not null)
+					newDirectory = yearDir;
+			}
+
+			if (episodeData.SeasonNumber is not null)
+			{
+				if (episodeData.SeasonNumber == 0)
+				{
+					newDirectory = Path.Combine(newDirectory, "Specials");
+				}
+				else
+				{
+					newDirectory = Path.Combine(newDirectory, "Season " + episodeData.SeasonNumber);
+				}
+			}
+
+			return newDirectory;
+		}
+
+		private static string RemoveInvalidChars(string text)
+		{
+			var sb = new StringBuilder();
+			const string invalidChars = "<>:\"/\\|?*";
+
+			foreach (var ch in text)
+			{
+				if (!invalidChars.Contains(ch))
+					sb.Append(ch);
+				else
+					sb.Append(' ');
+			}
+
+			return Regex.Replace(sb.ToString(), @"\s{2,}", " ", RegexOptions.Compiled).Trim();
+		}
+
 		private bool AddStreams<T>(List<IStream> addedStreams, IEnumerable<T> streams)
-		where T : IStream
+								where T : IStream
 		{
 			var streamCount = streams.Count();
 			if (streamCount == 0)
@@ -459,18 +564,10 @@ namespace VideoConverter.Commands
 			return true;
 		}
 
-		private void CancelProcessing(object? sender, ConsoleCancelEventArgs e)
-		{
-			if (e.SpecialKey == ConsoleSpecialKey.ControlC)
-			{
-				this.console.MarkupLine("We are cancelling all processing once current prompts are complete, please wait for cleanup to be complete!");
-
-				e.Cancel = true;
-				this.tokenSource.Cancel();
-			}
-		}
-
-		private async Task<bool> AskAcceptableAsync(CommandContext context, Core.Models.EpisodeData episodeData, CancellationToken cancellationToken)
+		private async Task<bool> AskAcceptableAsync(
+			CommandContext context,
+			EpisodeData episodeData,
+			CancellationToken cancellationToken)
 		{
 			DisplayEpisodeData(episodeData);
 
@@ -498,8 +595,14 @@ namespace VideoConverter.Commands
 			var settings = new AddCriteriaOption
 			{
 				FilePath = episodeData.FileName,
-				SeriesName = this.console.Prompt(new TextPrompt<string>("Name of Series").DefaultValue(episodeData.Series.EscapeMarkup())),
-				SeasonNumber = this.console.Prompt(new TextPrompt<int>("Season Number").DefaultValue(episodeData.SeasonNumber ?? 1)),
+				SeriesName = this.console.Prompt(
+					new TextPrompt<string>(
+						"Name of Series")
+							.DefaultValue(episodeData.Series.EscapeMarkup())),
+				SeasonNumber = this.console.Prompt(
+					new TextPrompt<int>(
+						"Season Number")
+							.DefaultValue(episodeData.SeasonNumber ?? 1)),
 				EpisodeNumber = this.console.Prompt(new TextPrompt<int>("Episode Number").DefaultValue(episodeData.EpisodeNumber))
 			};
 
@@ -513,20 +616,16 @@ namespace VideoConverter.Commands
 			return false;
 		}
 
-		private static string RemoveInvalidChars(string text)
+		private void CancelProcessing(object? sender, ConsoleCancelEventArgs e)
 		{
-			var sb = new StringBuilder();
-			const string invalidChars = "<>:\"/\\|?*";
-
-			foreach (var ch in text)
+			if (e.SpecialKey == ConsoleSpecialKey.ControlC)
 			{
-				if (!invalidChars.Contains(ch))
-					sb.Append(ch);
-				else
-					sb.Append(' ');
-			}
+				this.console.MarkupLine(
+					"We are cancelling all processing once current prompts are complete, please wait for cleanup to be complete!");
 
-			return Regex.Replace(sb.ToString(), @"\s{2,}", " ", RegexOptions.Compiled).Trim();
+				e.Cancel = true;
+				this.tokenSource.Cancel();
+			}
 		}
 
 		private void DisplayEpisodeData(Core.Models.EpisodeData episodeData)
@@ -561,7 +660,7 @@ namespace VideoConverter.Commands
 			this.console.Write(panel);
 		}
 
-		private async Task UpdateEpisodeDataAsync(Core.Models.EpisodeData episodeData, string relativeParentDir)
+		private async Task<bool> UpdateEpisodeDataAsync(Core.Models.EpisodeData episodeData, string relativeParentDir)
 		{
 			await foreach (var criteria in this.criteriaRepo.GetEpisodeCriteriasAsync(episodeData.Series))
 			{
@@ -575,71 +674,18 @@ namespace VideoConverter.Commands
 			if (!config.IncludeFansubber)
 				episodeData.Fansubber = null;
 
-			var existingEpisodeData = GetMatchingEpisodeData(episodeData, GetOutputDir(episodeData, relativeParentDir));
+			var existingEpisodeData = GetMatchingEpisodeData(
+				episodeData,
+				GetOutputDir(episodeData, relativeParentDir));
 			if (existingEpisodeData is null)
 			{
-				return;
+				return false;
 			}
 
 			episodeData.EpisodeName = existingEpisodeData.EpisodeName;
 			episodeData.Fansubber = existingEpisodeData.Fansubber;
-		}
 
-		private static string GetOutputDir(EpisodeData episodeData, string relativeParentDir)
-		{
-			var newDirectory = relativeParentDir;
-			var seriesName = RemoveInvalidChars(episodeData.Series);
-			newDirectory = Path.Combine(newDirectory, seriesName);
-			if (!Directory.Exists(newDirectory))
-			{
-				var yearDir = Directory.EnumerateDirectories(relativeParentDir, seriesName + " (*)").FirstOrDefault();
-				if (yearDir is not null)
-					newDirectory = yearDir;
-			}
-
-			if (episodeData.SeasonNumber is not null)
-			{
-				if (episodeData.SeasonNumber == 0)
-				{
-					newDirectory = Path.Combine(newDirectory, "Specials");
-				}
-				else
-				{
-					newDirectory = Path.Combine(newDirectory, "Season " + episodeData.SeasonNumber);
-				}
-			}
-
-			return newDirectory;
-		}
-
-		private static EpisodeData? GetMatchingEpisodeData(EpisodeData episodeData, string outputDir)
-		{
-			if (!Directory.Exists(outputDir))
-			{
-				return null;
-			}
-
-			var trimmedName = RemoveInvalidChars(episodeData.Series);
-
-			foreach (var file in AddDirectoryCommand.FindVideoFiles(outputDir, false).Select(f => FileParser.ParseEpisode(f)).Where(ed => ed is not null))
-			{
-				var fileTrimmed = RemoveInvalidChars(file!.Series);
-				if (!string.Equals(trimmedName, fileTrimmed, StringComparison.OrdinalIgnoreCase))
-				{
-					continue;
-				}
-				else if (file.EpisodeNumber == episodeData.EpisodeNumber && file.SeasonNumber == episodeData.SeasonNumber)
-				{
-					return file;
-				}
-			}
-
-			return null;
-		}
-
-		public void Dispose()
-		{
-			this.tokenSource?.Dispose();
+			return true;
 		}
 	}
 }

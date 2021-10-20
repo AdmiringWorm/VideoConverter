@@ -44,14 +44,15 @@ namespace VideoConverter.Core.Tests.Services
 			string tmp = Path.GetTempPath();
 			string expected = $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <Configuration xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">
-  <IncludeFansubber>true</IncludeFansubber>
-  <VideoCodec>hevc</VideoCodec>
   <AudioCodec>libopus</AudioCodec>
-  <SubtitleCodec>copy</SubtitleCodec>
-  <WorkDirectory>{tmp}</WorkDirectory>
-  <FileType>Matroska</FileType>
   <ExtraEncodingParameters />
+  <Fansubbers />
+  <FileType>Matroska</FileType>
+  <IncludeFansubber>true</IncludeFansubber>
   <Prefixes />
+  <SubtitleCodec>copy</SubtitleCodec>
+  <VideoCodec>hevc</VideoCodec>
+  <WorkDirectory>{tmp}</WorkDirectory>
 </Configuration>";
 
 			if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
