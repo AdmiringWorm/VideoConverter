@@ -16,6 +16,7 @@ namespace VideoConverter.Core.Parsers
 		{
 			// editorconfig-checker-disable
 			episodeRegexes.AddLast($@"^{SPACE}[\[\(]{SPACE}(?<Fansubber>[^\]\)]+)[\s*_]*[\]\)]{SPACE}(?<Series>.+){SPACE}S(?<Season>\d+){SPACE}-{SPACE}(?<Episode>\d+)[^\.]*(H\.265[^\.]*)?\.(?<Extension>[a-z\d]+)$");
+			episodeRegexes.AddLast($@"^{SPACE}[\[\(]{SPACE}(?<Fansubber>[^\]\)]+)[\s*_]*[\]\)]{SPACE}(?<Series>.+){SPACE}-{SPACE}(?<Episode>\d+)[^\.]*(H\.265[^\.]*)?\.(?<Extension>[a-z\d]+)$");
 			episodeRegexes.AddLast($@"^{SPACE}[\[\(]{SPACE}(?<Fansubber>[^\]\)]+){SPACE}[\]\)]{SPACE}(?<Series>.+){SPACE}S(?<Season>\d+){SPACE}-{SPACE}(?<Episode>\d+|(?:OVA|OAV) ?\d*)[^\.]*\.(?<Extension>[a-z\d]+)$");
 			episodeRegexes.AddLast($@"^{SPACE}[\[\(]{SPACE}(?<Fansubber>[^\]\)]+){SPACE}[\]\)]{SPACE}(?<Series>.+){SPACE}-{SPACE}(?<Episode>\d+|(?:OVA|OAV) ?\d*)[^\.]*\.(?<Extension>[a-z\d]+)$");
 			episodeRegexes.AddLast($@"^{SPACE}[\[\(]{SPACE}(?<Fansubber>[^\]\)]+){SPACE}[\]\)]{SPACE}(?<Series>.+){SPACE}-{SPACE}S(?<Season>\d+)E(?<Episode>\d+)(?:{SPACE}-{SPACE}(?<EpisodeName>[^\.]+){SPACE}|[^\.]*)\.(?<Extension>[a-z\d]+)$");
