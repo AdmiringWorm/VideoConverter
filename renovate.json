@@ -16,7 +16,8 @@
 				"Newtonsoft.Json",
 				"Spectre.Console",
 				"system.Linq.Async",
-				"Xabe.FFmpeg"
+				"Xabe.FFmpeg",
+				"Xabe.FFMpeg"
 			],
 			"semanticCommitType": "fix",
 			"addLabels": ["enhancement"]
