@@ -1,5 +1,5 @@
 #addin nuget:?package=Newtonsoft.Json&version=13.0.1
-#addin nuget:?package=Cake.Json&version=6.0.1
+#addin nuget:?package=Cake.Json&version=7.0.1
 
 public class BuildData
 {
