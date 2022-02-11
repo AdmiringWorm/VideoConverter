@@ -137,7 +137,7 @@ Task("Coverage")
 	});
 });
 
-Task("Publish")
+Task("Publish-Binaries")
 	.IsDependentOn("Test")
 	//.WithCriteria(IsRunningOnLinux)
 	.Does<BuildVersion>((version) =>
@@ -159,6 +159,33 @@ Task("Publish")
 			.WithProperty("PackageReleaseNotes", plainTextNotes)
 	});
 });
+
+Task("Create-Installer")
+	.IsDependentOn("Publish-Binaries")
+	.WithCriteria(IsRunningOnWindows)
+	.Does<BuildVersion>(version =>
+{
+	var script = File("./installer/install.iss");
+	var outputDirectory = artifactsDir.Combine("installers");;
+	if (DirectoryExists(outputDirectory))
+		CleanDirectory(outputDirectory);
+
+	var versionString = version.MajorMinorPatch;
+	if (!string.IsNullOrEmpty(version.PreReleaseTag)) {
+		versionString += "-" + version.PreReleaseTag;
+	}
+
+	InnoSetup(script, new InnoSetupSettings {
+		OutputDirectory = outputDirectory,
+		Defines = new Dictionary<string,string> {
+			{ "MyAppVersion", versionString }
+		}
+	});
+});
+
+Task("Publish")
+	.IsDependentOn("Publish-Binaries")
+	.IsDependentOn("Create-Installer");
 
 Task("Create-Tag")
 	.Does<BuildVersion>((version) =>
