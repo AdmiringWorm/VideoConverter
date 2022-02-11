@@ -3,5 +3,9 @@
 	"omnisharp.enableRoslynAnalyzers": true,
 	"omnisharp.enableEditorConfigSupport": true,
 	"prettier.useEditorConfig": true,
-	"editor.rulers": [120]
+	"editor.rulers": [
+		120
+	],
+	"license.author": "Kim J. Nordmo",
+	"license.extension": ".txt"
 }
