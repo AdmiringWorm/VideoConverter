@@ -1,5 +1,6 @@
 #addin nuget:?package=Newtonsoft.Json&version=13.0.1
 #addin nuget:?package=Cake.Json&version=6.0.1
+#addin nuget:?package=Cake.FileHelpers&version=5.0.0
 
 public class BuildData
 {
@@ -35,7 +36,7 @@ var singleFile = HasArgument("single-file");
 var artifactsDir = Argument<DirectoryPath>("artifacts", "./.artifacts");
 var dotnetExec = Context.Tools.Resolve("dotnet") ?? Context.Tools.Resolve("dotnet.exe");
 var plainTextReleaseNotes = artifactsDir.CombineWithFilePath("release-notes.txt");
-
+var markdownReleaseNotes = artifactsDir.CombineWithFilePath("release-notes.md");
 
 Setup((context) =>
 {
@@ -48,7 +49,8 @@ Setup((context) =>
 			.Append("ccvarn")
 			.Append("parse")
 			.AppendQuoted(outputPath.ToString())
-			.AppendSwitchQuoted("--output", " ", plainTextReleaseNotes.ToString()),
+			.AppendSwitchQuoted("--output", " ", plainTextReleaseNotes.ToString())
+			.AppendSwitchQuoted("--output", " ", markdownReleaseNotes.ToString()),
 	});
 
 	var buildData = DeserializeJsonFromFile<BuildData>(outputPath);
@@ -183,9 +185,52 @@ Task("Create-Installer")
 	});
 });
 
+Task("Pack-Choco")
+	.IsDependentOn("Create-Installer")
+	.WithCriteria(IsRunningOnWindows)
+	.Does<BuildVersion>(version =>
+{
+	var outputDirectory = artifactsDir.Combine("packages/choco");;
+	var buildDirectory = artifactsDir.Combine("build/packages/choco");
+	var nuspec = buildDirectory.CombineWithFilePath("video-converter.nuspec");
+
+	CleanDirectory(outputDirectory);
+	if (DirectoryExists(buildDirectory)) {
+		CleanDirectory(buildDirectory);
+	}
+
+	CopyDirectory("./packages/choco/", buildDirectory);
+
+	var versionString = version.MajorMinorPatch;
+	if (!string.IsNullOrEmpty(version.PreReleaseTag)) {
+		versionString += "-" + version.PreReleaseTag;
+	}
+
+	var installerName = "VideoConverter-" + versionString + ".exe";
+
+	ReplaceTextInFiles("./.artifacts/build/packages/choco/**/*.ps1", "{{FILE_NAME}}", installerName);
+	var license = MakeAbsolute(File("./LICENSE.txt"));
+	var installer = MakeAbsolute(artifactsDir.CombineWithFilePath("installers/" + installerName));
+	var markdownNotes = System.IO.File.ReadAllText(markdownReleaseNotes.ToString(), System.Text.Encoding.UTF8)
+		.Split('\n');
+
+	ChocolateyPack(nuspec, new ChocolateyPackSettings {
+		Version = versionString,
+		OutputDirectory = outputDirectory,
+		ReleaseNotes = markdownNotes,
+		Files = new[]{
+			new ChocolateyNuSpecContent { Source = "tools/**", Target = "tools" },
+			new ChocolateyNuSpecContent { Source = "legal/**", Target = "legal" },
+			new ChocolateyNuSpecContent { Source = license.ToString(), Target = "legal" },
+			new ChocolateyNuSpecContent { Source = installer.ToString(), Target = "tools" }
+		}
+	});
+});
+
 Task("Publish")
 	.IsDependentOn("Publish-Binaries")
-	.IsDependentOn("Create-Installer");
+	.IsDependentOn("Create-Installer")
+	.IsDependentOn("Pack-Choco");
 
 Task("Create-Tag")
 	.Does<BuildVersion>((version) =>
