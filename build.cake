@@ -14,6 +14,9 @@ public class BuildVersion
 	public string FullSemVer { get; set; }
 	public string PreReleaseTag { get; set; }
 	public string Metadata { get; set; }
+	public string PreReleaseLabel { get; set; }
+	public int Commits { get; set; }
+	public int Weight { get; set; }
 }
 
 
@@ -202,11 +205,16 @@ Task("Pack-Choco")
 	CopyDirectory("./packages/choco/", buildDirectory);
 
 	var versionString = version.MajorMinorPatch;
-	if (!string.IsNullOrEmpty(version.PreReleaseTag)) {
-		versionString += "-" + version.PreReleaseTag;
+	if (!string.IsNullOrEmpty(version.PreReleaseLabel)) {
+		versionString += string.Format(
+			"-{0}{1:00}{2:0000}",
+			version.PreReleaseLabel,
+			version.Weight,
+			version.Commits
+		);
 	}
 
-	var installerName = "VideoConverter-" + versionString + ".exe";
+	var installerName = "VideoConverter-" + version.SemVer + ".exe";
 
 	ReplaceTextInFiles("./.artifacts/build/packages/choco/**/*.ps1", "{{FILE_NAME}}", installerName);
 	var license = MakeAbsolute(File("./LICENSE.txt"));
