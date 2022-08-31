@@ -2,6 +2,7 @@ namespace VideoConverter.Options
 {
 	using System;
 	using System.ComponentModel;
+
 	using Spectre.Console;
 	using Spectre.Console.Cli;
 
@@ -16,14 +17,7 @@ namespace VideoConverter.Options
 			get => directories;
 			set
 			{
-				if (value is null)
-				{
-					directories = Array.Empty<string>();
-				}
-				else
-				{
-					directories = value;
-				}
+				directories = value ?? Array.Empty<string>();
 			}
 		}
 

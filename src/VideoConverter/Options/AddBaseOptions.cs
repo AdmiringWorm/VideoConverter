@@ -3,8 +3,10 @@ namespace VideoConverter.Options
 	using System;
 	using System.ComponentModel;
 	using System.Globalization;
+
 	using Spectre.Console;
 	using Spectre.Console.Cli;
+
 	using VideoConverter.Core.Models;
 	using VideoConverter.Storage.Models;
 
@@ -32,14 +34,9 @@ namespace VideoConverter.Options
 			get => ignoreStatuses;
 			set
 			{
-				if (value is null || value.Length == 0)
-				{
-					ignoreStatuses = new[] { QueueStatus.Encoding };
-				}
-				else
-				{
-					ignoreStatuses = value;
-				}
+				ignoreStatuses = value is null || value.Length == 0
+					? (new[] { QueueStatus.Encoding })
+					: value;
 			}
 		}
 
@@ -53,14 +50,7 @@ namespace VideoConverter.Options
 			get => parameters;
 			set
 			{
-				if (value is null)
-				{
-					parameters = Array.Empty<string>();
-				}
-				else
-				{
-					parameters = value;
-				}
+				parameters = value ?? Array.Empty<string>();
 			}
 		}
 

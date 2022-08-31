@@ -2,6 +2,7 @@ namespace VideoConverter.Options
 {
 	using System;
 	using System.ComponentModel;
+
 	using Spectre.Console.Cli;
 
 	public class QueueShowOption : CommandSettings
@@ -15,14 +16,7 @@ namespace VideoConverter.Options
 			get => identifiers;
 			set
 			{
-				if (value is null)
-				{
-					identifiers = Array.Empty<int>();
-				}
-				else
-				{
-					identifiers = value;
-				}
+				identifiers = value is null ? Array.Empty<int>() : value;
 			}
 		}
 	}

@@ -1,20 +1,47 @@
 using System;
 using System.Text;
+
 using VideoConverter.Core.Assertions;
 
 namespace VideoConverter.Core.Models
 {
 	public class EpisodeCriteria
 	{
-		public string SeriesName { get; set; } = string.Empty;
-		public int? Season { get; set; }
-
 		public int? Episode { get; set; }
-
-		public string? NewSeries { get; set; }
-		public int? NewSeason { get; set; }
-
 		public int? NewEpisode { get; set; }
+		public int? NewSeason { get; set; }
+		public string? NewSeries { get; set; }
+		public int? Season { get; set; }
+		public string SeriesName { get; set; } = string.Empty;
+
+		public static bool operator !=(EpisodeData data, EpisodeCriteria criteria)
+			=> !(data == criteria);
+
+#pragma warning disable CA2225 // Operator overloads have named alternates
+
+		public static bool operator <(EpisodeData data, EpisodeCriteria criteria)
+#pragma warning restore CA2225 // Operator overloads have named alternates
+		{
+			criteria.IsNotNull();
+			data.IsNotNull();
+
+			if (criteria.Season is null && criteria.Episode is null)
+			{
+				return false;
+			}
+
+			return
+				(criteria.Season is null || data.SeasonNumber < criteria.Season) &&
+				(criteria.Episode is null || data.EpisodeNumber < criteria.Episode);
+		}
+
+#pragma warning disable CA2225 // Operator overloads have named alternates
+
+		public static bool operator <=(EpisodeData data, EpisodeCriteria criteria)
+#pragma warning restore CA2225 // Operator overloads have named alternates
+		{
+			return data < criteria || data == criteria;
+		}
 
 		public static bool operator ==(EpisodeData data, EpisodeCriteria criteria)
 		{
@@ -41,9 +68,6 @@ namespace VideoConverter.Core.Models
 				(criteria.Episode is null || criteria.Episode == data.EpisodeNumber);
 		}
 
-		public static bool operator !=(EpisodeData data, EpisodeCriteria criteria)
-			=> !(data == criteria);
-
 #pragma warning disable CA2225
 
 		public static bool operator >(EpisodeData data, EpisodeCriteria criteria)
@@ -52,34 +76,18 @@ namespace VideoConverter.Core.Models
 			data.IsNotNull();
 
 			if (criteria.Season is null && criteria.Episode is null)
+			{
 				return false;
+			}
 
 			return
 				(criteria.Season is null || data.SeasonNumber > criteria.Season) &&
 				(criteria.Episode is null || data.EpisodeNumber > criteria.Episode);
 		}
 
-		public static bool operator <(EpisodeData data, EpisodeCriteria criteria)
-		{
-			criteria.IsNotNull();
-			data.IsNotNull();
-
-			if (criteria.Season is null && criteria.Episode is null)
-				return false;
-
-			return
-				(criteria.Season is null || data.SeasonNumber < criteria.Season) &&
-				(criteria.Episode is null || data.EpisodeNumber < criteria.Episode);
-		}
-
 		public static bool operator >=(EpisodeData data, EpisodeCriteria criteria)
 		{
 			return data > criteria || data == criteria;
-		}
-
-		public static bool operator <=(EpisodeData data, EpisodeCriteria criteria)
-		{
-			return data < criteria || data == criteria;
 		}
 
 #pragma warning restore CA2225
@@ -104,7 +112,7 @@ namespace VideoConverter.Core.Models
 		public override string ToString()
 		{
 			var sb = new StringBuilder("Episode Criteria [");
-			bool previous = false;
+			var previous = false;
 
 			if (SeriesName is not null)
 			{
@@ -115,7 +123,10 @@ namespace VideoConverter.Core.Models
 			if (Season is not null)
 			{
 				if (previous)
+				{
 					sb.Append(" AND ");
+				}
+
 				sb.Append("Season(").Append(Season).Append(')');
 				previous = true;
 			}
@@ -123,7 +134,10 @@ namespace VideoConverter.Core.Models
 			if (Episode is not null)
 			{
 				if (previous)
+				{
 					sb.Append(" AND ");
+				}
+
 				sb.Append("Episode(").Append(Episode).Append(')');
 			}
 
@@ -139,13 +153,23 @@ namespace VideoConverter.Core.Models
 			if (NewSeason is not null)
 			{
 				if (previous && NewSeason != Season)
+				{
 					sb.Append(" AND ");
+				}
+
 				if (NewSeason != Season)
+				{
 					sb.Append("Season(").Append(NewSeason).Append(')');
+				}
+
 				if (NewEpisode is not null)
+				{
 					sb.Append(" AND Episode(").Append(NewEpisode).Append(')');
+				}
 				else if (Episode is not null)
+				{
 					sb.Append(" AND Episode(1)");
+				}
 			}
 
 			sb.Append(']');

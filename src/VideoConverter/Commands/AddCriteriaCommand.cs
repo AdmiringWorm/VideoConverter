@@ -1,18 +1,20 @@
 namespace VideoConverter.Commands
 {
-	using VideoConverter.Options;
-	using Spectre.Console.Cli;
-	using VideoConverter.Storage.Repositories;
-	using VideoConverter.Core.Parsers;
-	using Spectre.Console;
 	using System;
-	using VideoConverter.Core.Models;
 	using System.Threading.Tasks;
+
+	using Spectre.Console;
+	using Spectre.Console.Cli;
+
+	using VideoConverter.Core.Models;
+	using VideoConverter.Core.Parsers;
+	using VideoConverter.Options;
+	using VideoConverter.Storage.Repositories;
 
 	public class AddCriteriaCommand : AsyncCommand<AddCriteriaOption>
 	{
-		private readonly EpisodeCriteriaRepository repository;
 		private readonly IAnsiConsole console;
+		private readonly EpisodeCriteriaRepository repository;
 
 		public AddCriteriaCommand(EpisodeCriteriaRepository repository, IAnsiConsole console)
 		{
@@ -23,7 +25,9 @@ namespace VideoConverter.Commands
 		public override async Task<int> ExecuteAsync(CommandContext context, AddCriteriaOption settings)
 		{
 			if (settings is null)
+			{
 				throw new ArgumentNullException(nameof(settings));
+			}
 
 			EpisodeData? episodeData;
 			try
@@ -32,16 +36,16 @@ namespace VideoConverter.Commands
 			}
 			catch (Exception ex)
 			{
-				this.console.WriteException(ex);
+				console.WriteException(ex);
 				throw;
 			}
 
 			if (episodeData is null)
 			{
-				this.console.MarkupLine(
+				console.MarkupLine(
 					"[red on black] ERROR: We could not extract any of the necessary information from the file name![/]"
 				);
-				this.console.MarkupLine(
+				console.MarkupLine(
 					"[red on black] ERROR: Please note that only Episodes are currently supported!"
 				);
 
@@ -76,11 +80,13 @@ namespace VideoConverter.Commands
 				newCriteria.Episode = episodeData.EpisodeNumber;
 				newCriteria.NewEpisode = settings.EpisodeNumber.Value;
 				if (newCriteria.Season is null)
+				{
 					newCriteria.Season = episodeData.SeasonNumber;
+				}
 			}
 
-			await this.repository.AddOrUpdateCriteriaAsync(newCriteria).ConfigureAwait(false);
-			await this.repository.SaveChangesAsync().ConfigureAwait(false);
+			await repository.AddOrUpdateCriteriaAsync(newCriteria).ConfigureAwait(false);
+			await repository.SaveChangesAsync().ConfigureAwait(false);
 		}
 	}
 }

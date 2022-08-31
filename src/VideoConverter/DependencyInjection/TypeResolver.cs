@@ -2,7 +2,9 @@ namespace VideoConverter.DependencyInjection
 {
 	using System;
 	using System.Linq;
+
 	using DryIoc;
+
 	using Spectre.Console.Cli;
 
 	public class TypeResolver : ITypeResolver
@@ -16,7 +18,7 @@ namespace VideoConverter.DependencyInjection
 
 		public object? Resolve(Type? type)
 		{
-			var result = this.container.Resolve(type);
+			var result = container.Resolve(type);
 
 			if (type.GetImplementedTypes().Any(
 					t => t.IsGenericType &&
@@ -24,7 +26,7 @@ namespace VideoConverter.DependencyInjection
 					t.GetGenericTypeDefinition() == typeof(Command<>)))
 			)
 			{
-				this.container.InjectPropertiesAndFields(result);
+				container.InjectPropertiesAndFields(result);
 			}
 
 			return result;

@@ -24,4 +24,12 @@
 		<ProjectReference Include="..\..\src\VideoConverter.Core\VideoConverter.Core.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<EditorConfigFiles Remove="E:\Docs\git\people\AdmiringWorm\VideoConverter\tests\VideoConverter.Core.Tests\.editorconfig" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="E:\Docs\git\people\AdmiringWorm\VideoConverter\tests\VideoConverter.Core.Tests\.editorconfig" />
+	</ItemGroup>
+
 </Project>

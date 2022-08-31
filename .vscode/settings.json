@@ -4,8 +4,14 @@
 	"omnisharp.enableEditorConfigSupport": true,
 	"prettier.useEditorConfig": true,
 	"editor.rulers": [
-		120
+		120,
+		140
 	],
 	"license.author": "Kim J. Nordmo",
-	"license.extension": ".txt"
+	"license.extension": ".txt",
+	"[editorconfig]": {
+		"editor.rulers": [
+			160
+		]
+	}
 }

@@ -1,8 +1,10 @@
 namespace VideoConverter.Options
 {
 	using System.ComponentModel;
-	using VideoConverter.Storage.Models;
+
 	using Spectre.Console.Cli;
+
+	using VideoConverter.Storage.Models;
 
 	public class QueueClearOption : CommandSettings
 	{

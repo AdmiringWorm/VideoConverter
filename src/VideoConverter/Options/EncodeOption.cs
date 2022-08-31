@@ -2,6 +2,7 @@ namespace VideoConverter.Options
 {
 	using System;
 	using System.ComponentModel;
+
 	using Spectre.Console.Cli;
 
 	public class EncodeOption : CommandSettings
@@ -23,14 +24,7 @@ namespace VideoConverter.Options
 			get => indexes;
 			set
 			{
-				if (value is null)
-				{
-					indexes = Array.Empty<int>();
-				}
-				else
-				{
-					indexes = value;
-				}
+				indexes = value ?? Array.Empty<int>();
 			}
 		}
 

@@ -3,16 +3,18 @@ namespace VideoConverter.Commands
 	using System;
 	using System.Collections.Generic;
 	using System.Threading.Tasks;
-	using Spectre.Console.Cli;
+
 	using Spectre.Console;
+	using Spectre.Console.Cli;
+
 	using VideoConverter.Options;
 	using VideoConverter.Storage.Models;
 	using VideoConverter.Storage.Repositories;
 
 	public class QueueRemoveCommand : AsyncCommand<QueueRemoveOption>
 	{
-		private readonly QueueRepository queueRepo;
 		private readonly IAnsiConsole console;
+		private readonly QueueRepository queueRepo;
 
 		public QueueRemoveCommand(QueueRepository queueRepo, IAnsiConsole console)
 		{
@@ -23,11 +25,13 @@ namespace VideoConverter.Commands
 		public override async Task<int> ExecuteAsync(CommandContext context, QueueRemoveOption settings)
 		{
 			if (settings is null)
+			{
 				throw new ArgumentNullException(nameof(settings));
+			}
 
 			var removed = new List<int>();
 
-			for (int i = 0; i < settings.Identifiers.Length; i++)
+			for (var i = 0; i < settings.Identifiers.Length; i++)
 			{
 				var item = await queueRepo.GetQueueItemAsync(settings.Identifiers[i]).ConfigureAwait(false);
 
@@ -53,7 +57,7 @@ namespace VideoConverter.Commands
 
 			foreach (var index in removed)
 			{
-				this.console.MarkupLine(
+				console.MarkupLine(
 					"[darkcyan]We successfully removed the queue item with the identifier {0} from the queue![/]",
 					index
 				);

@@ -2,6 +2,7 @@ namespace VideoConverter.Options
 {
 	using System;
 	using System.ComponentModel;
+
 	using Spectre.Console;
 	using Spectre.Console.Cli;
 
@@ -16,14 +17,7 @@ namespace VideoConverter.Options
 			get => files;
 			set
 			{
-				if (value is null)
-				{
-					files = Array.Empty<string>();
-				}
-				else
-				{
-					files = value;
-				}
+				files = value is null ? Array.Empty<string>() : value;
 			}
 		}
 

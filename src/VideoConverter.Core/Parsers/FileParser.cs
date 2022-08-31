@@ -3,14 +3,15 @@ namespace VideoConverter.Core.Parsers
 	using System.Collections.Generic;
 	using System.Globalization;
 	using System.Text.RegularExpressions;
+
 	using VideoConverter.Core.Assertions;
 	using VideoConverter.Core.Extensions;
 	using VideoConverter.Core.Models;
 
 	public static class FileParser
 	{
-		private readonly static LinkedList<string> episodeRegexes = new();
 		private const string SPACE = @"[\s_]*";
+		private static readonly LinkedList<string> episodeRegexes = new();
 
 		static FileParser()
 		{
@@ -50,22 +51,26 @@ namespace VideoConverter.Core.Parsers
 					RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase
 				);
 				if (!m.Success)
+				{
 					continue;
+				}
 
-				string container = m.Groups["Extension"].Value.GetExtensionFileType();
+				var container = m.Groups["Extension"].Value.GetExtensionFileType();
 
 				var episode = m.Groups["Episode"].Value;
 				var episodeNum = 0;
-				bool isSpecial = false;
+				var isSpecial = false;
 
 				if (!string.IsNullOrEmpty(episode) && !char.IsDigit(episode[0]))
 				{
-					int i = 0;
+					var i = 0;
 					isSpecial = true;
 					for (; i < episode.Length; i++)
 					{
 						if (char.IsNumber(episode[i]))
+						{
 							break;
+						}
 					}
 					episode = episode[i..];
 				}
@@ -83,17 +88,27 @@ namespace VideoConverter.Core.Parsers
 				);
 
 				if (m.Groups["Fansubber"].Success)
+				{
 					data.Fansubber = m.Groups["Fansubber"].Value;
+				}
 
 				if (m.Groups["Season"].Success && int.TryParse(m.Groups["Season"].Value, out var season))
+				{
 					data.SeasonNumber = season;
+				}
 				else if (string.IsNullOrEmpty(episode) || isSpecial)
+				{
 					data.SeasonNumber = 0;
+				}
 				else if (m.Groups["Season"].Success)
+				{
 					continue;
+				}
 
 				if (m.Groups["EpisodeName"].Success)
+				{
 					data.EpisodeName = m.Groups["EpisodeName"].Value.Replace('_', ' ').Trim();
+				}
 
 				return data;
 			}

@@ -1,27 +1,22 @@
 using System.Globalization;
 using System.Text;
+
 namespace VideoConverter.Prompts
 {
 	using System;
-	using Spectre.Console;
 
-	internal enum PromptResponse
-	{
-		Yes,
-		No,
-		Skip,
-	}
+	using Spectre.Console;
 
 	internal sealed class YesNoPrompt : IPrompt<PromptResponse>
 	{
 		private readonly string _prompt;
 
-		public PromptResponse DefaultResponse { get; set; }
-
 		public YesNoPrompt(string prompt)
 		{
 			_prompt = prompt;
 		}
+
+		public PromptResponse DefaultResponse { get; set; }
 
 		public PromptResponse Show(IAnsiConsole console)
 		{

@@ -13,7 +13,9 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Folder Include="Data\" />
+		<AssemblyAttribute Include="System.CLSCompliantAttribute">
+			<_Parameter1>false</_Parameter1>
+		</AssemblyAttribute>
 	</ItemGroup>
 
 	<ItemGroup>

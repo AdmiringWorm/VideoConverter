@@ -4,17 +4,18 @@ namespace VideoConverter.Storage.Repositories
 	using System.Collections.Generic;
 	using System.Linq;
 	using System.Threading.Tasks;
+
 	using LiteDB;
-	using VideoConverter.Core.Assertions;
+
 	using VideoConverter.Core.Models;
 	using VideoConverter.Storage.Database;
 	using VideoConverter.Storage.Models;
 
 	public class QueueRepository
 	{
-		private readonly DatabaseFactory dbFactory;
-		private readonly Configuration config;
 		private const string TABLE_NAME = "queue";
+		private readonly Configuration config;
+		private readonly DatabaseFactory dbFactory;
 
 		public QueueRepository(DatabaseFactory dbFactory, Configuration config)
 		{
@@ -22,85 +23,33 @@ namespace VideoConverter.Storage.Repositories
 			this.dbFactory = dbFactory;
 		}
 
-		public async Task<FileQueue> GetQueueItemAsync(int identifier)
+		public Task AbortChangesAsync()
 		{
-			var col = this.dbFactory.GetCollection<FileQueue>(TABLE_NAME);
-
-			return ReplacePrefixes(await col.FindByIdAsync(identifier).ConfigureAwait(false))!;
-		}
-
-		public async Task<FileQueue?> GetQueueItemAsync(string path)
-		{
-			var col = this.dbFactory.GetCollection<FileQueue>(TABLE_NAME);
-
-			var prefixedPath = ReplaceWithPrefix(path);
-
-			var queue = await col
-				.Query()
-				.Where(q => q.Path == prefixedPath || q.OutputPath == prefixedPath)
-				.FirstOrDefaultAsync()
-				.ConfigureAwait(false);
-
-			return ReplacePrefixes(queue);
-		}
-
-		public async Task<int> RemoveQueueItemsAsync(QueueStatus? status)
-		{
-			var col = this.dbFactory.GetCollection<FileQueue>(TABLE_NAME);
-			await this.dbFactory.EnsureTransactionAsync().ConfigureAwait(false);
-
-			if (status is null)
-			{
-				return await col.DeleteManyAsync(c =>
-					c.Status == QueueStatus.Completed ||
-					c.Status == QueueStatus.Failed ||
-					c.Status == QueueStatus.Pending)
-						.ConfigureAwait(false);
-			}
-			else
-			{
-				return await col.DeleteManyAsync(c => c.Status == status)
-					.ConfigureAwait(false);
-			}
-		}
-
-		public async Task RemoveQueueItemAsync(int id)
-		{
-			var col = this.dbFactory.GetCollection<FileQueue>(TABLE_NAME);
-			await this.dbFactory.EnsureTransactionAsync().ConfigureAwait(false);
-
-			await col.DeleteAsync(id).ConfigureAwait(false);
-
-			await this.dbFactory.CreateCheckpointAsync().ConfigureAwait(false);
-		}
-
-		public Task<long> GetQueueItemCountAsync(QueueStatus? status)
-		{
-			var col = this.dbFactory.GetCollection<FileQueue>(TABLE_NAME);
-			if (status is null)
-				return col.LongCountAsync();
-			else
-				return col.LongCountAsync(c => c.Status == status);
+			return dbFactory.RollbackTransactionAsync();
 		}
 
 		public async Task<bool> AddToQueueAsync(FileQueue queueItem)
 		{
 			if (queueItem is null)
+			{
 				throw new ArgumentNullException(nameof(queueItem));
+			}
 
-			var queueCol = this.dbFactory.GetCollection<FileQueue>(TABLE_NAME);
-			string path = ReplaceWithPrefix(queueItem.Path);
+			var queueCol = dbFactory.GetCollection<FileQueue>(TABLE_NAME);
+			var path = ReplaceWithPrefix(queueItem.Path);
 			var nextQueue = await queueCol
 				.Query()
 				.Where(q => q.Path == path)
 				.FirstOrDefaultAsync()
 				.ConfigureAwait(false);
-			await this.dbFactory.EnsureTransactionAsync().ConfigureAwait(false);
+			await dbFactory.EnsureTransactionAsync().ConfigureAwait(false);
 
 			if (nextQueue is not null)
 			{
 				if (nextQueue.Status == QueueStatus.Encoding)
+				{
 					return false;
+				}
 			}
 			else
 			{
@@ -122,132 +71,38 @@ namespace VideoConverter.Storage.Repositories
 			nextQueue.VideoCodec = queueItem.VideoCodec;
 
 			await queueCol.UpsertAsync(nextQueue).ConfigureAwait(false);
-			await this.dbFactory.CreateCheckpointAsync().ConfigureAwait(false);
+			await dbFactory.CreateCheckpointAsync().ConfigureAwait(false);
 
 			return true;
 		}
 
 		public Task<bool> FileExistsAsync(string path, string? hash)
 		{
-			var col = this.dbFactory.GetCollection<FileQueue>(TABLE_NAME);
+			var col = dbFactory.GetCollection<FileQueue>(TABLE_NAME);
 			var prefixedPath = ReplaceWithPrefix(path);
 
 			if (hash is null)
+			{
 				return col.ExistsAsync(c => c.Path == prefixedPath);
+			}
 			else
+			{
 				return col.ExistsAsync(c => (c.Path != prefixedPath && c.OldHash == hash) || c.NewHash == hash);
-		}
-
-		public async Task ResetFailedQueueAsync()
-		{
-			var queueCol = this.dbFactory.GetCollection<FileQueue>(TABLE_NAME);
-
-			var items = await queueCol.FindAsync(q => q.Status == QueueStatus.Failed).ConfigureAwait(false);
-
-			await this.dbFactory.EnsureTransactionAsync().ConfigureAwait(false);
-
-			await queueCol.UpdateAsync(items.Select(i => SetPendingStatus(i))).ConfigureAwait(false);
-
-			await this.dbFactory.CreateCheckpointAsync().ConfigureAwait(false);
-		}
-
-		public async Task UpdateQueueStatusAsync(string path, QueueStatus status, string? statusMessage = null)
-		{
-			var queueCol = this.dbFactory.GetCollection<FileQueue>(TABLE_NAME);
-			var prefixedPath = ReplaceWithPrefix(path);
-			var queueItem = await queueCol
-				.Query()
-				.Where(q => q.Path == prefixedPath)
-				.FirstOrDefaultAsync()
-				.ConfigureAwait(false);
-			if (queueItem is not null)
-			{
-				await this.dbFactory.EnsureTransactionAsync().ConfigureAwait(false);
-				queueItem.Status = status;
-				queueItem.StatusMessage = statusMessage;
-
-				await queueCol.UpdateAsync(queueItem).ConfigureAwait(false);
-
-				await this.dbFactory.CreateCheckpointAsync().ConfigureAwait(false);
 			}
-		}
-
-		public async Task UpdateQueueStatusAsync(string path, QueueStatus status, Exception exception)
-		{
-			var queueCol = this.dbFactory.GetCollection<FileQueue>(TABLE_NAME);
-			var prefixedPath = ReplaceWithPrefix(path);
-			var queueItem = await queueCol
-				.Query()
-				.Where(q => q.Path == prefixedPath)
-				.FirstOrDefaultAsync()
-				.ConfigureAwait(false);
-			if (queueItem is not null)
-			{
-				await this.dbFactory.EnsureTransactionAsync().ConfigureAwait(false);
-				queueItem.Status = status;
-				if (exception is not null)
-					queueItem.StatusMessage = exception.Message + "\n\n" + exception.StackTrace;
-				else
-					queueItem.StatusMessage = string.Empty;
-
-				await this.dbFactory.CreateCheckpointAsync().ConfigureAwait(false);
-			}
-		}
-
-		public async Task UpdateQueueStatusAsync(int id, QueueStatus status, string? statusMessage = null)
-		{
-			var queueCol = this.dbFactory.GetCollection<FileQueue>(TABLE_NAME);
-			var queueItem = await queueCol.FindByIdAsync(id).ConfigureAwait(false);
-
-			await this.dbFactory.EnsureTransactionAsync().ConfigureAwait(false);
-
-			queueItem.Status = status;
-			queueItem.StatusMessage = statusMessage;
-
-			await queueCol.UpdateAsync(queueItem).ConfigureAwait(false);
-
-			await this.dbFactory.CreateCheckpointAsync().ConfigureAwait(false);
-		}
-
-		public async Task UpdateQueueStatusAsync(int id, QueueStatus status, Exception exception)
-		{
-			var queueCol = this.dbFactory.GetCollection<FileQueue>(TABLE_NAME);
-			var queueItem = await queueCol.FindByIdAsync(id).ConfigureAwait(false);
-
-			await this.dbFactory.EnsureTransactionAsync().ConfigureAwait(false);
-
-			queueItem.Status = status;
-			if (exception is not null)
-				queueItem.StatusMessage = exception.Message + "\n\n" + exception.StackTrace;
-			else
-				queueItem.StatusMessage = string.Empty;
-
-			await queueCol.UpdateAsync(queueItem).ConfigureAwait(false);
-
-			await this.dbFactory.CreateCheckpointAsync().ConfigureAwait(false);
-		}
-
-		public async Task<int> GetPendingQueueCountAsync()
-		{
-			var col = this.dbFactory.GetCollection<FileQueue>(TABLE_NAME);
-
-			var result = await col.CountAsync(c => c.Status == QueueStatus.Pending).ConfigureAwait(false);
-
-			return result;
 		}
 
 		public async Task<FileQueue?> GetNextQueueItemAsync()
 		{
-			var queueCol = this.dbFactory.GetCollection<FileQueue>(TABLE_NAME);
+			var queueCol = dbFactory.GetCollection<FileQueue>(TABLE_NAME);
 			var queueItem = await queueCol
 				.Query().Where(q => q.Status == QueueStatus.Pending).FirstOrDefaultAsync().ConfigureAwait(false);
 
 			if (queueItem is not null)
 			{
-				await this.dbFactory.EnsureTransactionAsync().ConfigureAwait(false);
+				await dbFactory.EnsureTransactionAsync().ConfigureAwait(false);
 				queueItem.Status = QueueStatus.Encoding;
 				await queueCol.UpdateAsync(queueItem).ConfigureAwait(false);
-				await this.dbFactory.CreateCheckpointAsync().ConfigureAwait(false);
+				await dbFactory.CreateCheckpointAsync().ConfigureAwait(false);
 			}
 			else
 			{
@@ -257,16 +112,57 @@ namespace VideoConverter.Storage.Repositories
 			return ReplacePrefixes(queueItem);
 		}
 
+		public async Task<int> GetPendingQueueCountAsync()
+		{
+			var col = dbFactory.GetCollection<FileQueue>(TABLE_NAME);
+
+			var result = await col.CountAsync(c => c.Status == QueueStatus.Pending).ConfigureAwait(false);
+
+			return result;
+		}
+
+		public async Task<FileQueue> GetQueueItemAsync(int identifier)
+		{
+			var col = dbFactory.GetCollection<FileQueue>(TABLE_NAME);
+
+			return ReplacePrefixes(await col.FindByIdAsync(identifier).ConfigureAwait(false))!;
+		}
+
+		public async Task<FileQueue?> GetQueueItemAsync(string path)
+		{
+			var col = dbFactory.GetCollection<FileQueue>(TABLE_NAME);
+
+			var prefixedPath = ReplaceWithPrefix(path);
+
+			var queue = await col
+				.Query()
+				.Where(q => q.Path == prefixedPath || q.OutputPath == prefixedPath)
+				.FirstOrDefaultAsync()
+				.ConfigureAwait(false);
+
+			return ReplacePrefixes(queue);
+		}
+
+		public Task<long> GetQueueItemCountAsync(QueueStatus? status)
+		{
+			var col = dbFactory.GetCollection<FileQueue>(TABLE_NAME);
+			if (status is null)
+			{
+				return col.LongCountAsync();
+			}
+			else
+			{
+				return col.LongCountAsync(c => c.Status == status);
+			}
+		}
+
 		public async IAsyncEnumerable<FileQueue> GetQueueItemsAsync(QueueStatus? status)
 		{
-			var queueCol = this.dbFactory.GetCollection<FileQueue>(TABLE_NAME);
+			var queueCol = dbFactory.GetCollection<FileQueue>(TABLE_NAME);
 
-			IEnumerable<FileQueue> items;
-
-			if (status is null)
-				items = await queueCol.FindAllAsync().ConfigureAwait(false);
-			else
-				items = await queueCol.FindAsync(q => q.Status == status).ConfigureAwait(false);
+			var items = status is null
+				? await queueCol.FindAllAsync().ConfigureAwait(false)
+				: await queueCol.FindAsync(q => q.Status == status).ConfigureAwait(false);
 
 			foreach (var item in items)
 			{
@@ -274,24 +170,64 @@ namespace VideoConverter.Storage.Repositories
 			}
 		}
 
-		public Task SaveChangesAsync()
+		public async Task RemoveQueueItemAsync(int id)
 		{
-			return this.dbFactory.CommitTransactionAsync();
+			var col = dbFactory.GetCollection<FileQueue>(TABLE_NAME);
+			await dbFactory.EnsureTransactionAsync().ConfigureAwait(false);
+
+			await col.DeleteAsync(id).ConfigureAwait(false);
+
+			await dbFactory.CreateCheckpointAsync().ConfigureAwait(false);
 		}
 
-		public Task AbortChangesAsync()
+		public async Task<int> RemoveQueueItemsAsync(QueueStatus? status)
 		{
-			return this.dbFactory.RollbackTransactionAsync();
+			var col = dbFactory.GetCollection<FileQueue>(TABLE_NAME);
+			await dbFactory.EnsureTransactionAsync().ConfigureAwait(false);
+
+			if (status is null)
+			{
+				return await col.DeleteManyAsync(c =>
+					c.Status == QueueStatus.Completed ||
+					c.Status == QueueStatus.Failed ||
+					c.Status == QueueStatus.Pending)
+						.ConfigureAwait(false);
+			}
+			else
+			{
+				return await col.DeleteManyAsync(c => c.Status == status)
+					.ConfigureAwait(false);
+			}
+		}
+
+		public async Task ResetFailedQueueAsync()
+		{
+			var queueCol = dbFactory.GetCollection<FileQueue>(TABLE_NAME);
+
+			var items = await queueCol.FindAsync(q => q.Status == QueueStatus.Failed).ConfigureAwait(false);
+
+			await dbFactory.EnsureTransactionAsync().ConfigureAwait(false);
+
+			await queueCol.UpdateAsync(items.Select(i => SetPendingStatus(i))).ConfigureAwait(false);
+
+			await dbFactory.CreateCheckpointAsync().ConfigureAwait(false);
+		}
+
+		public Task SaveChangesAsync()
+		{
+			return dbFactory.CommitTransactionAsync();
 		}
 
 		public async Task UpdateQueueAsync(FileQueue queue)
 		{
 			if (queue is null)
+			{
 				throw new ArgumentNullException(nameof(queue));
+			}
 
-			var col = this.dbFactory.GetCollection<FileQueue>(TABLE_NAME);
+			var col = dbFactory.GetCollection<FileQueue>(TABLE_NAME);
 
-			await this.dbFactory.EnsureTransactionAsync().ConfigureAwait(false);
+			await dbFactory.EnsureTransactionAsync().ConfigureAwait(false);
 
 			var foundQueue = await col.FindByIdAsync(queue.Id).ConfigureAwait(false);
 
@@ -310,7 +246,87 @@ namespace VideoConverter.Storage.Repositories
 
 			await col.UpdateAsync(foundQueue).ConfigureAwait(false);
 
-			await this.dbFactory.CreateCheckpointAsync().ConfigureAwait(false);
+			await dbFactory.CreateCheckpointAsync().ConfigureAwait(false);
+		}
+
+		public async Task UpdateQueueStatusAsync(string path, QueueStatus status, string? statusMessage = null)
+		{
+			var queueCol = dbFactory.GetCollection<FileQueue>(TABLE_NAME);
+			var prefixedPath = ReplaceWithPrefix(path);
+			var queueItem = await queueCol
+				.Query()
+				.Where(q => q.Path == prefixedPath)
+				.FirstOrDefaultAsync()
+				.ConfigureAwait(false);
+
+			if (queueItem is null)
+			{
+				return;
+			}
+
+			await dbFactory.EnsureTransactionAsync().ConfigureAwait(false);
+			queueItem.Status = status;
+			queueItem.StatusMessage = statusMessage;
+
+			await queueCol.UpdateAsync(queueItem).ConfigureAwait(false);
+
+			await dbFactory.CreateCheckpointAsync().ConfigureAwait(false);
+		}
+
+		public async Task UpdateQueueStatusAsync(string path, QueueStatus status, Exception exception)
+		{
+			var queueCol = dbFactory.GetCollection<FileQueue>(TABLE_NAME);
+			var prefixedPath = ReplaceWithPrefix(path);
+			var queueItem = await queueCol
+				.Query()
+				.Where(q => q.Path == prefixedPath)
+				.FirstOrDefaultAsync()
+				.ConfigureAwait(false);
+			if (queueItem is null)
+			{
+				return;
+			}
+
+			await dbFactory.EnsureTransactionAsync().ConfigureAwait(false);
+			queueItem.Status = status;
+
+			queueItem.StatusMessage = exception is not null
+				? exception.Message + "\n\n" + exception.StackTrace
+				: string.Empty;
+
+			await dbFactory.CreateCheckpointAsync().ConfigureAwait(false);
+		}
+
+		public async Task UpdateQueueStatusAsync(int id, QueueStatus status, string? statusMessage = null)
+		{
+			var queueCol = dbFactory.GetCollection<FileQueue>(TABLE_NAME);
+			var queueItem = await queueCol.FindByIdAsync(id).ConfigureAwait(false);
+
+			await dbFactory.EnsureTransactionAsync().ConfigureAwait(false);
+
+			queueItem.Status = status;
+			queueItem.StatusMessage = statusMessage;
+
+			await queueCol.UpdateAsync(queueItem).ConfigureAwait(false);
+
+			await dbFactory.CreateCheckpointAsync().ConfigureAwait(false);
+		}
+
+		public async Task UpdateQueueStatusAsync(int id, QueueStatus status, Exception exception)
+		{
+			var queueCol = dbFactory.GetCollection<FileQueue>(TABLE_NAME);
+			var queueItem = await queueCol.FindByIdAsync(id).ConfigureAwait(false);
+
+			await dbFactory.EnsureTransactionAsync().ConfigureAwait(false);
+
+			queueItem.Status = status;
+			queueItem.StatusMessage = exception is not null
+				? exception.Message + "\n\n" + exception.StackTrace
+				: string.Empty;
+
+			await queueCol.UpdateAsync(queueItem).ConfigureAwait(false);
+
+			await dbFactory.CreateCheckpointAsync().ConfigureAwait(false);
 		}
 
 		private static FileQueue SetPendingStatus(FileQueue queue)
@@ -323,7 +339,9 @@ namespace VideoConverter.Storage.Repositories
 		private FileQueue? ReplacePrefixes(FileQueue? fileQueue)
 		{
 			if (fileQueue is null)
+			{
 				return null;
+			}
 
 			fileQueue.Path = ReplacePrefixes(fileQueue.Path);
 			fileQueue.OutputPath = ReplacePrefixes(fileQueue.OutputPath);
@@ -333,9 +351,11 @@ namespace VideoConverter.Storage.Repositories
 		private string ReplacePrefixes(string? prefixedPath)
 		{
 			if (prefixedPath is null)
+			{
 				return string.Empty;
+			}
 
-			foreach (var prefix in this.config.Prefixes)
+			foreach (var prefix in config.Prefixes)
 			{
 				if (prefixedPath.StartsWith($"{{{prefix.Prefix.TrimEnd('/')}}}", StringComparison.OrdinalIgnoreCase))
 
@@ -354,11 +374,13 @@ namespace VideoConverter.Storage.Repositories
 		private string ReplaceWithPrefix(string? path)
 		{
 			if (path is null)
+			{
 				return string.Empty;
+			}
 
 			var foundPaths = new List<string>();
 
-			foreach (var prefix in this.config.Prefixes)
+			foreach (var prefix in config.Prefixes)
 			{
 				if (path.StartsWith(prefix.Path, StringComparison.OrdinalIgnoreCase))
 				{
@@ -367,7 +389,9 @@ namespace VideoConverter.Storage.Repositories
 			}
 
 			if (foundPaths.Count == 0)
+			{
 				return path;
+			}
 
 			return foundPaths.OrderBy(f => f.Length).First();
 		}

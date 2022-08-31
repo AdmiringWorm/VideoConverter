@@ -1,17 +1,78 @@
-using System.Runtime.InteropServices;
-using System.Threading;
-using System.Text;
 using System;
 using System.IO;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Threading;
+
 namespace VideoConverter.Core.Tests.Services
 {
 	using FluentAssertions;
+
 	using NUnit.Framework;
+
 	using VideoConverter.Core.Models;
 	using VideoConverter.Core.Services;
 
 	public class XmlConfigurationServiceTests
 	{
+		[Test]
+		public void Should_Get_Default_Configuration_When_File_Do_Not_Exist()
+		{
+			var path = Path.Combine(Environment.CurrentDirectory, Guid.NewGuid() + ".xml");
+			var expected = new Configuration
+			{
+				MapperDatabase = Path.Combine(
+					Environment.GetFolderPath(
+						Environment.SpecialFolder.LocalApplicationData),
+					"VideoConverter",
+					"storage.db"),
+			};
+			using var service = new XmlConfigurationService(path);
+
+			var actual = service.GetConfiguration();
+
+			actual.Should().BeEquivalentTo(expected);
+		}
+
+		[Test]
+		public void Should_Read_Configuration_From_File_Path()
+		{
+			var path = Path.Combine(Environment.CurrentDirectory, Guid.NewGuid() + ".xml");
+			var temp = Path.GetTempPath();
+			var storagePath = Path.Combine(temp, "storage.db");
+			var expected = new Configuration
+			{
+				MapperDatabase = storagePath,
+				AudioCodec = "opus"
+			};
+			// editorconfig-checker-disable
+			File.WriteAllText(path, $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<Configuration xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">
+  <IncludeFansubber>true</IncludeFansubber>
+  <VideoCodec>hevc</VideoCodec>
+  <AudioCodec>opus</AudioCodec>
+  <SubtitleCodec>copy</SubtitleCodec>
+  <WorkDirectory>{temp}</WorkDirectory>
+  <FileType>Matroska</FileType>
+  <MapperDatabase>{storagePath}</MapperDatabase>
+  <ExtraEncodingParameters />
+  <Prefixes />
+</Configuration>");
+			// editorconfig-checker-enable
+			using var service = new XmlConfigurationService(path);
+
+			var actual = service.GetConfiguration();
+
+			try
+			{
+				actual.Should().BeEquivalentTo(expected);
+			}
+			finally
+			{
+				File.Delete(path);
+			}
+		}
+
 		[Test]
 		public void Should_Save_Configuration_To_File()
 		{
@@ -41,8 +102,8 @@ namespace VideoConverter.Core.Tests.Services
 		{
 			var path = Path.Combine(Environment.CurrentDirectory, Guid.NewGuid() + ".xml");
 			// editorconfig-checker-disable
-			string tmp = Path.GetTempPath();
-			string expected = $@"<?xml version=""1.0"" encoding=""utf-8""?>
+			var tmp = Path.GetTempPath();
+			var expected = $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <Configuration xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">
   <AudioCodec>libopus</AudioCodec>
   <ExtraEncodingParameters />
@@ -78,64 +139,6 @@ namespace VideoConverter.Core.Tests.Services
 					File.Delete(path);
 				}
 				catch { }
-			}
-		}
-
-		[Test]
-		public void Should_Get_Default_Configuration_When_File_Do_Not_Exist()
-		{
-			var path = Path.Combine(Environment.CurrentDirectory, Guid.NewGuid() + ".xml");
-			var expected = new Configuration
-			{
-				MapperDatabase = Path.Combine(
-					Environment.GetFolderPath(
-						Environment.SpecialFolder.LocalApplicationData),
-					"VideoConverter",
-					"storage.db"),
-			};
-			using var service = new XmlConfigurationService(path);
-
-			var actual = service.GetConfiguration();
-
-			actual.Should().BeEquivalentTo(expected);
-		}
-
-		[Test]
-		public void Should_Read_Configuration_From_File_Path()
-		{
-			var path = Path.Combine(Environment.CurrentDirectory, Guid.NewGuid() + ".xml");
-			string temp = Path.GetTempPath();
-			string storagePath = Path.Combine(temp, "storage.db");
-			var expected = new Configuration
-			{
-				MapperDatabase = storagePath,
-				AudioCodec = "opus"
-			};
-			// editorconfig-checker-disable
-			File.WriteAllText(path, $@"<?xml version=""1.0"" encoding=""utf-8""?>
-<Configuration xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">
-  <IncludeFansubber>true</IncludeFansubber>
-  <VideoCodec>hevc</VideoCodec>
-  <AudioCodec>opus</AudioCodec>
-  <SubtitleCodec>copy</SubtitleCodec>
-  <WorkDirectory>{temp}</WorkDirectory>
-  <FileType>Matroska</FileType>
-  <MapperDatabase>{storagePath}</MapperDatabase>
-  <ExtraEncodingParameters />
-  <Prefixes />
-</Configuration>");
-			// editorconfig-checker-enable
-			using var service = new XmlConfigurationService(path);
-
-			var actual = service.GetConfiguration();
-
-			try
-			{
-				actual.Should().BeEquivalentTo(expected);
-			}
-			finally
-			{
-				File.Delete(path);
 			}
 		}
 

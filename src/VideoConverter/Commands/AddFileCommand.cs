@@ -21,6 +21,7 @@ namespace VideoConverter.Commands
 	using VideoConverter.Extensions;
 	using VideoConverter.Options;
 	using VideoConverter.Prompts;
+	using VideoConverter.Prompts.Streams;
 	using VideoConverter.Storage.Models;
 	using VideoConverter.Storage.Repositories;
 
@@ -52,16 +53,20 @@ namespace VideoConverter.Commands
 
 		public void Dispose()
 		{
-			this.tokenSource?.Dispose();
+			tokenSource?.Dispose();
 		}
 
 		public override async Task<int> ExecuteAsync(CommandContext context, AddFileOption settings)
 		{
 			if (settings is null)
+			{
 				throw new ArgumentNullException(nameof(settings));
+			}
 
 			if (!string.IsNullOrWhiteSpace(settings.FileExtension))
-				this.config.FileType = settings.FileExtension.GetExtensionFileType();
+			{
+				config.FileType = settings.FileExtension.GetExtensionFileType();
+			}
 
 			try
 			{
@@ -69,23 +74,25 @@ namespace VideoConverter.Commands
 
 				foreach (var file in settings.Files.Select(f => Path.GetFullPath(f)))
 				{
-					if (this.tokenSource.IsCancellationRequested)
+					if (tokenSource.IsCancellationRequested)
+					{
 						break;
+					}
 
 					if (!File.Exists(file))
 					{
-						this.console.MarkupLine("[red on black] ERROR: The file '[fuchsia]{0}[/]' do not exist.[/]", file.EscapeMarkup());
+						console.MarkupLine("[red on black] ERROR: The file '[fuchsia]{0}[/]' do not exist.[/]", file.EscapeMarkup());
 						return 1;
 					}
 
 					//var hash = await EncodeCommand.GetSHA1Async(file, tokenSource.Token).ConfigureAwait(false);
 					var hash = string.Empty;
 
-					var existingFile = await this.queueRepository.GetQueueItemAsync(file).ConfigureAwait(false);
+					var existingFile = await queueRepository.GetQueueItemAsync(file).ConfigureAwait(false);
 
 					if (existingFile is not null && settings.IgnoreStatuses.Contains(existingFile.Status))
 					{
-						this.console.MarkupLine(
+						console.MarkupLine(
 							"[yellow]WARNING: [fuchsia]'{0}'[/] exists with status [aqua]{1}[/]. Ignoring...[/]",
 							file.EscapeMarkup(), existingFile.Status
 						);
@@ -93,25 +100,25 @@ namespace VideoConverter.Commands
 					}
 					else if (settings.IgnoreDuplicates || settings.RemoveDuplicates)
 					{
-						var fileExists = await this.queueRepository.FileExistsAsync(file, hash).ConfigureAwait(false);
+						var fileExists = await queueRepository.FileExistsAsync(file, hash).ConfigureAwait(false);
 						if (fileExists)
 						{
-							this.console.MarkupLine(
+							console.MarkupLine(
 								"[yellow]WARNING: [fuchsia]'{0}'[/] exists already exists. Ignoring...[/]",
 								file.EscapeMarkup());
 							continue;
 						}
 					}
 
-					var mediaInfoTask = FFmpeg.GetMediaInfo(file, this.tokenSource.Token);
+					var mediaInfoTask = FFmpeg.GetMediaInfo(file, tokenSource.Token);
 
-					bool isAccepted = false;
+					var isAccepted = false;
 					EpisodeData? episodeData = null;
 
 					var outputPath = settings.OutputPath;
 
 					while (
-						!this.tokenSource.Token.IsCancellationRequested &&
+						!tokenSource.Token.IsCancellationRequested &&
 						!settings.ReEncode &&
 						string.IsNullOrEmpty(outputPath) &&
 						!isAccepted
@@ -122,10 +129,13 @@ namespace VideoConverter.Commands
 						var relativePath = settings.OutputDir ?? Environment.CurrentDirectory;
 
 						if (settings.ReEncode)
+						{
 							break;
+						}
+
 						if (episodeData is null)
 						{
-							var path = this.console.Prompt(
+							var path = console.Prompt(
 								new TextPrompt<string>(
 									$"File '[fuchsia]{file.EscapeMarkup()}[/]'...\n" +
 									"We were unable to extract necessary information. Please input the location of the file to save,\n" +
@@ -135,17 +145,23 @@ namespace VideoConverter.Commands
 							);
 
 							if (string.IsNullOrWhiteSpace(path))
+							{
 								break;
-							else if (path.StartsWith('/'))
-								outputPath = path.Trim();
+							}
 							else
-								outputPath = Path.Combine(relativePath, path.Trim());
+							{
+								outputPath = path.StartsWith('/')
+									? path.Trim()
+									: Path.Combine(relativePath, path.Trim());
+							}
 
 							break;
 						}
 
-						if (this.tokenSource.Token.IsCancellationRequested)
+						if (tokenSource.Token.IsCancellationRequested)
+						{
 							break;
+						}
 
 						var fansubber = episodeData.Fansubber;
 
@@ -162,7 +178,7 @@ namespace VideoConverter.Commands
 
 							if (fansubberConfig?.IgnoreOnDuplicates == true)
 							{
-								this.console.WriteLine(
+								console.WriteLine(
 									$"WARNING: The file '{file}' already exist, and the fansubber '{fansubber}' is ignored for existing files...",
 									new Style(Color.Yellow));
 								episodeData.Series = "SKIP";
@@ -170,14 +186,18 @@ namespace VideoConverter.Commands
 							}
 						}
 
-						if (this.tokenSource.Token.IsCancellationRequested)
+						if (tokenSource.Token.IsCancellationRequested)
+						{
 							break;
+						}
 
-						isAccepted = await AskAcceptableAsync(context, episodeData, this.tokenSource.Token).ConfigureAwait(false);
+						isAccepted = await AskAcceptableAsync(context, episodeData, tokenSource.Token).ConfigureAwait(false);
 					}
 
-					if (this.tokenSource.Token.IsCancellationRequested)
+					if (tokenSource.Token.IsCancellationRequested)
+					{
 						break;
+					}
 
 					if ((episodeData is null && string.IsNullOrEmpty(outputPath) && !settings.ReEncode) ||
 						(episodeData is not null && episodeData.Series == "SKIP"))
@@ -192,8 +212,10 @@ namespace VideoConverter.Commands
 					var audioStreams = mediaInfo.AudioStreams.ToList();
 					var subtitleStreams = mediaInfo.SubtitleStreams.ToList();
 
-					if (this.tokenSource.Token.IsCancellationRequested)
+					if (tokenSource.Token.IsCancellationRequested)
+					{
 						break;
+					}
 
 					var streams = new List<IStream>();
 
@@ -224,16 +246,18 @@ namespace VideoConverter.Commands
 
 					AddStreams(streams, mediaInfo.SubtitleStreams);
 
-					if (this.tokenSource.IsCancellationRequested)
+					if (tokenSource.IsCancellationRequested)
+					{
 						break;
+					}
 
-					var fileExist = await this.queueRepository.FileExistsAsync(file.Normalize(), null).ConfigureAwait(false);
+					var fileExist = await queueRepository.FileExistsAsync(file.Normalize(), null).ConfigureAwait(false);
 
 					if (fileExist)
 					{
 						if (settings.RemoveDuplicates)
 						{
-							this.console.WriteLine(
+							console.WriteLine(
 								$"The file '{file}' is a duplicate of an existing file. Removing...",
 								new Style(Color.Green)
 							);
@@ -242,7 +266,7 @@ namespace VideoConverter.Commands
 						}
 						else if (settings.IgnoreDuplicates)
 						{
-							this.console.WriteLine(
+							console.WriteLine(
 								$"WARNING: The file '{file}' is a duplicate of an existing file. Ignoring...",
 								new Style(Color.Yellow)
 							);
@@ -250,7 +274,7 @@ namespace VideoConverter.Commands
 						}
 						else
 						{
-							this.console.MarkupLine(
+							console.MarkupLine(
 								"[yellow]WARNING: Found duplicate file, ignoring or removing duplicates have not been specified. Continuing[/]"
 							);
 						}
@@ -261,21 +285,24 @@ namespace VideoConverter.Commands
 						outputPath = Path.GetFullPath(outputPath);
 						if (string.IsNullOrEmpty(Path.GetExtension(outputPath)))
 						{
-							outputPath = "." + (settings.FileExtension ?? this.config.FileType.GetFileExtension()).TrimStart('.');
+							outputPath = "." + (settings.FileExtension ?? config.FileType.GetFileExtension()).TrimStart('.');
 						}
 					}
 					else if (!string.IsNullOrEmpty(settings.OutputDir))
 					{
-						string rootDir = Path.GetFullPath(settings.OutputDir!);
+						var rootDir = Path.GetFullPath(settings.OutputDir!);
 						if (!Directory.Exists(rootDir))
+						{
 							Directory.CreateDirectory(rootDir);
-						string directory = rootDir;
+						}
+
+						var directory = rootDir;
+
 						if (episodeData is not null)
 						{
-							if (settings.FileExtension is not null)
-								episodeData.Container = settings.FileExtension.GetExtensionFileType();
-							else
-								episodeData.Container = this.config.FileType;
+							episodeData.Container = settings.FileExtension is not null
+								? settings.FileExtension.GetExtensionFileType()
+								: config.FileType;
 
 							directory = GetOutputDir(episodeData, directory);
 
@@ -283,14 +310,14 @@ namespace VideoConverter.Commands
 						}
 						else if (settings.ReEncode)
 						{
-							var extension = settings.FileExtension ?? this.config.FileType.GetFileExtension();
+							var extension = settings.FileExtension ?? config.FileType.GetFileExtension();
 
 							outputPath = Path.Combine(directory, Path.GetFileName(file));
 							outputPath = Path.ChangeExtension(outputPath, extension);
 						}
 						else
 						{
-							this.console.MarkupLine(
+							console.MarkupLine(
 								"[yellow on black] ERROR: No information was found in the data, and no output path is specified. " +
 								"This should not happen, please report this error to the developers.[/]"
 							);
@@ -300,12 +327,12 @@ namespace VideoConverter.Commands
 					}
 					else if (settings.ReEncode)
 					{
-						var extension = settings.FileExtension ?? this.config.FileType.GetFileExtension();
+						var extension = settings.FileExtension ?? config.FileType.GetFileExtension();
 						outputPath = Path.ChangeExtension(outputPath ?? file, extension);
 					}
 					else
 					{
-						this.console.MarkupLine(
+						console.MarkupLine(
 							"[yellow on black] ERROR: No information was found in the data, and no output path is specified. " +
 							"This should not happen, please report this error to the developers.[/]"
 						);
@@ -313,25 +340,16 @@ namespace VideoConverter.Commands
 						return 1;
 					}
 
-					FileQueue queueItem;
-
-					if (existingFile is not null)
+					var queueItem = existingFile ?? new FileQueue
 					{
-						queueItem = existingFile;
-					}
-					else
-					{
-						queueItem = new FileQueue
-						{
-							Path = file.Normalize()
-						};
-					}
+						Path = file.Normalize()
+					};
 					queueItem.OldHash = hash;
 					queueItem.SkipThumbnails = settings.SkipThumbnails;
 
-					var audioCodec = settings.AudioCodec ?? this.config.AudioCodec;
-					var videoCodec = settings.VideoCodec ?? this.config.VideoCodec;
-					var subtitleCodec = settings.SubtitleCodec ?? this.config.SubtitleCodec;
+					var audioCodec = settings.AudioCodec ?? config.AudioCodec;
+					var videoCodec = settings.VideoCodec ?? config.VideoCodec;
+					var subtitleCodec = settings.SubtitleCodec ?? config.SubtitleCodec;
 
 					if (settings.UseEncodingCopy)
 					{
@@ -380,11 +398,11 @@ namespace VideoConverter.Commands
 					queueItem.OutputPath = outputPath!;
 					queueItem.Parameters = settings.Parameters.Any(p => !string.IsNullOrEmpty(p))
 											? string.Join(' ', settings.Parameters.Where(p => !string.IsNullOrEmpty(p)))
-											: this.config.ExtraEncodingParameters;
+											: config.ExtraEncodingParameters;
 					queueItem.Status = QueueStatus.Pending;
 					queueItem.StatusMessage = string.Empty;
 					queueItem.StereoMode = settings.StereoMode;
-					queueItem.Streams = streams.Select(s => s.Index).ToList();
+					queueItem.Streams = streams.ConvertAll(s => s.Index);
 					queueItem.SubtitleCodec = subtitleCodec;
 					queueItem.VideoCodec = videoCodec;
 
@@ -392,7 +410,7 @@ namespace VideoConverter.Commands
 					{
 						if (TimeSpan.TryParse(settings.Repeat, CultureInfo.InvariantCulture, out var ts))
 						{
-							int repeatTimes = 0;
+							var repeatTimes = 0;
 							var firstStream = videoStreams.FirstOrDefault();
 
 							if (firstStream?.Duration.TotalMilliseconds > 0)
@@ -405,11 +423,11 @@ namespace VideoConverter.Commands
 							}
 							else
 							{
-								this.console.MarkupLine(
+								console.MarkupLine(
 									"[yellow]WARNING: We were unable to detect how long the video is, " +
 									"unable to specify repeat vairable automatically[/]"
 								);
-								this.console.MarkupLine(
+								console.MarkupLine(
 									"[yellow]         Assuming a length of 1 second, and will repeat {0}", "time[/]"
 										.ToQuantity((int)ts.TotalSeconds)
 								);
@@ -417,7 +435,9 @@ namespace VideoConverter.Commands
 							}
 
 							if (repeatTimes > 1)
+							{
 								queueItem.InputParameters = "-stream_loop " + repeatTimes;
+							}
 						}
 						else if (int.TryParse(settings.Repeat, NumberStyles.Integer, CultureInfo.InvariantCulture, out var i) && i > 1)
 						{
@@ -430,13 +450,13 @@ namespace VideoConverter.Commands
 						await queueRepository.SaveChangesAsync().ConfigureAwait(false);
 						try
 						{
-							this.console.MarkupLine(
+							console.MarkupLine(
 								"Added or updated '[fuchsia]{0}[/]' to the encoding queue!",
 								file.EscapeMarkup());
 						}
 						catch
 						{
-							this.console.WriteLine(
+							console.WriteLine(
 								$"Added or updated '{file.EscapeMarkup()}' to the encoding queue!",
 								new Style(Color.Fuchsia));
 						}
@@ -444,7 +464,7 @@ namespace VideoConverter.Commands
 					else
 					{
 						await queueRepository.AbortChangesAsync().ConfigureAwait(false);
-						this.console.WriteLine(
+						console.WriteLine(
 							$"WARNING: Unable to update '{file.EscapeMarkup()}'. Encoding have already started on the file!",
 							new Style(Color.Yellow, Color.Black)
 						);
@@ -453,11 +473,11 @@ namespace VideoConverter.Commands
 			}
 			catch (Exception ex)
 			{
-				this.console.WriteException(ex);
-				this.tokenSource.Cancel();
+				console.WriteException(ex);
+				tokenSource.Cancel();
 			}
 
-			return this.tokenSource.Token.IsCancellationRequested ? 1 : 0;
+			return tokenSource.Token.IsCancellationRequested ? 1 : 0;
 		}
 
 		private static EpisodeData? GetMatchingEpisodeData(EpisodeData episodeData, string outputDir)
@@ -495,19 +515,16 @@ namespace VideoConverter.Commands
 			{
 				var yearDir = Directory.EnumerateDirectories(relativeParentDir, seriesName + " (*)").FirstOrDefault();
 				if (yearDir is not null)
+				{
 					newDirectory = yearDir;
+				}
 			}
 
 			if (episodeData.SeasonNumber is not null)
 			{
-				if (episodeData.SeasonNumber == 0)
-				{
-					newDirectory = Path.Combine(newDirectory, "Specials");
-				}
-				else
-				{
-					newDirectory = Path.Combine(newDirectory, "Season " + episodeData.SeasonNumber);
-				}
+				newDirectory = episodeData.SeasonNumber == 0
+					? Path.Combine(newDirectory, "Specials")
+					: Path.Combine(newDirectory, "Season " + episodeData.SeasonNumber);
 			}
 
 			return newDirectory;
@@ -520,10 +537,14 @@ namespace VideoConverter.Commands
 
 			foreach (var ch in text)
 			{
-				if (!invalidChars.Contains(ch))
+				if (!invalidChars.Contains(ch, StringComparison.Ordinal))
+				{
 					sb.Append(ch);
+				}
 				else
+				{
 					sb.Append(' ');
+				}
 			}
 
 			return Regex.Replace(sb.ToString(), @"\s{2,}", " ", RegexOptions.Compiled).Trim();
@@ -572,7 +593,7 @@ namespace VideoConverter.Commands
 		{
 			DisplayEpisodeData(episodeData);
 
-			var prompt = this.console.Prompt(new YesNoPrompt("Do this information look correct?"));
+			var prompt = console.Prompt(new YesNoPrompt("Do this information look correct?"));
 
 			if (cancellationToken.IsCancellationRequested)
 			{
@@ -589,22 +610,22 @@ namespace VideoConverter.Commands
 				return true;
 			}
 
-			this.console.MarkupLine("Okay then, please enter the correct information!");
-			this.console.MarkupLine("[italic]Press {{Enter}} with an empty line to use default values[/]");
-			this.console.WriteLine();
+			console.MarkupLine("Okay then, please enter the correct information!");
+			console.MarkupLine("[italic]Press {{Enter}} with an empty line to use default values[/]");
+			console.WriteLine();
 
 			var settings = new AddCriteriaOption
 			{
 				FilePath = episodeData.FileName,
-				SeriesName = this.console.Prompt(
+				SeriesName = console.Prompt(
 					new TextPrompt<string>(
 						"Name of Series")
 							.DefaultValue(episodeData.Series.EscapeMarkup())),
-				SeasonNumber = this.console.Prompt(
+				SeasonNumber = console.Prompt(
 					new TextPrompt<int>(
 						"Season Number")
 							.DefaultValue(episodeData.SeasonNumber ?? 1)),
-				EpisodeNumber = this.console.Prompt(new TextPrompt<int>("Episode Number").DefaultValue(episodeData.EpisodeNumber))
+				EpisodeNumber = console.Prompt(new TextPrompt<int>("Episode Number").DefaultValue(episodeData.EpisodeNumber))
 			};
 
 			if (cancellationToken.IsCancellationRequested)
@@ -619,14 +640,16 @@ namespace VideoConverter.Commands
 
 		private void CancelProcessing(object? sender, ConsoleCancelEventArgs e)
 		{
-			if (e.SpecialKey == ConsoleSpecialKey.ControlC)
+			if (e.SpecialKey != ConsoleSpecialKey.ControlC)
 			{
-				this.console.MarkupLine(
-					"We are cancelling all processing once current prompts are complete, please wait for cleanup to be complete!");
-
-				e.Cancel = true;
-				this.tokenSource.Cancel();
+				return;
 			}
+
+			console.MarkupLine(
+				"We are cancelling all processing once current prompts are complete, please wait for cleanup to be complete!");
+
+			e.Cancel = true;
+			tokenSource.Cancel();
 		}
 
 		private void DisplayEpisodeData(Core.Models.EpisodeData episodeData)
@@ -658,22 +681,28 @@ namespace VideoConverter.Commands
 
 			var panel = new Panel(grid)
 				.Header("New Episode Data", Justify.Center);
-			this.console.Write(panel);
+			console.Write(panel);
 		}
 
 		private async Task<bool> UpdateEpisodeDataAsync(Core.Models.EpisodeData episodeData, string relativeParentDir)
 		{
-			await foreach (var criteria in this.criteriaRepo.GetEpisodeCriteriasAsync(episodeData.Series))
+			await foreach (var criteria in criteriaRepo.GetEpisodeCriteriasAsync(episodeData.Series))
 			{
 				if (criteria.UpdateEpisodeData(episodeData) && criteria.SeriesName is not null)
+				{
 					break;
+				}
 			}
 
 			if (episodeData.SeasonNumber is null)
+			{
 				episodeData.SeasonNumber = 1;
+			}
 
 			if (!config.IncludeFansubber)
+			{
 				episodeData.Fansubber = null;
+			}
 
 			var existingEpisodeData = GetMatchingEpisodeData(
 				episodeData,

@@ -1,7 +1,9 @@
 namespace VideoConverter.Core.Tests.Parsers
 {
 	using FluentAssertions;
+
 	using NUnit.Framework;
+
 	using VideoConverter.Core.Models;
 	using VideoConverter.Core.Parsers;
 
@@ -25,7 +27,6 @@ namespace VideoConverter.Core.Tests.Parsers
 		[TestCase("Death Note - 01x29 - Father.mkv", "Death Note", 1, 29, "Matroska")]
 		[TestCase("[YuiSubs] Isekai Shokudou S2 - 01  (NVENC H.265 1080p).mkv", "Isekai Shokudou", 2, 1, "Matroska")]
 		[TestCase("[YuiSubs] Sekai Saikou no Ansatsusha, Isekai Kizoku ni Tensei suru - 03  (NVENC H.265 1080p).mkv", "Sekai Saikou no Ansatsusha, Isekai Kizoku ni Tensei suru", null, 3, "Matroska")]
-		// editorconfig-checker-enable
 		public void ShouldParseCorrectEpisodeData(
 			string fileName,
 			string expectedSeries,
