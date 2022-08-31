@@ -1,0 +1,57 @@
+{
+	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
+	"extends": [
+		"config:base",
+		"group:dotNetCore",
+		"group:linters",
+		"group:unitTest",
+		"group:dotnetMonorepo",
+		"helpers:pinGitHubActionDigests"
+	],
+	"semanticCommits": "enabled",
+	"labels": ["dependencies"],
+	"packageRules": [
+		{
+			"major": {
+				"dependencyDashboard": true
+			}
+		},
+		{
+			"matchPackagePrefixes": ["LiteDB"],
+			"groupName": "litedb packages",
+			"semanticCommitType": "fix",
+			"addLabels": ["enhancement"]
+		},
+		{
+			"matchPackageNames": [
+				"DryIoc",
+				"Humanizer",
+				"Newtonsoft.Json",
+				"Spectre.Console",
+				"system.Linq.Async",
+				"Xabe.FFmpeg",
+				"Xabe.FFMpeg"
+			],
+			"semanticCommitType": "fix",
+			"addLabels": ["enhancement"]
+		},
+		{
+			"matchSourceUrlPrefixes": [
+				"https://github.com/nunit/"
+			],
+			"semanticCommitType": "build",
+			"addLabels": ["build"],
+			"groupName": "nunit packages"
+		},
+		{
+			"matchPaths": ["*.Tests.csproj", "*.IntegrationTests.csproj", "dotnet-tools.json", "*.cake", "*.yml"],
+			"addLabels": ["build"],
+			"automerge": true
+		},
+		{
+			"matchPackagePatterns": [".*Analyzers$"],
+			"addLabels": ["build"],
+			"automerge": true
+		}
+	]
+}
