@@ -38,6 +38,29 @@ namespace VideoConverter.Options
 		)]
 		public string? OutputDir { get; set; }
 
+		public static AddFileOption FromDirectoryOptions(AddDirectoryOption directoryOptions, params string[] files)
+		{
+			var fileOptions = new AddFileOption
+			{
+				AudioCodec = directoryOptions.AudioCodec,
+				FileExtension = directoryOptions.FileExtension,
+				Files = files,
+				IgnoreDuplicates = directoryOptions.IgnoreDuplicates,
+				IgnoreStatuses = directoryOptions.IgnoreStatuses,
+				OutputDir = directoryOptions.OutputDirectory,
+				Parameters = directoryOptions.Parameters,
+				ReEncode = directoryOptions.ReEncode,
+				RemoveDuplicates = directoryOptions.RemoveDuplicates,
+				Repeat = directoryOptions.Repeat,
+				StereoMode = directoryOptions.StereoMode,
+				SubtitleCodec = directoryOptions.SubtitleCodec,
+				UseEncodingCopy = directoryOptions.UseEncodingCopy,
+				VideoCodec = directoryOptions.VideoCodec,
+			};
+
+			return fileOptions;
+		}
+
 		public override ValidationResult Validate()
 		{
 			if (string.IsNullOrEmpty(OutputPath) && string.IsNullOrEmpty(OutputDir) && !ReEncode)
