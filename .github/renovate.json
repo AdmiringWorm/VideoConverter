@@ -33,7 +33,7 @@
 			"addLabels": ["enhancement"]
 		},
 		{
-			"matchPaths": ["*.Tests.csproj", "dotnet-tools.json", "*.cake", "*.yml"],
+			"matchPaths": ["*.Tests.csproj", "*.IntegrationTests.csproj", "dotnet-tools.json", "*.cake", "*.yml"],
 			"addLabels": ["build"],
 			"automerge": true
 		},
