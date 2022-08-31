@@ -33,6 +33,15 @@
 			"addLabels": ["enhancement"]
 		},
 		{
+			"matchPackageNames": [
+				"nunit",
+				"nunit3testadapter"
+			],
+			"semanticCommitType": "build",
+			"addLabels": ["build"],
+			"groupName": "nunit packages"
+		},
+		{
 			"matchPaths": ["*.Tests.csproj", "*.IntegrationTests.csproj", "dotnet-tools.json", "*.cake", "*.yml"],
 			"addLabels": ["build"],
 			"automerge": true
