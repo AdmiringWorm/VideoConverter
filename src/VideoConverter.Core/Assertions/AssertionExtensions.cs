@@ -1,7 +1,9 @@
 using System;
+
 namespace VideoConverter.Core.Assertions
 {
 	using System.Runtime.CompilerServices;
+
 	public static class AssertionExtensions
 	{
 		public static TValue IsNotNull<TValue>(

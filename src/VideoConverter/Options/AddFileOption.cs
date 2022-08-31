@@ -27,16 +27,16 @@ namespace VideoConverter.Options
 			}
 		}
 
-		[CommandOption("-o|--output <OUTPUT_PATH>")]
-		[Description("The path to the location where the encoded file will be located")]
-		public string? OutputPath { get; set; }
-
 		[CommandOption("-d|--dir <OUTPUT_DIRECTORY>")]
 		[Description(
 			"The base directory where outputs will be located.\n" +
 			"[italic]Directories for TV Series/Movie and a Season directory will be relative to this path![/]"
 		)]
 		public string? OutputDir { get; set; }
+
+		[CommandOption("-o|--output <OUTPUT_PATH>")]
+		[Description("The path to the location where the encoded file will be located")]
+		public string? OutputPath { get; set; }
 
 		public static AddFileOption FromDirectoryOptions(AddDirectoryOption directoryOptions, params string[] files)
 		{

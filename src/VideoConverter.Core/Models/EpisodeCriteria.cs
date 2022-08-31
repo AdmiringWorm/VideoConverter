@@ -45,6 +45,7 @@ namespace VideoConverter.Core.Models
 			=> !(data == criteria);
 
 #pragma warning disable CA2225
+
 		public static bool operator >(EpisodeData data, EpisodeCriteria criteria)
 		{
 			criteria.IsNotNull();

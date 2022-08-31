@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 namespace VideoConverter.Options
 {
 	using System;
@@ -11,55 +10,16 @@ namespace VideoConverter.Options
 
 	public abstract class AddBaseOptions : CommandSettings
 	{
-		private string[] parameters = Array.Empty<string>();
 		private QueueStatus[] ignoreStatuses = new[] { QueueStatus.Encoding };
-
-		[CommandOption("--vcodec <CODEC>")]
-		[Description("The video codec to use for the added files, useful to override global configuration.")]
-		public string? VideoCodec { get; set; }
+		private string[] parameters = Array.Empty<string>();
 
 		[CommandOption("--acodec <CODEC>")]
 		[Description("The audio codec to use for the added files, useful to override global configuration.")]
 		public string? AudioCodec { get; set; }
 
-		[CommandOption("--scodec <CODEC>")]
-		[Description("The subtitle codec to use for the added files, useful to override global configuration.")]
-		public string? SubtitleCodec { get; set; }
-
-		[CommandOption("--parameters <PARAMETERS>")]
-		[Description(
-			"Additional parameters that should be passed when calling ffmpeg " +
-			"(by default, the vaules in global configuration is used)"
-		)]
-		public string[] Parameters
-		{
-			get => parameters;
-			set
-			{
-				if (value is null)
-				{
-					parameters = Array.Empty<string>();
-				}
-				else
-				{
-					parameters = value;
-				}
-			}
-		}
-
-		[CommandOption("--use-copy|--allow-copy")]
-		[Description("Use encoding copy when target and source uses same codec")]
-		public bool UseEncodingCopy { get; set; }
-
-		[CommandOption("--re-encode|--reencode")]
-		[Description(
-			"Pure re-encode of the of the file name (allows re-using the same filename, without a output directory)"
-		)]
-		public bool ReEncode { get; set; }
-
-		[CommandOption("--remove-duplicates")]
-		[Description("Remove any duplicate files that have already been added to the queue")]
-		public bool RemoveDuplicates { get; set; }
+		[CommandOption("--extension")]
+		[Description("The file extension to use when encoding files")]
+		public string? FileExtension { get; set; }
 
 		[CommandOption("--ignore-duplicates")]
 		[Description("Ignore any duplicate files that have already been added to the queue")]
@@ -83,6 +43,43 @@ namespace VideoConverter.Options
 			}
 		}
 
+		[CommandOption("--parameters <PARAMETERS>")]
+		[Description(
+			"Additional parameters that should be passed when calling ffmpeg " +
+			"(by default, the vaules in global configuration is used)"
+		)]
+		public string[] Parameters
+		{
+			get => parameters;
+			set
+			{
+				if (value is null)
+				{
+					parameters = Array.Empty<string>();
+				}
+				else
+				{
+					parameters = value;
+				}
+			}
+		}
+
+		[CommandOption("--re-encode|--reencode")]
+		[Description(
+			"Pure re-encode of the of the file name (allows re-using the same filename, without a output directory)"
+		)]
+		public bool ReEncode { get; set; }
+
+		[CommandOption("--remove-duplicates")]
+		[Description("Remove any duplicate files that have already been added to the queue")]
+		public bool RemoveDuplicates { get; set; }
+
+		[CommandOption("--repeat")]
+		[Description(
+			"Repeat the movie until it reaches a certain threshold (value can be a timespan, or a number of repeated loops)"
+		)]
+		public string? Repeat { get; set; }
+
 		[CommandOption("--extension")]
 		[Description("The file extension to use when encoding files")]
 		public string? FileExtension { get; set; }
@@ -91,11 +88,17 @@ namespace VideoConverter.Options
 		[Description("The movie is in 3D with the following stereoscopic view")]
 		public StereoScopicMode StereoMode { get; set; }
 
-		[CommandOption("--repeat")]
-		[Description(
-			"Repeat the movie until it reaches a certain threshold (value can be a timespan, or a number of repeated loops)"
-		)]
-		public string? Repeat { get; set; }
+		[CommandOption("--scodec <CODEC>")]
+		[Description("The subtitle codec to use for the added files, useful to override global configuration.")]
+		public string? SubtitleCodec { get; set; }
+
+		[CommandOption("--use-copy|--allow-copy")]
+		[Description("Use encoding copy when target and source uses same codec")]
+		public bool UseEncodingCopy { get; set; }
+
+		[CommandOption("--vcodec <CODEC>")]
+		[Description("The video codec to use for the added files, useful to override global configuration.")]
+		public string? VideoCodec { get; set; }
 
 		public override ValidationResult Validate()
 		{
