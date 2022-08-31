@@ -6,11 +6,11 @@
 		":dependencyDashboard"
 	],
 	"semanticCommits": "enabled",
-	"labels": ["dependenciess"],
+	"labels": ["dependencies"],
 	"packageRules": [
 		{
 			"major": {
-				"dependencyDashboard"
+				"dependencyDashboard": true
 			}
 		},
 		{
