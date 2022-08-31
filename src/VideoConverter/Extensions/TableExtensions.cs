@@ -2,8 +2,11 @@ namespace VideoConverter.Extensions
 {
 	using System;
 	using System.Globalization;
+
 	using Humanizer;
+
 	using Spectre.Console;
+
 	using VideoConverter.Core.Models;
 	using VideoConverter.Storage.Models;
 
@@ -25,9 +28,14 @@ namespace VideoConverter.Extensions
 		public static Text GetAnsiText(this object? value)
 		{
 			if (value is null)
+			{
 				return new Text(string.Empty, Style.Plain);
+			}
+
 			if (value is QueueStatus qs)
+			{
 				return qs.GetAnsiText();
+			}
 
 			var (textValue, color) = value switch
 			{
@@ -41,6 +49,16 @@ namespace VideoConverter.Extensions
 			return new Text(textValue, new Style(color));
 		}
 
+		public static Text GetAnsiText(this object? value, Color color)
+		{
+			if (value is null)
+			{
+				return new Text(string.Empty);
+			}
+
+			return new Text(value.ToString()!, new Style(color));
+		}
+
 		public static string GetAnsiTextString(this QueueStatus status)
 		{
 			return status switch
@@ -50,14 +68,6 @@ namespace VideoConverter.Extensions
 				QueueStatus.Encoding => $"[teal]{status}[/]",
 				_ => $"[olive]{status}[/]",
 			};
-		}
-
-		public static Text GetAnsiText(this object? value, Color color)
-		{
-			if (value is null)
-				return new Text(string.Empty);
-
-			return new Text(value.ToString()!, new Style(color));
 		}
 
 		public static void RenderTable(this IAnsiConsole console, Table table, string header)

@@ -21,7 +21,10 @@ namespace VideoConverter.Core.Services
 			var dir = Path.GetDirectoryName(configPath) ?? Environment.CurrentDirectory;
 			var name = Path.GetFileName(configPath);
 			if (!Directory.Exists(dir))
+			{
 				Directory.CreateDirectory(dir);
+			}
+
 			watcher = new FileSystemWatcher(dir, name);
 			watcher.Changed += OnFileChanged;
 			watcher.NotifyFilter = NotifyFilters.LastWrite;
@@ -29,31 +32,64 @@ namespace VideoConverter.Core.Services
 
 		public void Dispose()
 		{
-			this.watcher.Dispose();
+			watcher.Dispose();
 		}
 
 		public Configuration GetConfiguration()
 		{
-			if (this.config is not null)
-				return this.config;
-
-			this.config = new Configuration();
-
-			if (!File.Exists(this.configPath))
+			if (config is not null)
 			{
-				this.config.MapperDatabase = GetMapperDatabase();
+				return config;
+			}
+
+			config = new Configuration();
+
+			if (!File.Exists(configPath))
+			{
+				config.MapperDatabase = GetMapperDatabase();
 			}
 			else
 			{
-				UpdateConfiguration(this.config, this.configPath);
+				UpdateConfiguration(config, configPath);
 			}
 			watcher.EnableRaisingEvents = true;
 
-			return this.config;
+			return config;
+		}
+
+		public void SetConfiguration(Configuration config)
+		{
+			watcher.EnableRaisingEvents = false;
+
+			var directory = Path.GetDirectoryName(configPath);
+			if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+			{
+				Directory.CreateDirectory(directory);
+			}
+
+			using var writer = new StreamWriter(configPath, false, Encoding.UTF8);
+
+			var serializer = new XmlSerializer(typeof(Configuration));
+
+			serializer.Serialize(writer, config);
+
+			this.config = config;
+
+			watcher.EnableRaisingEvents = true;
+		}
+
+		private static string GetMapperDatabase()
+		{
+			return Path.Combine(
+				Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+				"VideoConverter",
+				"storage.db"
+			);
 		}
 
 		private static void UpdateConfiguration(Configuration config, string configPath)
 		{
+#pragma warning disable CA1031 // Do not catch general exception types
 			try
 			{
 				using var reader = new StreamReader(configPath, Encoding.UTF8);
@@ -75,42 +111,17 @@ namespace VideoConverter.Core.Services
 			catch
 			{
 			}
-		}
-
-		public void SetConfiguration(Configuration config)
-		{
-			this.watcher.EnableRaisingEvents = false;
-
-			var directory = Path.GetDirectoryName(configPath);
-			if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-				Directory.CreateDirectory(directory);
-
-			using var writer = new StreamWriter(configPath, false, Encoding.UTF8);
-
-			var serializer = new XmlSerializer(typeof(Configuration));
-
-			serializer.Serialize(writer, config);
-
-			this.config = config;
-
-			this.watcher.EnableRaisingEvents = true;
+#pragma warning restore CA1031 // Do not catch general exception types
 		}
 
 		private void OnFileChanged(object sender, FileSystemEventArgs e)
 		{
-			if (e.ChangeType != WatcherChangeTypes.Changed || this.config is null)
+			if (e.ChangeType != WatcherChangeTypes.Changed || config is null)
+			{
 				return;
+			}
 
-			UpdateConfiguration(this.config, this.configPath);
-		}
-
-		private static string GetMapperDatabase()
-		{
-			return Path.Combine(
-				Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-				"VideoConverter",
-				"storage.db"
-			);
+			UpdateConfiguration(config, configPath);
 		}
 	}
 }

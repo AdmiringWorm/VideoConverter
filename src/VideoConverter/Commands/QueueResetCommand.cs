@@ -3,16 +3,18 @@ namespace VideoConverter.Commands
 	using System;
 	using System.Linq;
 	using System.Threading.Tasks;
-	using Spectre.Console.Cli;
+
 	using Spectre.Console;
+	using Spectre.Console.Cli;
+
 	using VideoConverter.Options;
 	using VideoConverter.Storage.Models;
 	using VideoConverter.Storage.Repositories;
 
 	public sealed class QueueResetCommand : AsyncCommand<QueueResetOption>
 	{
-		private readonly QueueRepository queueRepo;
 		private readonly IAnsiConsole console;
+		private readonly QueueRepository queueRepo;
 
 		public QueueResetCommand(QueueRepository queueRepo, IAnsiConsole console)
 		{
@@ -23,7 +25,9 @@ namespace VideoConverter.Commands
 		public override async Task<int> ExecuteAsync(CommandContext context, QueueResetOption settings)
 		{
 			if (settings is null)
+			{
 				throw new ArgumentNullException(nameof(settings));
+			}
 
 			foreach (var identifier in settings.Identifiers)
 			{
@@ -35,7 +39,10 @@ namespace VideoConverter.Commands
 				await foreach (var item in queueRepo.GetQueueItemsAsync(status).ConfigureAwait(false))
 				{
 					if (settings.Identifiers.Contains(item.Id))
+					{
 						continue;
+					}
+
 					item.Status = QueueStatus.Pending;
 					item.StatusMessage = string.Empty;
 					item.NewHash = string.Empty;
@@ -43,9 +50,9 @@ namespace VideoConverter.Commands
 				}
 			}
 
-			await this.queueRepo.SaveChangesAsync().ConfigureAwait(false);
+			await queueRepo.SaveChangesAsync().ConfigureAwait(false);
 
-			this.console.MarkupLine("[aqua]The queue have been reset[/]");
+			console.MarkupLine("[aqua]The queue have been reset[/]");
 
 			return 0;
 		}

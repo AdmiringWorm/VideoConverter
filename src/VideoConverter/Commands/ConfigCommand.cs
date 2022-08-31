@@ -38,9 +38,11 @@ namespace VideoConverter.Commands
 					return 0;
 				}
 				if (settings.Name == "Prefixes")
+				{
 					throw new Exception("Prefixes can not be displayed at this time");
+				}
 
-				string propertyName = settings.Name.Dehumanize();
+				var propertyName = settings.Name.Dehumanize();
 
 				if (string.Equals("Fansubber.Ignore", settings.Name, StringComparison.OrdinalIgnoreCase) ||
 					string.Equals("Fansubber.Include", settings.Name, StringComparison.OrdinalIgnoreCase))
@@ -52,7 +54,7 @@ namespace VideoConverter.Commands
 
 				if (property is null)
 				{
-					this.console.MarkupLine(
+					console.MarkupLine(
 						"[red on black] ERROR: We could not find any configuration with the name '[fuchsia]{0}[/]'[/]",
 						settings.Name
 					);
@@ -61,13 +63,13 @@ namespace VideoConverter.Commands
 
 				if (string.IsNullOrEmpty(settings.Value))
 				{
-					this.console.MarkupLine(
+					console.MarkupLine(
 						"[fuchsia]{0}[/] = [aqua]{1}[/]",
 						property.Name.Humanize(),
 						property.GetValue(config) ?? string.Empty
 					);
 				}
-				else if (string.Equals(settings.Name, "Fansubber.Ignore"))
+				else if (string.Equals(settings.Name, "Fansubber.Ignore", StringComparison.OrdinalIgnoreCase))
 				{
 					var fansubber = config.Fansubbers.Find(f => string.Equals(f.Name, settings.Value, StringComparison.Ordinal));
 
@@ -79,16 +81,16 @@ namespace VideoConverter.Commands
 							IgnoreOnDuplicates = true
 						});
 						service.SetConfiguration(config);
-						this.console.MarkupLine(
+						console.MarkupLine(
 							"Added [aqua]{0}[/] to Ignore list",
 							settings.Value);
 					}
 					else
 					{
-						this.console.MarkupLine("[yellow on black] WARNING: No change in configuration value. Ignoring...[/]");
+						console.MarkupLine("[yellow on black] WARNING: No change in configuration value. Ignoring...[/]");
 					}
 				}
-				else if (string.Equals(settings.Name, "Fansubber.Include"))
+				else if (string.Equals(settings.Name, "Fansubber.Include", StringComparison.OrdinalIgnoreCase))
 				{
 					var fansubber = config.Fansubbers.Find(f => string.Equals(f.Name, settings.Value, StringComparison.Ordinal));
 
@@ -96,25 +98,25 @@ namespace VideoConverter.Commands
 					{
 						service.SetConfiguration(config);
 						fansubber.IgnoreOnDuplicates = false;
-						this.console.MarkupLine(
+						console.MarkupLine(
 							"Removed [aqua]{0}[/] from Ignore list",
 							settings.Value);
 					}
 					else
 					{
-						this.console.MarkupLine("[yellow on black] WARNING: No change in configuration value. Ignoring...[/]");
+						console.MarkupLine("[yellow on black] WARNING: No change in configuration value. Ignoring...[/]");
 					}
 				}
 				else if (string.Equals(property.GetValue(config), settings.Value))
 				{
-					this.console.MarkupLine("[yellow on black] WARNING: No change in configuration value. Ignoring...[/]");
+					console.MarkupLine("[yellow on black] WARNING: No change in configuration value. Ignoring...[/]");
 				}
 				else if (property.PropertyType == typeof(bool))
 				{
 					var value = bool.Parse(settings.Value);
 					property.SetValue(config, value);
 					service.SetConfiguration(config);
-					this.console.WriteLine("Configuration Updated!", Style.Plain);
+					console.WriteLine("Configuration Updated!", Style.Plain);
 				}
 				else if (string.Equals(
 							property.Name,
@@ -124,7 +126,7 @@ namespace VideoConverter.Commands
 						File.Exists(config.MapperDatabase)
 				)
 				{
-					this.console.Markup(
+					console.Markup(
 						"[yellow on black] WARNING: We found an existing database in the previous location. " +
 						"Do you want to move this to the new location? (y/N)[/]"
 					);
@@ -134,25 +136,28 @@ namespace VideoConverter.Commands
 					{
 						var directory = Path.GetDirectoryName(settings.Value) ?? Environment.CurrentDirectory;
 						if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+						{
 							Directory.CreateDirectory(directory);
+						}
+
 						File.Move(config.MapperDatabase, settings.Value);
 					}
-					this.console.WriteLine();
+					console.WriteLine();
 
 					property.SetValue(config, Path.GetFullPath(settings.Value));
 					service.SetConfiguration(config);
-					this.console.WriteLine("Configuration updated!", Style.Plain);
+					console.WriteLine("Configuration updated!", Style.Plain);
 				}
 				else
 				{
 					property.SetValue(config, settings.Value);
 					service.SetConfiguration(config);
-					this.console.WriteLine("Configuration updated!", Style.Plain);
+					console.WriteLine("Configuration updated!", Style.Plain);
 				}
 			}
 			catch (Exception ex)
 			{
-				this.console.WriteException(ex);
+				console.WriteException(ex);
 				return 1;
 			}
 

@@ -7,9 +7,11 @@ namespace VideoConverter.Core.Extensions
 		public static string GetExtensionFileType(this string extension)
 		{
 			if (extension is null)
+			{
 				throw new ArgumentNullException(nameof(extension));
+			}
 
-			return (extension.TrimStart('.').ToUpperInvariant()) switch
+			return extension.TrimStart('.').ToUpperInvariant() switch
 			{
 				"AVI" => "Audio Video Interleave",
 				"DV" => "DIGITAL VIDEO",
@@ -31,7 +33,9 @@ namespace VideoConverter.Core.Extensions
 		public static string GetFileExtension(this string extensionType)
 		{
 			if (extensionType is null)
+			{
 				throw new ArgumentNullException(nameof(extensionType));
+			}
 
 			return extensionType.ToUpperInvariant() switch
 			{

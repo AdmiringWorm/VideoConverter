@@ -2,13 +2,15 @@ namespace VideoConverter.Commands
 {
 	using System;
 	using System.Collections.Generic;
+	using System.Diagnostics.CodeAnalysis;
 	using System.IO;
-	using Spectre.Console.Cli;
+
 	using Spectre.Console;
+	using Spectre.Console.Cli;
+
 	using VideoConverter.Core.Models;
 	using VideoConverter.Core.Services;
 	using VideoConverter.Options;
-	using System.Diagnostics.CodeAnalysis;
 
 	public sealed class AddPrefixCommand : Command<AddPrefixOption>
 	{
@@ -23,9 +25,11 @@ namespace VideoConverter.Commands
 
 		public override int Execute([NotNull] CommandContext context, [NotNull] AddPrefixOption settings)
 		{
-			var config = this.configService.GetConfiguration();
+			var config = configService.GetConfiguration();
 			if (config.Prefixes is null)
+			{
 				config.Prefixes = new List<PrefixConfiguration>();
+			}
 
 			var prefixConfig = config.Prefixes.Find(
 				p => string.Equals(p.Prefix, settings.Prefix, StringComparison.OrdinalIgnoreCase)
@@ -45,9 +49,9 @@ namespace VideoConverter.Commands
 				prefixConfig.Path = Path.GetFullPath(settings.DirectoryPath);
 			}
 
-			this.configService.SetConfiguration(config);
+			configService.SetConfiguration(config);
 
-			this.console.MarkupLine("[green]Successfully added prefix [fuchsia]{0}[/] with path [fuchsia]{1}[/][/]",
+			console.MarkupLine("[green]Successfully added prefix [fuchsia]{0}[/] with path [fuchsia]{1}[/][/]",
 				settings.Prefix.EscapeMarkup(),
 				settings.DirectoryPath.EscapeMarkup());
 

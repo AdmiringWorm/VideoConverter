@@ -2,18 +2,20 @@ namespace VideoConverter.Storage.Database
 {
 	using System;
 	using System.Threading.Tasks;
+
 	using LiteDB;
 	using LiteDB.Async;
+
 	using VideoConverter.Storage.Models;
+
 	using Configuration = VideoConverter.Core.Models.Configuration;
 
 	public sealed class DatabaseFactory : IDisposable
 	{
+		private readonly BsonMapper bsonMapper;
 		private readonly Configuration configuration;
 		private LiteDatabaseAsync? database;
 		private bool transactionStarted;
-
-		private readonly BsonMapper bsonMapper;
 
 		public DatabaseFactory(Configuration configuration)
 		{
@@ -29,62 +31,76 @@ namespace VideoConverter.Storage.Database
 				.DbRef(x => x.Criterias);
 		}
 
-		public ILiteCollectionAsync<TEntity> GetCollection<TEntity>(string? name = null)
+		public async Task CommitTransactionAsync()
 		{
-			EnsureDatabase();
+			if (database is null)
+			{
+				return;
+			}
 
-			if (name is null)
-				return this.database!.GetCollection<TEntity>();
-			else
-				return this.database!.GetCollection<TEntity>(name);
-		}
-
-		public async Task EnsureTransactionAsync()
-		{
-			EnsureDatabase();
-
-			if (!transactionStarted)
-				transactionStarted = await this.database!.BeginTransAsync().ConfigureAwait(false);
+			await database.CommitAsync().ConfigureAwait(false);
+			transactionStarted = false;
 		}
 
 		public async Task CreateCheckpointAsync()
 		{
 			await EnsureTransactionAsync().ConfigureAwait(false);
 
-			await this.database!.CheckpointAsync().ConfigureAwait(false);
-		}
-
-		public async Task RollbackTransactionAsync()
-		{
-			if (this.database is not null)
-			{
-				await this.database.RollbackAsync().ConfigureAwait(false);
-				this.transactionStarted = false;
-			}
-		}
-
-		public async Task CommitTransactionAsync()
-		{
-			if (this.database is not null)
-			{
-				await this.database.CommitAsync().ConfigureAwait(false);
-				this.transactionStarted = false;
-			}
-		}
-
-		private void EnsureDatabase()
-		{
-			if (this.database is null)
-			{
-				this.database = new LiteDatabaseAsync(
-					$"Filename={this.configuration.MapperDatabase};Connection=shared;Upgrade=true", bsonMapper
-				);
-			}
+			await database!.CheckpointAsync().ConfigureAwait(false);
 		}
 
 		public void Dispose()
 		{
-			this.database?.Dispose();
+			database?.Dispose();
+		}
+
+		public async Task EnsureTransactionAsync()
+		{
+			EnsureDatabase();
+
+			if (transactionStarted)
+			{
+				return;
+			}
+
+			transactionStarted = await database!.BeginTransAsync().ConfigureAwait(false);
+		}
+
+		public ILiteCollectionAsync<TEntity> GetCollection<TEntity>(string? name = null)
+		{
+			EnsureDatabase();
+
+			if (name is null)
+			{
+				return database!.GetCollection<TEntity>();
+			}
+			else
+			{
+				return database!.GetCollection<TEntity>(name);
+			}
+		}
+
+		public async Task RollbackTransactionAsync()
+		{
+			if (database is null)
+			{
+				return;
+			}
+
+			await database.RollbackAsync().ConfigureAwait(false);
+			transactionStarted = false;
+		}
+
+		private void EnsureDatabase()
+		{
+			if (database is not null)
+			{
+				return;
+			}
+
+			database = new LiteDatabaseAsync(
+				$"Filename={configuration.MapperDatabase};Connection=shared;Upgrade=true", bsonMapper
+			);
 		}
 	}
 }

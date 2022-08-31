@@ -1,5 +1,8 @@
 namespace VideoConverter.Core.Models
 {
+	using System;
+
+	[Flags]
 	public enum StereoScopicMode
 	{
 		None = 0,

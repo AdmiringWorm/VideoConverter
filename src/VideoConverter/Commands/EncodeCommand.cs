@@ -1,30 +1,35 @@
 namespace VideoConverter.Commands
 {
 	using System;
+	using System.Globalization;
 	using System.IO;
 	using System.Linq;
+	using System.Security.Cryptography;
+	using System.Text;
 	using System.Text.RegularExpressions;
 	using System.Threading;
 	using System.Threading.Tasks;
+
 	using Humanizer;
-	using Spectre.Console.Cli;
+
 	using Spectre.Console;
-	using System.Security.Cryptography;
-	using System.Text;
+	using Spectre.Console.Cli;
+
 	using VideoConverter.Core.Models;
+	using VideoConverter.Extensions;
 	using VideoConverter.Options;
 	using VideoConverter.Storage.Models;
 	using VideoConverter.Storage.Repositories;
+
 	using Xabe.FFmpeg;
-	using System.Globalization;
 	using Xabe.FFmpeg.Streams.SubtitleStream;
 
 	public class EncodeCommand : AsyncCommand<EncodeOption>
 	{
-		private readonly QueueRepository queueRepo;
-		private readonly Configuration config;
 		private readonly CancellationToken cancellationToken;
+		private readonly Configuration config;
 		private readonly IAnsiConsole console;
+		private readonly QueueRepository queueRepo;
 		private readonly Random rand = new();
 
 		public EncodeCommand(QueueRepository queueRepo, Configuration config, IAnsiConsole console)
@@ -32,24 +37,30 @@ namespace VideoConverter.Commands
 			this.queueRepo = queueRepo;
 			this.config = config;
 			var tokenSource = new CancellationTokenSource();
-			this.cancellationToken = tokenSource.Token;
+			cancellationToken = tokenSource.Token;
 
 			Console.CancelKeyPress += (sender, e) =>
-			{
-				Console.WriteLine("Cancelling!!!");
-				if (e.SpecialKey == ConsoleSpecialKey.ControlC)
 				{
+					Console.WriteLine("Cancelling!!!");
+
+					if (e.SpecialKey != ConsoleSpecialKey.ControlC)
+					{
+						return;
+					}
+
 					tokenSource.Cancel();
 					e.Cancel = true;
 				}
-			};
+;
 			this.console = console;
 		}
 
 		public override async Task<int> ExecuteAsync(CommandContext context, EncodeOption settings)
 		{
 			if (settings is null)
+			{
 				throw new ArgumentNullException(nameof(settings));
+			}
 
 			Console.Clear();
 			var failed = false;
@@ -68,7 +79,7 @@ namespace VideoConverter.Commands
 
 			var exitCode = 0;
 
-			var mapperDb = this.config.MapperDatabase
+			var mapperDb = config.MapperDatabase
 				?? Path.Combine(
 					Environment.GetFolderPath(
 						Environment.SpecialFolder.LocalApplicationData),
@@ -81,24 +92,32 @@ namespace VideoConverter.Commands
 			using var monitor = new FileSystemWatcher(dbDirectory, fileName);
 			var onHold = false;
 			Console.CancelKeyPress += (sender, e) =>
-			{
-				if (e.SpecialKey == ConsoleSpecialKey.ControlC)
 				{
+					if (e.SpecialKey != ConsoleSpecialKey.ControlC)
+					{
+						return;
+					}
+
 					monitor.EnableRaisingEvents = false;
 					onHold = false;
 				}
-			};
+;
 			var currentValue = 0.0;
 
 			monitor.Changed += (sender, e) =>
 			{
 				if (e.ChangeType != WatcherChangeTypes.Changed)
+				{
 					return;
+				}
+
 				var originalHold = onHold;
 				onHold = false;
 
 				monitor.EnableRaisingEvents = false;
 				int newCount;
+
+#pragma warning disable IDE0045 // Convert to conditional expression
 				if (count == 0 || originalHold)
 				{
 					newCount = GetPendingCountAsync(
@@ -113,6 +132,7 @@ namespace VideoConverter.Commands
 						settings.Indexes)
 					.GetAwaiter().GetResult();
 				}
+#pragma warning restore IDE0045 // Convert to conditional expression
 
 				if (newCount != count)
 				{
@@ -124,7 +144,7 @@ namespace VideoConverter.Commands
 
 		monitorStart:
 
-			(FileQueue? queue, int indexCount) = await GetNextQueueItemAsync(
+			(var queue, var indexCount) = await GetNextQueueItemAsync(
 				settings.Indexes,
 				0
 			).ConfigureAwait(false);
@@ -132,7 +152,7 @@ namespace VideoConverter.Commands
 
 			while (queue != null)
 			{
-				await this.console.Progress()
+				await console.Progress()
 					.AutoClear(false)
 					.Columns(new ProgressColumn[]
 					{
@@ -162,7 +182,7 @@ namespace VideoConverter.Commands
 							}
 							catch (Exception ex)
 							{
-								this.console.WriteException(ex);
+								console.WriteException(ex);
 								throw;
 							}
 
@@ -172,8 +192,13 @@ namespace VideoConverter.Commands
 								return;
 							}
 
-							mainTask.Description =
-								$"[green]Processing [aqua]{Path.GetFileNameWithoutExtension(queue.OutputPath).EscapeMarkup()}[/] [fuchsia]{(int)mainTask.Value + 1} / {count}[/]...[/]";
+							mainTask.Description = string.Format(
+								CultureInfo.InvariantCulture,
+								"[green]Processing [aqua]{0}[/] [fuchsia]{1:0} / {2}[/]...[/]",
+								Path.GetFileNameWithoutExtension(queue.OutputPath),
+								mainTask.Value + 1,
+								count
+								);
 							mainTask.Increment(1.0);
 							currentValue = mainTask.Value;
 							mainTask.StopTask(); // Work around so it doesn't show as in progress
@@ -214,7 +239,9 @@ namespace VideoConverter.Commands
 
 								var directory = Path.GetDirectoryName(queue.OutputPath) ?? Environment.CurrentDirectory;
 								if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+								{
 									Directory.CreateDirectory(directory);
+								}
 
 								var streams = mediaInfo.Streams.Where(s => queue.Streams.Contains(s.Index));
 
@@ -227,7 +254,7 @@ namespace VideoConverter.Commands
 										if (settings.UseEncodingCopy &&
 											string.Equals(
 												videoStream.Codec,
-												queue.VideoCodec ?? this.config.VideoCodec,
+												queue.VideoCodec ?? config.VideoCodec,
 												StringComparison.OrdinalIgnoreCase)
 										)
 										{
@@ -235,7 +262,7 @@ namespace VideoConverter.Commands
 										}
 										else
 										{
-											videoStream.SetCodec(queue.VideoCodec ?? this.config.VideoCodec);
+											videoStream.SetCodec(queue.VideoCodec ?? config.VideoCodec);
 										}
 									}
 									else if (stream is IAudioStream audioStream)
@@ -243,7 +270,7 @@ namespace VideoConverter.Commands
 										if (settings.UseEncodingCopy &&
 											string.Equals(
 												audioStream.Codec,
-												queue.AudioCodec ?? this.config.AudioCodec,
+												queue.AudioCodec ?? config.AudioCodec,
 												StringComparison.OrdinalIgnoreCase)
 										)
 										{
@@ -251,7 +278,7 @@ namespace VideoConverter.Commands
 										}
 										else
 										{
-											audioStream.SetCodec(queue.AudioCodec ?? this.config.AudioCodec);
+											audioStream.SetCodec(queue.AudioCodec ?? config.AudioCodec);
 										}
 									}
 									else if (stream is ISubtitleStream subtitleStream)
@@ -259,7 +286,7 @@ namespace VideoConverter.Commands
 										if (settings.UseEncodingCopy &&
 											string.Equals(
 												subtitleStream.Codec,
-												queue.SubtitleCodec ?? this.config.SubtitleCodec,
+												queue.SubtitleCodec ?? config.SubtitleCodec,
 												StringComparison.OrdinalIgnoreCase)
 										)
 										{
@@ -267,7 +294,7 @@ namespace VideoConverter.Commands
 										}
 										else
 										{
-											subtitleStream.SetCodec(queue.SubtitleCodec ?? this.config.SubtitleCodec);
+											subtitleStream.SetCodec(queue.SubtitleCodec ?? config.SubtitleCodec);
 										}
 									}
 
@@ -276,25 +303,28 @@ namespace VideoConverter.Commands
 
 								parseTask.Increment(parseStep);
 
-								if (!Directory.Exists(this.config.WorkDirectory))
-									Directory.CreateDirectory(this.config.WorkDirectory);
+								if (!Directory.Exists(config.WorkDirectory))
+								{
+									Directory.CreateDirectory(config.WorkDirectory);
+								}
 
 								var tempWorkPath = Path.Combine(
-									this.config.WorkDirectory,
+									config.WorkDirectory,
 									Guid.NewGuid() + Path.GetExtension(queue.OutputPath)
 								);
 
 								var firstVideoStream = mediaInfo.VideoStreams.First();
 
-								string parameters = string.Empty;
+								var parameters = string.Empty;
 
-								if (!string.IsNullOrEmpty(queue.Parameters))
-									parameters = queue.Parameters;
-								else
-									parameters = this.config.ExtraEncodingParameters;
+								parameters = !string.IsNullOrEmpty(queue.Parameters)
+									? queue.Parameters
+									: config.ExtraEncodingParameters;
 
-								if (!parameters.Contains("faststart") && !parameters.Contains("movflags"))
+								if (!parameters.ContainsInvariant("faststart") && !parameters.ContainsInvariant("movflags"))
+								{
 									parameters = "-movflags +faststart " + parameters;
+								}
 
 								if (queue.OutputPath.EndsWith(
 										".mk3d",
@@ -305,73 +335,120 @@ namespace VideoConverter.Commands
 									conversion.SetOutputFormat(Format.matroska);
 								}
 
-								string parameters3D = string.Empty;
-								string stereo3d = string.Empty;
+								var parameters3D = string.Empty;
+								var stereo3d = string.Empty;
 
 								switch (queue.StereoMode)
 								{
 									case StereoScopicMode.Mono:
-										if (!parameters.Contains("v360") && !settings.NoStereoModeMetadata)
+										if (!parameters.ContainsInvariant("v360") && !settings.NoStereoModeMetadata)
+										{
 											parameters3D = "-metadata:s:v stereo_mode=mono";
+										}
+
 										break;
+
 									case StereoScopicMode.AboveBelowLeft:
-										if (parameters.Contains("v360"))
+										if (parameters.ContainsExact("v360"))
+										{
 											parameters = Regex.Replace(parameters, "v360=([^\\s\"])", "v360=$1:in_stereo=tb:out_stereo=tb");
+										}
 										else
+										{
 											parameters3D = "-vf \"stereo3d=tbl:tbl\"";
+										}
+
 										if (!settings.NoStereoModeMetadata)
+										{
 											parameters3D += " -metadata:s:v stereo_mode=top_bottom";
+										}
+
 										stereo3d = "tbl";
 										break;
+
 									case StereoScopicMode.AboveBelowRight:
 										parameters3D = "-vf \"stereo3d=tbr:tbl\"";
 										if (!settings.NoStereoModeMetadata)
+										{
 											parameters3D += " -metadata:s:v stereo_mode=top_bottom";
+										}
+
 										stereo3d = "tbl";
 										break;
+
 									case StereoScopicMode.AboveBelowLeftHalf:
 										parameters3D = "-vf \"stereo3d=tb2l:tb2l\"";
 										if (!settings.NoStereoModeMetadata)
+										{
 											parameters3D += " -metadata:s:v stereo_mode=top_bottom";
+										}
+
 										stereo3d = "tb2l";
 										break;
+
 									case StereoScopicMode.AboveBelowRightHalf:
 										parameters3D = "-vf \"stereo3d=tb2r:tb2l\"";
 										if (!settings.NoStereoModeMetadata)
+										{
 											parameters3D += " -metadata:s:v stereo_mode=top_bottom";
+										}
+
 										stereo3d = "tb2l";
 										break;
+
 									case StereoScopicMode.SideBySideLeft:
-										if (parameters.Contains("v360"))
+										if (parameters.ContainsExact("v360"))
+										{
 											parameters = Regex.Replace(parameters, "v360=([^\\s\"]+)", "v360=$1:in_stereo=sbs:out_stereo=sbs");
+										}
 										else
+										{
 											parameters3D = "-vf \"stereo3d=sbsl:sbsl\"";
+										}
+
 										if (!settings.NoStereoModeMetadata)
+										{
 											parameters3D += " -metadata:s:v stereo_mode=left_right";
+										}
+
 										stereo3d = "sbsl";
 										break;
+
 									case StereoScopicMode.SideBySideLeftHalf:
 										parameters3D = "-vf \"stereo3d=sbs2l:sbs2l\"";
 										if (!settings.NoStereoModeMetadata)
+										{
 											parameters3D += " -metadata:s:v stereo_mode=left_right";
+										}
+
 										stereo3d = "sbs2l";
 										break;
+
 									case StereoScopicMode.SideBySideRight:
 										parameters3D = "-vf \"stereo3d=sbsr:sbsl\"";
 										if (!settings.NoStereoModeMetadata)
+										{
 											parameters3D += " -metadata:s:v stereo_mode=left_right";
+										}
+
 										stereo3d = "sbsl";
 										break;
+
 									case StereoScopicMode.SideBySideRightHalf:
 										parameters3D = "-vf \"stereo3d=sbs2r:sbs2l\"";
 										if (!settings.NoStereoModeMetadata)
+										{
 											parameters3D += " -metadata:s:v stereo_mode=left_right";
+										}
+
 										stereo3d = "sbs2l";
 										break;
 								}
 
 								if (!string.IsNullOrEmpty(queue.InputParameters))
+								{
 									conversion.AddParameter(queue.InputParameters, ParameterPosition.PreInput);
+								}
 
 								conversion.AddParameter($"{parameters} {parameters3D}")
 									.SetOverwriteOutput(true)
@@ -415,7 +492,9 @@ namespace VideoConverter.Commands
 										).ConfigureAwait(false);
 										encodeTask.Description = "[grey]Encoding cancelled...[/]";
 										if (File.Exists(tempWorkPath))
+										{
 											File.Delete(tempWorkPath);
+										}
 									}
 									else
 									{
@@ -443,20 +522,19 @@ namespace VideoConverter.Commands
 										if (!isDuplicate || !settings.IgnoreDuplicates)
 										{
 											var newSize = new FileInfo(tempWorkPath).Length;
+#pragma warning disable IDE0045 // Convert to conditional expression
 											if (newSize > initialSize)
 											{
 												queue.StatusMessage =
 													$"Lost {(newSize - initialSize).Bytes().Humanize("#.##", CultureInfo.CurrentCulture)}";
 											}
-											else if (newSize < initialSize)
-											{
-												queue.StatusMessage =
-													$"Saved {(initialSize - newSize).Bytes().Humanize("#.##", CultureInfo.CurrentCulture)}";
-											}
 											else
 											{
-												queue.StatusMessage = "No loss or gain in size";
+												queue.StatusMessage = newSize < initialSize
+													? $"Saved {(initialSize - newSize).Bytes().Humanize("#.##", CultureInfo.CurrentCulture)}"
+													: "No loss or gain in size";
 											}
+#pragma warning restore IDE0045 // Convert to conditional expression
 										}
 
 										await queueRepo.UpdateQueueAsync(queue).ConfigureAwait(false);
@@ -464,50 +542,74 @@ namespace VideoConverter.Commands
 										//this.queueRepo.UpdateQueueStatus(queue.Id, QueueStatus.Completed, statusMessage);
 										if (!isDuplicate || !settings.IgnoreDuplicates)
 										{
-											var newThumbPath = Path.ChangeExtension(queue.OutputPath, "-thumb.jpg").Replace(".-thumb", "-thumb");
-											var newFanArtPath = Path.ChangeExtension(queue.OutputPath, "-fanart.jpg").Replace(".-fanart", "-fanart");
-
-											if (File.Exists(newThumbPath))
-												File.Delete(newThumbPath);
-
-											if (File.Exists(newFanArtPath))
-												File.Delete(newFanArtPath);
 											moveTask.Increment(moveStep);
 
 											mediaInfo = await FFmpeg.GetMediaInfo(tempWorkPath).ConfigureAwait(false);
 											firstVideoStream = mediaInfo.VideoStreams.First();
 											parseTask.Increment(parseStep);
 
-											var thumbnailAt = this.rand.Next((int)firstVideoStream.Duration.TotalMilliseconds + 1);
-											var fanArtAt = this.rand.Next((int)firstVideoStream.Duration.TotalMilliseconds + 1);
-											var thumbConversion = await FFmpeg.Conversions.FromSnippet.Snapshot(
-												tempWorkPath,
-												newThumbPath,
-												TimeSpan.FromMilliseconds(thumbnailAt)
-											).ConfigureAwait(false);
-											var fanArtConversion = await FFmpeg.Conversions.FromSnippet.Snapshot(
-												tempWorkPath,
-												newFanArtPath,
-												TimeSpan.FromMilliseconds(fanArtAt)
-											).ConfigureAwait(false);
-											if (!string.IsNullOrEmpty(stereo3d))
+											if (!queue.SkipThumbnails)
 											{
-												thumbConversion.AddParameter($"-vf \"stereo3d={stereo3d}:ml\"");
-												fanArtConversion.AddParameter($"-vf \"stereo3d={stereo3d}:mr\"");
+												var newThumbPath = Path
+													.ChangeExtension(
+														queue.OutputPath,
+														"-thumb.jpg")
+													.Replace(
+														".-thumb",
+														"-thumb",
+														StringComparison.Ordinal);
+												var newFanArtPath = Path
+													.ChangeExtension(
+														queue.OutputPath,
+														"-fanart.jpg")
+													.Replace(
+														".-fanart",
+														"-fanart",
+														StringComparison.Ordinal);
+
+												if (File.Exists(newThumbPath))
+												{
+													File.Delete(newThumbPath);
+												}
+
+												if (File.Exists(newFanArtPath))
+												{
+													File.Delete(newFanArtPath);
+												}
+
+												var thumbnailAt = rand.Next((int)firstVideoStream.Duration.TotalMilliseconds + 1);
+												var fanArtAt = rand.Next((int)firstVideoStream.Duration.TotalMilliseconds + 1);
+												var thumbConversion = await FFmpeg.Conversions.FromSnippet.Snapshot(
+													tempWorkPath,
+													newThumbPath,
+													TimeSpan.FromMilliseconds(thumbnailAt)
+												).ConfigureAwait(false);
+												var fanArtConversion = await FFmpeg.Conversions.FromSnippet.Snapshot(
+													tempWorkPath,
+													newFanArtPath,
+													TimeSpan.FromMilliseconds(fanArtAt)
+												).ConfigureAwait(false);
+												if (!string.IsNullOrEmpty(stereo3d))
+												{
+													thumbConversion.AddParameter($"-vf \"stereo3d={stereo3d}:ml\"");
+													fanArtConversion.AddParameter($"-vf \"stereo3d={stereo3d}:mr\"");
+												}
+
+												var thumbArgs = thumbConversion.Build();
+												var fanArtArgs = fanArtConversion.Build();
+
+												await Task.WhenAll(
+													thumbConversion.Start(cancellationToken),
+													fanArtConversion.Start(cancellationToken)
+												).ConfigureAwait(false);
 											}
-
-											var thumbArgs = thumbConversion.Build();
-											var fanArtArgs = fanArtConversion.Build();
-
-											await Task.WhenAll(
-												thumbConversion.Start(cancellationToken),
-												fanArtConversion.Start(cancellationToken)
-											).ConfigureAwait(false);
 
 											moveTask.Increment(moveStep);
 
 											if (File.Exists(queue.OutputPath))
+											{
 												File.Delete(queue.OutputPath);
+											}
 
 											File.Move(tempWorkPath, queue.OutputPath);
 
@@ -522,7 +624,9 @@ namespace VideoConverter.Commands
 										if (settings.RemoveOldFiles)
 										{
 											if (queue.Path != queue.OutputPath && File.Exists(queue.Path))
+											{
 												File.Delete(queue.Path);
+											}
 										}
 										moveTask.Increment(moveStep);
 										/*moveTask.StopTask();
@@ -546,7 +650,9 @@ namespace VideoConverter.Commands
 									}
 
 									if (File.Exists(tempWorkPath))
+									{
 										File.Delete(tempWorkPath);
+									}
 								}
 							}
 							catch (Exception ex)
@@ -575,21 +681,25 @@ namespace VideoConverter.Commands
 									await queueRepo.SaveChangesAsync().ConfigureAwait(false);
 								}
 
-								this.console.WriteException(ex);
+								console.WriteException(ex);
 								exitCode = 1;
 								return;
 							}
 						}).ConfigureAwait(false);
 
 				if (exitCode != 0)
+				{
 					break;
+				}
 			}
 
 			if (settings.MonitorDatabase)
 			{
 				onHold = true;
 				while (onHold)
+				{
 					Thread.Sleep(TimeSpan.FromSeconds(5));
+				}
 
 				if (cancellationToken.IsCancellationRequested)
 				{
@@ -602,36 +712,6 @@ namespace VideoConverter.Commands
 			}
 
 			return exitCode = failed ? 1 : 0;
-		}
-
-		private async Task<int> GetPendingCountAsync(double currentTick, int[] indexes)
-		{
-			if (indexes is not null && indexes.Length > 0)
-				return indexes.Length;
-
-			var count = await queueRepo.GetPendingQueueCountAsync().ConfigureAwait(false);
-
-			return count + (int)currentTick;
-		}
-
-		private async Task<(FileQueue? queue, int count)> GetNextQueueItemAsync(int[] indexes, int indexCount)
-		{
-			int newIndex = indexCount;
-			FileQueue? queue = null;
-			if (indexes is not null && indexes.Length > 0)
-			{
-				if (newIndex < indexes.Length)
-				{
-					queue = await queueRepo.GetQueueItemAsync(indexes[newIndex]).ConfigureAwait(false);
-					newIndex++;
-				}
-			}
-			else
-			{
-				queue = await queueRepo.GetNextQueueItemAsync().ConfigureAwait(false);
-			}
-
-			return (queue, newIndex);
 		}
 
 		internal static async Task<string> GetSHA1Async(string file, CancellationToken cancellationToken)
@@ -650,6 +730,38 @@ namespace VideoConverter.Commands
 			}
 
 			return sb.ToString();
+		}
+
+		private async Task<(FileQueue? queue, int count)> GetNextQueueItemAsync(int[] indexes, int indexCount)
+		{
+			var newIndex = indexCount;
+			FileQueue? queue = null;
+			if (indexes is not null && indexes.Length > 0)
+			{
+				if (newIndex < indexes.Length)
+				{
+					queue = await queueRepo.GetQueueItemAsync(indexes[newIndex]).ConfigureAwait(false);
+					newIndex++;
+				}
+			}
+			else
+			{
+				queue = await queueRepo.GetNextQueueItemAsync().ConfigureAwait(false);
+			}
+
+			return (queue, newIndex);
+		}
+
+		private async Task<int> GetPendingCountAsync(double currentTick, int[] indexes)
+		{
+			if (indexes is not null && indexes.Length > 0)
+			{
+				return indexes.Length;
+			}
+
+			var count = await queueRepo.GetPendingQueueCountAsync().ConfigureAwait(false);
+
+			return count + (int)currentTick;
 		}
 	}
 }

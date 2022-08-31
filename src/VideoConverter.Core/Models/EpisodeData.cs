@@ -1,8 +1,10 @@
 using System.Globalization;
+
 namespace VideoConverter.Core.Models
 {
 	using System;
 	using System.Text;
+
 	using VideoConverter.Core.Extensions;
 
 	public sealed class EpisodeData
@@ -15,17 +17,13 @@ namespace VideoConverter.Core.Models
 			Container = container;
 		}
 
-		public string FileName { get; set; }
-		public string? Fansubber { get; set; }
-
-		public string Series { get; set; }
-		public int? SeasonNumber { get; set; }
-
-		public string? EpisodeName { get; set; }
-
-		public int EpisodeNumber { get; set; }
-
 		public string Container { get; set; }
+		public string? EpisodeName { get; set; }
+		public int EpisodeNumber { get; set; }
+		public string? Fansubber { get; set; }
+		public string FileName { get; set; }
+		public int? SeasonNumber { get; set; }
+		public string Series { get; set; }
 
 		public EpisodeData Copy()
 		{
@@ -59,16 +57,23 @@ namespace VideoConverter.Core.Models
 			var sb = new StringBuilder();
 
 			if (Fansubber is not null)
+			{
 				sb.Append('[').Append(Fansubber).Append("] ");
+			}
 
 			sb.Append(Series).Append(" - ");
 
 			if (SeasonNumber is not null)
+			{
 				sb.Append('S').AppendFormat(CultureInfo.InvariantCulture, "{0:D2}", SeasonNumber);
+			}
+
 			sb.Append('E').AppendFormat(CultureInfo.InvariantCulture, "{0:D2}", EpisodeNumber);
 
 			if (EpisodeName is not null)
+			{
 				sb.Append(" - ").Append(EpisodeName);
+			}
 
 			sb.Append(Container.GetFileExtension());
 

@@ -4,19 +4,52 @@ namespace VideoConverter
 	using System.IO;
 	using System.Text;
 	using System.Threading.Tasks;
+
 	using DryIoc;
+
 	using Spectre.Console;
 	using Spectre.Console.Cli;
+
 	using VideoConverter.Commands;
 	using VideoConverter.Core.Models;
 	using VideoConverter.Core.Services;
 	using VideoConverter.DependencyInjection;
 	using VideoConverter.Storage.Database;
 	using VideoConverter.Storage.Repositories;
+
 	using AnsiSupport = Spectre.Console.AnsiSupport;
 
 	internal static class Program
 	{
+		private static IContainer CreateContainer()
+		{
+			var container = new Container(
+				rules => rules
+					.WithTrackingDisposableTransients()
+					.WithCaptureContainerDisposeStackTrace()
+			);
+			var ansiSupport = Console.IsOutputRedirected ? AnsiSupport.No : AnsiSupport.Detect;
+			var colorSupport = Console.IsOutputRedirected ? ColorSystemSupport.NoColors : ColorSystemSupport.Detect;
+
+			container.RegisterDelegate(
+				_ => AnsiConsole.Create
+				(new AnsiConsoleSettings
+				{
+					Ansi = ansiSupport,
+					ColorSystem = colorSupport
+				}
+				),
+				Reuse.Singleton
+			);
+			container.RegisterDelegate(RegisterConfigurationRepository, Reuse.Singleton);
+			container.RegisterDelegate(RegisterConfiguration, Reuse.Singleton);
+			container.Register<DatabaseFactory>(Reuse.Singleton);
+			container.Register<EpisodeCriteriaRepository>(Reuse.ScopedOrSingleton);
+			container.Register<QueueRepository>(Reuse.ScopedOrSingleton);
+
+			return container;
+		}
+
 		private static async Task<int> Main(string[] args)
 		{
 			Console.OutputEncoding = Encoding.UTF8;
@@ -92,46 +125,6 @@ namespace VideoConverter
 			}
 		}
 
-		private static IContainer CreateContainer()
-		{
-			var container = new Container(
-				rules => rules
-					.WithTrackingDisposableTransients()
-					.WithCaptureContainerDisposeStackTrace()
-			);
-			var ansiSupport = Console.IsOutputRedirected ? AnsiSupport.No : AnsiSupport.Detect;
-			var colorSupport = Console.IsOutputRedirected ? ColorSystemSupport.NoColors : ColorSystemSupport.Detect;
-
-			container.RegisterDelegate(
-				_ => AnsiConsole.Create
-				(new AnsiConsoleSettings
-				{
-					Ansi = ansiSupport,
-					ColorSystem = colorSupport
-				}
-				),
-				Reuse.Singleton
-			);
-			container.RegisterDelegate(RegisterConfigurationRepository, Reuse.Singleton);
-			container.RegisterDelegate(RegisterConfiguration, Reuse.Singleton);
-			container.Register<DatabaseFactory>(Reuse.Singleton);
-			container.Register<EpisodeCriteriaRepository>(Reuse.ScopedOrSingleton);
-			container.Register<QueueRepository>(Reuse.ScopedOrSingleton);
-
-			return container;
-		}
-
-		private static IConfigurationService RegisterConfigurationRepository(IResolverContext arg)
-		{
-			var configPath = Path.Combine(
-				Environment.GetFolderPath(
-					Environment.SpecialFolder.LocalApplicationData),
-				"VideoConverter",
-				"config.xml");
-
-			return new XmlConfigurationService(configPath);
-		}
-
 		private static Configuration RegisterConfiguration(IResolverContext context)
 		{
 			var repository = context.Resolve<IConfigurationService>();
@@ -150,6 +143,17 @@ namespace VideoConverter
 			}
 
 			return config;
+		}
+
+		private static IConfigurationService RegisterConfigurationRepository(IResolverContext arg)
+		{
+			var configPath = Path.Combine(
+				Environment.GetFolderPath(
+					Environment.SpecialFolder.LocalApplicationData),
+				"VideoConverter",
+				"config.xml");
+
+			return new XmlConfigurationService(configPath);
 		}
 	}
 }
