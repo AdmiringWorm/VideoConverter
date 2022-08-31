@@ -11,10 +11,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3.0.2
+      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # tag=v3.0.2
 
       - name: Lint Code Base
-        uses: github/super-linter@v4.9.6
+        uses: github/super-linter@01d3218744765b55c3b5ffbb27e50961e50c33c5 # tag=v4.9.6
         env:
           VALIDATE_ALL_CODEBASE: false
           VALIDATE_DOCKERFILE: false
