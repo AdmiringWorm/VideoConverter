@@ -3,7 +3,10 @@
 	"extends": [
 		"config:base",
 		"group:dotNetCore",
-		":dependencyDashboard"
+		"group:linters",
+		"group:unitTest",
+		"group:dotnetMonorepo",
+		"helpers:pinGitHubActionDigests"
 	],
 	"semanticCommits": "enabled",
 	"labels": ["dependencies"],
@@ -33,9 +36,8 @@
 			"addLabels": ["enhancement"]
 		},
 		{
-			"matchPackageNames": [
-				"nunit",
-				"nunit3testadapter"
+			"matchSourceUrlPrefixes": [
+				"https://github.com/nunit/"
 			],
 			"semanticCommitType": "build",
 			"addLabels": ["build"],
