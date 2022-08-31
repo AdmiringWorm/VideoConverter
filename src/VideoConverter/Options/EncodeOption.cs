@@ -8,6 +8,10 @@ namespace VideoConverter.Options
 	{
 		private int[] indexes = Array.Empty<int>();
 
+		[CommandOption("--ignore-duplicates|--skip-duplicates")]
+		[Description("Ignore any duplicate entries found after encoding")]
+		public bool IgnoreDuplicates { get; set; }
+
 		[CommandOption("--include-failed|--include-failing|--failed|--failing")]
 		[Description("Also include files that previously failed encoding")]
 		public bool IncludeFailing { get; set; }

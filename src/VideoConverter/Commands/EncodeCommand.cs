@@ -464,45 +464,49 @@ namespace VideoConverter.Commands
 										//this.queueRepo.UpdateQueueStatus(queue.Id, QueueStatus.Completed, statusMessage);
 										if (!isDuplicate || !settings.IgnoreDuplicates)
 										{
-											var newThumbPath = Path.ChangeExtension(queue.OutputPath, "-thumb.jpg").Replace(".-thumb", "-thumb");
-											var newFanArtPath = Path.ChangeExtension(queue.OutputPath, "-fanart.jpg").Replace(".-fanart", "-fanart");
-
-											if (File.Exists(newThumbPath))
-												File.Delete(newThumbPath);
-
-											if (File.Exists(newFanArtPath))
-												File.Delete(newFanArtPath);
 											moveTask.Increment(moveStep);
 
 											mediaInfo = await FFmpeg.GetMediaInfo(tempWorkPath).ConfigureAwait(false);
 											firstVideoStream = mediaInfo.VideoStreams.First();
 											parseTask.Increment(parseStep);
 
-											var thumbnailAt = this.rand.Next((int)firstVideoStream.Duration.TotalMilliseconds + 1);
-											var fanArtAt = this.rand.Next((int)firstVideoStream.Duration.TotalMilliseconds + 1);
-											var thumbConversion = await FFmpeg.Conversions.FromSnippet.Snapshot(
-												tempWorkPath,
-												newThumbPath,
-												TimeSpan.FromMilliseconds(thumbnailAt)
-											).ConfigureAwait(false);
-											var fanArtConversion = await FFmpeg.Conversions.FromSnippet.Snapshot(
-												tempWorkPath,
-												newFanArtPath,
-												TimeSpan.FromMilliseconds(fanArtAt)
-											).ConfigureAwait(false);
-											if (!string.IsNullOrEmpty(stereo3d))
+											if (!queue.SkipThumbnails)
 											{
-												thumbConversion.AddParameter($"-vf \"stereo3d={stereo3d}:ml\"");
-												fanArtConversion.AddParameter($"-vf \"stereo3d={stereo3d}:mr\"");
+												var newThumbPath = Path.ChangeExtension(queue.OutputPath, "-thumb.jpg").Replace(".-thumb", "-thumb");
+												var newFanArtPath = Path.ChangeExtension(queue.OutputPath, "-fanart.jpg").Replace(".-fanart", "-fanart");
+
+												if (File.Exists(newThumbPath))
+													File.Delete(newThumbPath);
+
+												if (File.Exists(newFanArtPath))
+													File.Delete(newFanArtPath);
+
+												var thumbnailAt = this.rand.Next((int)firstVideoStream.Duration.TotalMilliseconds + 1);
+												var fanArtAt = this.rand.Next((int)firstVideoStream.Duration.TotalMilliseconds + 1);
+												var thumbConversion = await FFmpeg.Conversions.FromSnippet.Snapshot(
+													tempWorkPath,
+													newThumbPath,
+													TimeSpan.FromMilliseconds(thumbnailAt)
+												).ConfigureAwait(false);
+												var fanArtConversion = await FFmpeg.Conversions.FromSnippet.Snapshot(
+													tempWorkPath,
+													newFanArtPath,
+													TimeSpan.FromMilliseconds(fanArtAt)
+												).ConfigureAwait(false);
+												if (!string.IsNullOrEmpty(stereo3d))
+												{
+													thumbConversion.AddParameter($"-vf \"stereo3d={stereo3d}:ml\"");
+													fanArtConversion.AddParameter($"-vf \"stereo3d={stereo3d}:mr\"");
+												}
+
+												var thumbArgs = thumbConversion.Build();
+												var fanArtArgs = fanArtConversion.Build();
+
+												await Task.WhenAll(
+													thumbConversion.Start(cancellationToken),
+													fanArtConversion.Start(cancellationToken)
+												).ConfigureAwait(false);
 											}
-
-											var thumbArgs = thumbConversion.Build();
-											var fanArtArgs = fanArtConversion.Build();
-
-											await Task.WhenAll(
-												thumbConversion.Start(cancellationToken),
-												fanArtConversion.Start(cancellationToken)
-											).ConfigureAwait(false);
 
 											moveTask.Increment(moveStep);
 

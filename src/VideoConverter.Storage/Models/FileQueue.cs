@@ -25,5 +25,7 @@ namespace VideoConverter.Storage.Models
 		public StereoScopicMode StereoMode { get; set; }
 
 		public string InputParameters { get; set; } = string.Empty;
+
+		public bool SkipThumbnails { get; set; }
 	}
 }

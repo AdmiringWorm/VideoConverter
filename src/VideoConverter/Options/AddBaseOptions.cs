@@ -80,9 +80,9 @@ namespace VideoConverter.Options
 		)]
 		public string? Repeat { get; set; }
 
-		[CommandOption("--extension")]
-		[Description("The file extension to use when encoding files")]
-		public string? FileExtension { get; set; }
+		[CommandOption("--skip-thumbnails|--no-thumbnails")]
+		[Description("After conversion, do not create any thumbnails together with the video")]
+		public bool SkipThumbnails { get; set; }
 
 		[CommandOption("--stereo-mode|--stereo")]
 		[Description("The movie is in 3D with the following stereoscopic view")]

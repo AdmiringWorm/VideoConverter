@@ -327,6 +327,7 @@ namespace VideoConverter.Commands
 						};
 					}
 					queueItem.OldHash = hash;
+					queueItem.SkipThumbnails = settings.SkipThumbnails;
 
 					var audioCodec = settings.AudioCodec ?? this.config.AudioCodec;
 					var videoCodec = settings.VideoCodec ?? this.config.VideoCodec;

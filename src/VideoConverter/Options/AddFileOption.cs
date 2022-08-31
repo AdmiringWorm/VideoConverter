@@ -52,6 +52,7 @@ namespace VideoConverter.Options
 				ReEncode = directoryOptions.ReEncode,
 				RemoveDuplicates = directoryOptions.RemoveDuplicates,
 				Repeat = directoryOptions.Repeat,
+				SkipThumbnails = directoryOptions.SkipThumbnails,
 				StereoMode = directoryOptions.StereoMode,
 				SubtitleCodec = directoryOptions.SubtitleCodec,
 				UseEncodingCopy = directoryOptions.UseEncodingCopy,
