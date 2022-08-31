@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net5.0</TargetFramework>
+
+		<IsPackable>false</IsPackable>
+		<PublishTrimmed>true</PublishTrimmed>
+		<PublishSingleFile>false</PublishSingleFile>
+		<TrimMode>CopyUsed</TrimMode>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="coverlet.collector" Version="3.0.3">
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+			<PrivateAssets>all</PrivateAssets>
+		</PackageReference>
+		<PackageReference Include="FluentAssertions" Version="5.10.3" />
+		<PackageReference Include="NUnit" Version="3.13.1" />
+		<PackageReference Include="NUnit3TestAdapter" Version="3.17.0" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.4" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\src\VideoConverter.Core\VideoConverter.Core.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<EditorConfigFiles Remove=".editorconfig" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include=".editorconfig" />
+	</ItemGroup>
+
+</Project>

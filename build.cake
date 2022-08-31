@@ -76,7 +76,7 @@ Task("Clean")
 
 Task("Build")
 	.IsDependentOn("Clean")
-	.DoesForEach(GetFiles("tests/**/*.csproj"), (project) =>
+	.DoesForEach(GetFiles("src/**/*Tests.csproj"), (project) =>
 {
 	DotNetCoreBuild(project.FullPath, new DotNetCoreBuildSettings
 	{

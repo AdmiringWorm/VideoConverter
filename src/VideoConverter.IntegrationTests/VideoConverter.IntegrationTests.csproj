@@ -21,15 +21,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\src\VideoConverter.Core\VideoConverter.Core.csproj" />
+		<ProjectReference Include="..\VideoConverter\VideoConverter.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<EditorConfigFiles Remove="E:\Docs\git\people\AdmiringWorm\VideoConverter\tests\VideoConverter.Core.Tests\.editorconfig" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<None Include="E:\Docs\git\people\AdmiringWorm\VideoConverter\tests\VideoConverter.Core.Tests\.editorconfig" />
+		<EditorConfigFiles Include="..\VideoConverter.Core.Tests\.editorconfig" Link=".editorconfig" />
 	</ItemGroup>
 
 </Project>
