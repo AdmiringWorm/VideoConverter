@@ -177,6 +177,7 @@ Task("Publish-Binaries")
 		Runtime = runtime,
 		OutputDirectory = outputDirectory,
 		PublishSingleFile = singleFile,
+		SelfContained = true,
 		MSBuildSettings = new DotNetCoreMSBuildSettings()
 			.SetVersion(version.FullSemVer)
 			.WithProperty("PackageReleaseNotes", plainTextNotes)

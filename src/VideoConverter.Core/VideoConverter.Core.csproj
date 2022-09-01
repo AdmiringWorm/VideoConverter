@@ -1,10 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net5.0</TargetFramework>
+		<TargetFramework>net6.0</TargetFramework>
 		<langVersion>9.0</langVersion>
 		<nullable>enable</nullable>
-		<IsTrimmable>true</IsTrimmable>
+		<IsTrimmable>false</IsTrimmable>
 		<TrimMode>link</TrimMode>
 		<AnalysisMode>AllEnabledByDefault</AnalysisMode>
 		<DebugType>embedded</DebugType>

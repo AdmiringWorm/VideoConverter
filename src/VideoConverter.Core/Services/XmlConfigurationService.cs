@@ -68,10 +68,14 @@ namespace VideoConverter.Core.Services
 			}
 
 			using var writer = new StreamWriter(configPath, false, Encoding.UTF8);
+			using var xmlWriter = XmlWriter.Create(writer, new XmlWriterSettings
+			{
+				Indent = true
+			});
 
 			var serializer = new XmlSerializer(typeof(ConverterConfiguration));
 
-			serializer.Serialize(writer, config);
+			serializer.Serialize(xmlWriter, config);
 
 			this.config = config;
 
