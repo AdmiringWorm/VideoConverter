@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 using Spectre.Console;
 
@@ -21,18 +23,31 @@ namespace VideoConverter.Prompts.Streams
 
 		public IEnumerable<T> Show(IAnsiConsole console)
 		{
-			var indexes = ShowBase(console, streams);
-
-			if (indexes.Any())
-			{
-				return streams.Where(s => indexes.Contains(s.Index));
-			}
-			else
-			{
-				return streams;
-			}
+			throw new NotSupportedException("Synchron calling is not supported!");
 		}
 
-		protected abstract IEnumerable<int> ShowBase(IAnsiConsole console, IEnumerable<T> streams);
+		public async Task<IEnumerable<T>> ShowAsync(IAnsiConsole console, CancellationToken cancellationToken)
+		{
+			var streamDictionary = streams.ToDictionary(
+				k => k.Index,
+				v => v);
+
+			var result = new List<T>();
+
+			await foreach (var index in ShowBaseAsync(console, streams, cancellationToken))
+			{
+				if (streamDictionary.ContainsKey(index))
+				{
+					result.Add(streamDictionary[index]);
+				}
+			}
+
+			return result;
+		}
+
+		protected abstract IAsyncEnumerable<int> ShowBaseAsync(
+			IAnsiConsole console,
+			IEnumerable<T> streams,
+			CancellationToken cancellationToken);
 	}
 }

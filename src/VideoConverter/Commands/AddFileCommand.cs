@@ -135,14 +135,12 @@ namespace VideoConverter.Commands
 
 						if (episodeData is null)
 						{
-							var path = console.Prompt(
-								new TextPrompt<string>(
-									$"File '[fuchsia]{file.EscapeMarkup()}[/]'...\n" +
-									"We were unable to extract necessary information. Please input the location of the file to save,\n" +
-									$"[grey][[Optional]][/] Relative to the path ([fuchsia]{relativePath.EscapeMarkup()}[/]):"
-								)
-								.AllowEmpty()
-							);
+							var path = await TextPromptOptionalAsync<string>(
+								console,
+								$"File '[fuchsia]{file.EscapeMarkup()}[/]'...\n" +
+								"We were unable to extract necessary information. Please input the location of the file to save,\n" +
+								$"[grey][[Optional]][/] Relative to the path ([fuchsia]{relativePath.EscapeMarkup()}[/]):",
+								tokenSource.Token);
 
 							if (string.IsNullOrWhiteSpace(path))
 							{
@@ -219,7 +217,7 @@ namespace VideoConverter.Commands
 
 					var streams = new List<IStream>();
 
-					if (!AddStreams(
+					if (!await AddStreamsAsync(
 						streams,
 						mediaInfo.VideoStreams
 							.Where(v =>
@@ -227,7 +225,8 @@ namespace VideoConverter.Commands
 									v.Codec, "mjpeg",
 									StringComparison.OrdinalIgnoreCase)
 								)
-							.ToArray()
+							.ToArray(),
+						tokenSource.Token
 						)
 					)
 					{
@@ -238,13 +237,14 @@ namespace VideoConverter.Commands
 						break;
 					}
 
-					AddStreams(streams, mediaInfo.AudioStreams);
+					await AddStreamsAsync(streams, mediaInfo.AudioStreams, tokenSource.Token);
+
 					if (tokenSource.Token.IsCancellationRequested)
 					{
 						break;
 					}
 
-					AddStreams(streams, mediaInfo.SubtitleStreams);
+					await AddStreamsAsync(streams, mediaInfo.SubtitleStreams, tokenSource.Token);
 
 					if (tokenSource.IsCancellationRequested)
 					{
@@ -550,8 +550,34 @@ namespace VideoConverter.Commands
 			return Regex.Replace(sb.ToString(), @"\s{2,}", " ", RegexOptions.Compiled).Trim();
 		}
 
-		private bool AddStreams<T>(List<IStream> addedStreams, IEnumerable<T> streams)
-								where T : IStream
+		private static Task<TType> TextPromptAsync<TType>(
+			IAnsiConsole console,
+			string title,
+			TType defaultValue,
+			CancellationToken cancellationToken = default)
+		{
+			var textPrompt = new TextPrompt<TType>(title)
+				.DefaultValue(defaultValue);
+
+			return textPrompt.ShowAsync(console, cancellationToken);
+		}
+
+		private static Task<TType> TextPromptOptionalAsync<TType>(
+			IAnsiConsole console,
+			string title,
+			CancellationToken cancellationToken = default)
+		{
+			var textPrompt = new TextPrompt<TType>(title)
+				.AllowEmpty();
+
+			return textPrompt.ShowAsync(console, cancellationToken);
+		}
+
+		private async Task<bool> AddStreamsAsync<T>(
+			List<IStream> addedStreams,
+			IEnumerable<T> streams,
+			CancellationToken cancellationToken = default)
+												where T : IStream
 		{
 			var streamCount = streams.Count();
 			if (streamCount == 0)
@@ -568,19 +594,19 @@ namespace VideoConverter.Commands
 			{
 				var prompt = new VideoStreamPrompt()
 					.AddStreams(videoStreams);
-				addedStreams.AddRange(prompt.Show(console));
+				addedStreams.AddRange(await prompt.ShowAsync(console, cancellationToken));
 			}
 			else if (streams is IEnumerable<IAudioStream> audioStreams)
 			{
 				var prompt = new AudioStreamPrompt()
 					.AddStreams(audioStreams);
-				addedStreams.AddRange(prompt.Show(console));
+				addedStreams.AddRange(await prompt.ShowAsync(console, cancellationToken));
 			}
 			else if (streams is IEnumerable<ISubtitleStream> subtitleStreams)
 			{
 				var prompt = new SubtitleStreamPrompt()
 					.AddStreams(subtitleStreams);
-				addedStreams.AddRange(prompt.Show(console));
+				addedStreams.AddRange(await prompt.ShowAsync(console, cancellationToken));
 			}
 
 			return true;
@@ -593,7 +619,8 @@ namespace VideoConverter.Commands
 		{
 			DisplayEpisodeData(episodeData);
 
-			var prompt = console.Prompt(new YesNoPrompt("Do this information look correct?"));
+			var consolePrompt = new YesNoPrompt("Do this information look correct?");
+			var prompt = await consolePrompt.ShowAsync(console, cancellationToken).ConfigureAwait(false);
 
 			if (cancellationToken.IsCancellationRequested)
 			{
@@ -617,15 +644,21 @@ namespace VideoConverter.Commands
 			var settings = new AddCriteriaOption
 			{
 				FilePath = episodeData.FileName,
-				SeriesName = console.Prompt(
-					new TextPrompt<string>(
-						"Name of Series")
-							.DefaultValue(episodeData.Series.EscapeMarkup())),
-				SeasonNumber = console.Prompt(
-					new TextPrompt<int>(
-						"Season Number")
-							.DefaultValue(episodeData.SeasonNumber ?? 1)),
-				EpisodeNumber = console.Prompt(new TextPrompt<int>("Episode Number").DefaultValue(episodeData.EpisodeNumber))
+				SeriesName = await TextPromptAsync(
+					console,
+					"Name of Series",
+					episodeData.Series.EscapeMarkup(),
+					tokenSource.Token),
+				SeasonNumber = await TextPromptAsync(
+					console,
+					"Season Number",
+					episodeData.SeasonNumber ?? 1,
+					tokenSource.Token),
+				EpisodeNumber = await TextPromptAsync(
+					console,
+					"Episode Number",
+					episodeData.EpisodeNumber,
+					tokenSource.Token)
 			};
 
 			if (cancellationToken.IsCancellationRequested)
@@ -652,7 +685,7 @@ namespace VideoConverter.Commands
 			tokenSource.Cancel();
 		}
 
-		private void DisplayEpisodeData(Core.Models.EpisodeData episodeData)
+		private void DisplayEpisodeData(EpisodeData episodeData)
 		{
 			var grid = new Grid()
 				.AddColumn(new GridColumn().RightAligned())
