@@ -4,8 +4,12 @@ using System.Text;
 namespace VideoConverter.Prompts
 {
 	using System;
+	using System.Threading;
+	using System.Threading.Tasks;
 
 	using Spectre.Console;
+
+	using VideoConverter.Core.Assertions;
 
 	internal sealed class YesNoPrompt : IPrompt<PromptResponse>
 	{
@@ -20,6 +24,11 @@ namespace VideoConverter.Prompts
 
 		public PromptResponse Show(IAnsiConsole console)
 		{
+			throw new NotSupportedException("Sync calls are not supported!");
+		}
+
+		public async Task<PromptResponse> ShowAsync(IAnsiConsole console, CancellationToken cancellationToken)
+		{
 			if (console is null)
 			{
 				throw new ArgumentNullException(nameof(console));
@@ -31,15 +40,14 @@ namespace VideoConverter.Prompts
 
 			while (true)
 			{
-				var key = console.Input.ReadKey(true);
+				var key = await console.Input.ReadKeyAsync(intercept: true, cancellationToken).ConfigureAwait(false);
 
-				if (key.Key == ConsoleKey.Enter)
+				if (!key.HasValue)
 				{
-					console.WriteLine(DefaultResponse.ToString(), promptStyle);
-					return DefaultResponse;
+					continue;
 				}
 
-				switch (key.Key)
+				switch (key.Value.Key)
 				{
 					case ConsoleKey.Y:
 						console.WriteLine("Yes", promptStyle);
@@ -54,12 +62,17 @@ namespace VideoConverter.Prompts
 						return PromptResponse.Skip;
 
 					case ConsoleKey.C:
-						if (key.Modifiers == ConsoleModifiers.Control)
+						if (key.Value.Modifiers == ConsoleModifiers.Control)
 						{
 							console.WriteLine("Skip", promptStyle);
 							return PromptResponse.Skip;
 						}
+
 						break;
+
+					case ConsoleKey.Enter:
+						console.WriteLine(DefaultResponse.ToString(), promptStyle);
+						return DefaultResponse;
 				}
 			}
 		}
