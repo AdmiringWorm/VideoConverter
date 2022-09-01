@@ -1,7 +1,6 @@
 namespace VideoConverter.Storage.Database
 {
 	using System;
-	using System.Diagnostics.CodeAnalysis;
 	using System.Threading.Tasks;
 
 	using LiteDB;
@@ -16,7 +15,7 @@ namespace VideoConverter.Storage.Database
 		private readonly BsonMapper bsonMapper;
 		private readonly Configuration configuration;
 		private LiteDatabaseAsync? database;
-		private ILiteDatabaseAsync? transaction;
+		private bool transactionStarted;
 
 		public DatabaseFactory(Configuration configuration)
 		{
@@ -34,73 +33,50 @@ namespace VideoConverter.Storage.Database
 
 		public async Task CommitTransactionAsync()
 		{
-			if (transaction is not null)
-			{
-				await transaction.CommitAsync().ConfigureAwait(false);
-
-				transaction.Dispose();
-				transaction = null;
-			}
-
 			if (database is null)
 			{
 				return;
 			}
 
 			await database.CommitAsync().ConfigureAwait(false);
-			database.Dispose();
-			database = null;
+			transactionStarted = false;
 		}
 
 		public async Task CreateCheckpointAsync()
 		{
 			await EnsureTransactionAsync().ConfigureAwait(false);
 
-			await transaction.CheckpointAsync().ConfigureAwait(false);
+			await database!.CheckpointAsync().ConfigureAwait(false);
 		}
 
 		public void Dispose()
 		{
-			transaction?.Dispose();
-			transaction = null;
-
 			database?.Dispose();
-			database = null;
 		}
 
-		[MemberNotNull(nameof(transaction))]
 		public async Task EnsureTransactionAsync()
 		{
 			EnsureDatabase();
 
-			if (transaction is not null)
+			if (transactionStarted)
 			{
 				return;
 			}
 
-#pragma warning disable CS8774 // Member must have a non-null value when exiting.
-			var startedTransaction = await database.BeginTransactionAsync().ConfigureAwait(false);
-#pragma warning restore CS8774 // Member must have a non-null value when exiting.
-
-			if (startedTransaction is null)
-			{
-				throw new ApplicationException("Unable to create the transaction");
-			}
-
-			transaction = startedTransaction;
+			transactionStarted = await database!.BeginTransAsync().ConfigureAwait(false);
 		}
 
 		public ILiteCollectionAsync<TEntity> GetCollection<TEntity>(string? name = null)
 		{
 			EnsureDatabase();
 
-			if (name is null && transaction is not null)
+			if (name is null)
 			{
-				return transaction.GetCollection<TEntity>();
+				return database!.GetCollection<TEntity>();
 			}
 			else
 			{
-				return database.GetCollection<TEntity>(name);
+				return database!.GetCollection<TEntity>(name);
 			}
 		}
 
@@ -111,21 +87,10 @@ namespace VideoConverter.Storage.Database
 				return;
 			}
 
-			if (transaction is not null)
-			{
-				await transaction.RollbackAsync().ConfigureAwait(false);
-				transaction.Dispose();
-				transaction = null;
-			}
-			else
-			{
-				await database.RollbackAsync().ConfigureAwait(false);
-				database.Dispose();
-				database = null;
-			}
+			await database.RollbackAsync().ConfigureAwait(false);
+			transactionStarted = false;
 		}
 
-		[MemberNotNull(nameof(database))]
 		private void EnsureDatabase()
 		{
 			if (database is not null)
