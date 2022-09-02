@@ -1,6 +1,7 @@
 namespace VideoConverter.Commands
 {
 	using System;
+	using System.Collections;
 	using System.Diagnostics.CodeAnalysis;
 	using System.IO;
 	using System.Linq;
@@ -188,8 +189,16 @@ namespace VideoConverter.Commands
 					.Where(p => p.Name != "Prefixes")
 			)
 			{
+				if (property.PropertyType.IsArray ||
+					(property.PropertyType != typeof(string) && property.PropertyType.IsAssignableTo(typeof(IEnumerable))))
+				{
+					// For now we will ignore any lists
+					continue;
+				}
+
 				var name = property.Name;
 				var value = property.GetValue(config);
+
 				table.AddRow(
 					$"[fuchsia]{name.Humanize()}[/]",
 					$"[aqua]{value}[/]"
