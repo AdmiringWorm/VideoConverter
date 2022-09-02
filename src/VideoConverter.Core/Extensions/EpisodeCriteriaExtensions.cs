@@ -7,8 +7,8 @@ namespace VideoConverter.Core.Extensions
 	{
 		public static bool UpdateEpisodeData(this EpisodeCriteria criteria, EpisodeData data)
 		{
-			criteria.IsNotNull();
-			data.IsNotNull();
+			criteria.AssertNotNull();
+			data.AssertNotNull();
 
 			if (data < criteria)
 			{

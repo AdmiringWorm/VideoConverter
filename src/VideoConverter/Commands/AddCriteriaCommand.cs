@@ -6,6 +6,7 @@ namespace VideoConverter.Commands
 	using Spectre.Console;
 	using Spectre.Console.Cli;
 
+	using VideoConverter.Core.Assertions;
 	using VideoConverter.Core.Models;
 	using VideoConverter.Core.Parsers;
 	using VideoConverter.Options;
@@ -24,10 +25,7 @@ namespace VideoConverter.Commands
 
 		public override async Task<int> ExecuteAsync(CommandContext context, AddCriteriaOption settings)
 		{
-			if (settings is null)
-			{
-				throw new ArgumentNullException(nameof(settings));
-			}
+			settings.AssertNotNull();
 
 			EpisodeData? episodeData;
 			try

@@ -1,6 +1,5 @@
 namespace VideoConverter.Commands
 {
-	using System;
 	using System.Threading.Tasks;
 
 	using Humanizer;
@@ -8,6 +7,7 @@ namespace VideoConverter.Commands
 	using Spectre.Console;
 	using Spectre.Console.Cli;
 
+	using VideoConverter.Core.Assertions;
 	using VideoConverter.Options;
 	using VideoConverter.Storage.Repositories;
 
@@ -24,10 +24,7 @@ namespace VideoConverter.Commands
 
 		public override async Task<int> ExecuteAsync(CommandContext context, QueueClearOption settings)
 		{
-			if (settings is null)
-			{
-				throw new ArgumentNullException(nameof(settings));
-			}
+			settings.AssertNotNull();
 
 			var statusCount = await queueRepo.RemoveQueueItemsAsync(settings.Status).ConfigureAwait(false);
 

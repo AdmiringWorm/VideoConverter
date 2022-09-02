@@ -15,6 +15,7 @@ namespace VideoConverter.Commands
 	using Spectre.Console;
 	using Spectre.Console.Cli;
 
+	using VideoConverter.Core.Assertions;
 	using VideoConverter.Core.Extensions;
 	using VideoConverter.Core.Models;
 	using VideoConverter.Core.Parsers;
@@ -58,10 +59,7 @@ namespace VideoConverter.Commands
 
 		public override async Task<int> ExecuteAsync(CommandContext context, AddFileOption settings)
 		{
-			if (settings is null)
-			{
-				throw new ArgumentNullException(nameof(settings));
-			}
+			settings.AssertNotNull();
 
 			if (!string.IsNullOrWhiteSpace(settings.FileExtension))
 			{

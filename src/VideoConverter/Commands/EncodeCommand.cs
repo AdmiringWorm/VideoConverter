@@ -15,6 +15,7 @@ namespace VideoConverter.Commands
 	using Spectre.Console;
 	using Spectre.Console.Cli;
 
+	using VideoConverter.Core.Assertions;
 	using VideoConverter.Core.Models;
 	using VideoConverter.Extensions;
 	using VideoConverter.Options;
@@ -57,10 +58,7 @@ namespace VideoConverter.Commands
 
 		public override async Task<int> ExecuteAsync(CommandContext context, EncodeOption settings)
 		{
-			if (settings is null)
-			{
-				throw new ArgumentNullException(nameof(settings));
-			}
+			settings.AssertNotNull();
 
 			Console.Clear();
 			var failed = false;

@@ -7,6 +7,7 @@ namespace VideoConverter.Commands
 	using Spectre.Console;
 	using Spectre.Console.Cli;
 
+	using VideoConverter.Core.Assertions;
 	using VideoConverter.Options;
 	using VideoConverter.Storage.Models;
 	using VideoConverter.Storage.Repositories;
@@ -24,10 +25,7 @@ namespace VideoConverter.Commands
 
 		public override async Task<int> ExecuteAsync(CommandContext context, QueueResetOption settings)
 		{
-			if (settings is null)
-			{
-				throw new ArgumentNullException(nameof(settings));
-			}
+			settings.AssertNotNull();
 
 			foreach (var identifier in settings.Identifiers)
 			{

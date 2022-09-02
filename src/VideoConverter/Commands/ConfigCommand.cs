@@ -12,6 +12,7 @@ namespace VideoConverter.Commands
 	using Spectre.Console;
 	using Spectre.Console.Cli;
 
+	using VideoConverter.Core.Assertions;
 	using VideoConverter.Core.Models;
 	using VideoConverter.Core.Services;
 	using VideoConverter.Options;
@@ -23,8 +24,8 @@ namespace VideoConverter.Commands
 
 		public ConfigCommand(IConfigurationService service, IAnsiConsole console)
 		{
-			this.service = service ?? throw new ArgumentNullException(nameof(service));
-			this.console = console ?? throw new ArgumentNullException(nameof(console));
+			this.service = service.AssertAndReturnNotNull();
+			this.console = console.AssertAndReturnNotNull();
 		}
 
 		public override int Execute([NotNull] CommandContext context, [NotNull] ConfigOption settings)

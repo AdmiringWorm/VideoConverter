@@ -1,44 +1,58 @@
 namespace VideoConverter.Core.Assertions
 {
 	using System;
+	using System.Diagnostics.CodeAnalysis;
 	using System.Runtime.CompilerServices;
 
 	public static class AssertionExtensions
 	{
-		public static string IsNotEmpty(
-			this string value,
+		public static TValue AssertAndReturnNotNull<TValue>(
+			[NotNull] this TValue value,
 			[CallerArgumentExpression("memberName")] string? memberName = default)
 		{
-			if (string.IsNullOrEmpty(value))
-			{
-				throw new ArgumentOutOfRangeException(memberName);
-			}
+			AssertNotNull(value, memberName);
 
 			return value;
 		}
 
-		public static TValue IsNotNull<TValue>(
-					this TValue value,
+		public static void AssertNotEmpty(
+							[NotNull] this string value,
 			[CallerArgumentExpression("memberName")] string? memberName = default)
 		{
-			if (value is null)
+			AssertNotNull(value, memberName);
+
+			if (!string.IsNullOrEmpty(value))
 			{
-				throw new ArgumentNullException(memberName);
+				return;
 			}
 
-			return value;
+			throw new ArgumentOutOfRangeException(memberName);
 		}
 
-		public static string IsNotWhitespace(
-			this string value,
+		public static void AssertNotNull<TValue>(
+							[NotNull] this TValue value,
 			[CallerArgumentExpression("memberName")] string? memberName = default)
 		{
-			if (string.IsNullOrWhiteSpace(value))
+			if (value is not null)
 			{
-				throw new ArgumentOutOfRangeException(memberName);
+				return;
 			}
 
-			return value;
+			throw new ArgumentNullException(memberName);
+		}
+
+		public static void AssertNotWhitespace(
+			[NotNull] this string value,
+			[CallerArgumentExpression("memberName")] string? memberName = default)
+		{
+			AssertNotNull(value, memberName);
+
+			if (!string.IsNullOrWhiteSpace(value))
+			{
+				return;
+			}
+
+			throw new ArgumentOutOfRangeException(memberName);
 		}
 	}
 }

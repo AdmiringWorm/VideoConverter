@@ -22,8 +22,8 @@ namespace VideoConverter.Core.Models
 		public static bool operator <(EpisodeData data, EpisodeCriteria criteria)
 #pragma warning restore CA2225 // Operator overloads have named alternates
 		{
-			criteria.IsNotNull();
-			data.IsNotNull();
+			criteria.AssertNotNull();
+			data.AssertNotNull();
 
 			if (criteria.Season is null && criteria.Episode is null)
 			{
@@ -45,8 +45,8 @@ namespace VideoConverter.Core.Models
 
 		public static bool operator ==(EpisodeData data, EpisodeCriteria criteria)
 		{
-			criteria.IsNotNull();
-			data.IsNotNull();
+			criteria.AssertNotNull();
+			data.AssertNotNull();
 
 			if (criteria.SeriesName is null &&
 				criteria.Season is null &&
@@ -72,8 +72,8 @@ namespace VideoConverter.Core.Models
 
 		public static bool operator >(EpisodeData data, EpisodeCriteria criteria)
 		{
-			criteria.IsNotNull();
-			data.IsNotNull();
+			criteria.AssertNotNull();
+			data.AssertNotNull();
 
 			if (criteria.Season is null && criteria.Episode is null)
 			{

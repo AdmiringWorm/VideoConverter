@@ -1,11 +1,10 @@
-using System;
-using System.Linq;
-
 namespace VideoConverter.Storage.Repositories
 {
 	using System.Collections.Generic;
+	using System.Linq;
 	using System.Threading.Tasks;
 
+	using VideoConverter.Core.Assertions;
 	using VideoConverter.Storage.Database;
 	using VideoConverter.Storage.Models;
 
@@ -28,10 +27,7 @@ namespace VideoConverter.Storage.Repositories
 
 		public async Task AddOrUpdateCriteriaAsync(CoreEpisodeCriteria criteria)
 		{
-			if (criteria is null)
-			{
-				throw new ArgumentNullException(nameof(criteria));
-			}
+			criteria.AssertNotNull();
 
 			var collection = dbFactory.GetCollection<Criteria<EpisodeCriteria>>(TABLE_NAME);
 			var epCol = dbFactory.GetCollection<EpisodeCriteria>();

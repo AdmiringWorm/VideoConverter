@@ -35,7 +35,7 @@ namespace VideoConverter.Core.Parsers
 
 		public static EpisodeData? ParseEpisode(string fileName)
 		{
-			fileName.IsNotNull().IsNotWhitespace();
+			fileName.AssertNotWhitespace();
 
 			var index = fileName.LastIndexOfAny(new[] { '/', '\\' });
 			if (index > 0)

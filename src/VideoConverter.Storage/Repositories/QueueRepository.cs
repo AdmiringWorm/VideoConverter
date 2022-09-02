@@ -8,6 +8,7 @@ namespace VideoConverter.Storage.Repositories
 	using LiteDB;
 	using LiteDB.Async;
 
+	using VideoConverter.Core.Assertions;
 	using VideoConverter.Core.Models;
 	using VideoConverter.Storage.Database;
 	using VideoConverter.Storage.Models;
@@ -31,10 +32,7 @@ namespace VideoConverter.Storage.Repositories
 
 		public async Task<bool> AddToQueueAsync(FileQueue queueItem)
 		{
-			if (queueItem is null)
-			{
-				throw new ArgumentNullException(nameof(queueItem));
-			}
+			queueItem.AssertNotNull();
 
 			var queueCol = dbFactory.GetCollection<FileQueue>(TABLE_NAME);
 			var path = ReplaceWithPrefix(queueItem.Path);
@@ -221,10 +219,7 @@ namespace VideoConverter.Storage.Repositories
 
 		public async Task UpdateQueueAsync(FileQueue queue)
 		{
-			if (queue is null)
-			{
-				throw new ArgumentNullException(nameof(queue));
-			}
+			queue.AssertNotNull();
 
 			var col = dbFactory.GetCollection<FileQueue>(TABLE_NAME);
 

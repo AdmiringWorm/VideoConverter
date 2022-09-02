@@ -1,15 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-
-using Spectre.Console.Cli;
-
-using VideoConverter.Options;
-
 namespace VideoConverter.Commands
 {
+	using System.Collections.Generic;
+	using System.IO;
+	using System.Linq;
+	using System.Threading.Tasks;
+
+	using Spectre.Console.Cli;
+
+	using VideoConverter.Core.Assertions;
+	using VideoConverter.Options;
+
 	public class AddDirectoryCommand : AsyncCommand<AddDirectoryOption>
 	{
 		private readonly AddFileCommand fileCommand;
@@ -21,10 +21,7 @@ namespace VideoConverter.Commands
 
 		public override Task<int> ExecuteAsync(CommandContext context, AddDirectoryOption settings)
 		{
-			if (settings is null)
-			{
-				throw new ArgumentNullException(nameof(settings));
-			}
+			settings.AssertNotNull();
 
 			var files = settings.Directories.SelectMany(d => FindVideoFiles(d, settings.RecursiveSearch)).OrderBy(f => f);
 

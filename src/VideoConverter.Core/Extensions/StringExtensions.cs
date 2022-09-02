@@ -2,14 +2,13 @@ namespace VideoConverter.Core.Extensions
 {
 	using System;
 
+	using VideoConverter.Core.Assertions;
+
 	public static class StringExtensions
 	{
 		public static string GetExtensionFileType(this string extension)
 		{
-			if (extension is null)
-			{
-				throw new ArgumentNullException(nameof(extension));
-			}
+			extension.AssertNotNull();
 
 			return extension.TrimStart('.').ToUpperInvariant() switch
 			{
@@ -32,10 +31,7 @@ namespace VideoConverter.Core.Extensions
 
 		public static string GetFileExtension(this string extensionType)
 		{
-			if (extensionType is null)
-			{
-				throw new ArgumentNullException(nameof(extensionType));
-			}
+			extensionType.AssertNotNull();
 
 			return extensionType.ToUpperInvariant() switch
 			{
