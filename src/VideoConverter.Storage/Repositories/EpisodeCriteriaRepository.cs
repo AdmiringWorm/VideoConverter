@@ -12,7 +12,7 @@ namespace VideoConverter.Storage.Repositories
 
 	public class EpisodeCriteriaRepository
 	{
-		private const string TABLE_NAME = "criterias";
+		public const string TABLE_NAME = "criterias";
 		private readonly DatabaseFactory dbFactory;
 
 		public EpisodeCriteriaRepository(DatabaseFactory dbFactory)

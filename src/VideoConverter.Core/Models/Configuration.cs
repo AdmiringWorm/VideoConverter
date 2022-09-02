@@ -4,8 +4,6 @@ namespace VideoConverter.Core.Models
 	using System.IO;
 	using System.Linq;
 
-#pragma warning disable CA1724
-
 	public class Configuration
 	{
 		private readonly List<FansubberConfiguration> _ignoreVideosWithFansubbers;
@@ -21,12 +19,12 @@ namespace VideoConverter.Core.Models
 		public string AudioCodec { get; set; } = "libopus";
 		public string ExtraEncodingParameters { get; set; } = string.Empty;
 
-#pragma warning disable CA1002 // Do not expose generic lists
 #pragma warning disable CA2227 // Collection properties should be read only
+#pragma warning disable CA1002 // Do not expose generic lists
 
 		public List<FansubberConfiguration> Fansubbers
-#pragma warning restore CA2227 // Collection properties should be read only
 #pragma warning restore CA1002 // Do not expose generic lists
+#pragma warning restore CA2227 // Collection properties should be read only
 		{
 			get => _ignoreVideosWithFansubbers;
 			set
@@ -37,16 +35,17 @@ namespace VideoConverter.Core.Models
 		}
 
 		public string FileType { get; set; } = "Matroska";
+
 		public bool IncludeFansubber { get; set; } = true;
 
 		public string? MapperDatabase { get; set; }
 
-#pragma warning disable CA1002 // Do not expose generic lists
 #pragma warning disable CA2227 // Collection properties should be read only
+#pragma warning disable CA1002 // Do not expose generic lists
 
 		public List<PrefixConfiguration> Prefixes
-#pragma warning restore CA2227 // Collection properties should be read only
 #pragma warning restore CA1002 // Do not expose generic lists
+#pragma warning restore CA2227 // Collection properties should be read only
 		{
 			get => _prefixes;
 			set
@@ -57,7 +56,23 @@ namespace VideoConverter.Core.Models
 		}
 
 		public string SubtitleCodec { get; set; } = "copy";
+
 		public string VideoCodec { get; set; } = "hevc";
+
 		public string WorkDirectory { get; set; }
+
+		public void Reset()
+		{
+			AudioCodec = "libopus";
+			ExtraEncodingParameters = string.Empty;
+			Fansubbers.Clear();
+			FileType = "Matroska";
+			IncludeFansubber = true;
+			MapperDatabase = null;
+			Prefixes.Clear();
+			SubtitleCodec = "copy";
+			VideoCodec = "hevc";
+			WorkDirectory = Path.GetTempPath();
+		}
 	}
 }

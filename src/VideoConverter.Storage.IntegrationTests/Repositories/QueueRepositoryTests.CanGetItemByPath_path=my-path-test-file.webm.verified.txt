@@ -1,0 +1,10 @@
+﻿{
+  AudioCodec: libopus,
+  Id: 2,
+  OutputPath: my-temp/,
+  Path: my-path/test-file.webm,
+  SkipThumbnails: false,
+  Status: Failed,
+  SubtitleCodec: copy,
+  VideoCodec: hevc
+}

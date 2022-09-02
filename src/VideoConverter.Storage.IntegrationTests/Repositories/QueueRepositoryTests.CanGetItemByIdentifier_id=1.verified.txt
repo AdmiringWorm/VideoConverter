@@ -1,0 +1,19 @@
+﻿{
+  AudioCodec: copy,
+  Id: 1,
+  NewHash: e684fc2b2ddd6bbf78bb371c5793eef4e977123a,
+  OldHash: 6f0e875894c90eaea3a13f12a2235ca4218a1a3f,
+  OutputPath: my-temp/test-completed.mp4,
+  Path: my-path/some-file-to-complet.mp4,
+  SkipThumbnails: true,
+  Status: Completed,
+  StatusMessage: This file was completed successfully,
+  StereoMode: AboveBelowRight,
+  Streams: [
+    3,
+    2,
+    7
+  ],
+  SubtitleCodec: copy,
+  VideoCodec: libx264
+}

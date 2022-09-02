@@ -70,6 +70,9 @@
 # Text files where line endings should be preserved
 *.patch    -text
 
+# Text files that are used to verify behavior
+*.verified.txt -text
+
 #
 # Exclude files from exporting
 #

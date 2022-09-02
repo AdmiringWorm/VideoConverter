@@ -15,7 +15,7 @@ namespace VideoConverter.Storage.Repositories
 
 	public class QueueRepository
 	{
-		private const string TABLE_NAME = "queue";
+		public const string TABLE_NAME = "queue";
 		private readonly Configuration config;
 		private readonly DatabaseFactory dbFactory;
 
@@ -185,9 +185,11 @@ namespace VideoConverter.Storage.Repositories
 			var col = dbFactory.GetCollection<FileQueue>(TABLE_NAME);
 			await dbFactory.EnsureTransactionAsync().ConfigureAwait(false);
 
+			int result;
+
 			if (status is null)
 			{
-				return await col.DeleteManyAsync(c =>
+				result = await col.DeleteManyAsync(c =>
 					c.Status == QueueStatus.Completed ||
 					c.Status == QueueStatus.Failed ||
 					c.Status == QueueStatus.Pending)
@@ -195,9 +197,12 @@ namespace VideoConverter.Storage.Repositories
 			}
 			else
 			{
-				return await col.DeleteManyAsync(c => c.Status == status)
+				result = await col.DeleteManyAsync(c => c.Status == status)
 					.ConfigureAwait(false);
 			}
+			await dbFactory.CreateCheckpointAsync().ConfigureAwait(false);
+
+			return result;
 		}
 
 		public async Task ResetFailedQueueAsync()

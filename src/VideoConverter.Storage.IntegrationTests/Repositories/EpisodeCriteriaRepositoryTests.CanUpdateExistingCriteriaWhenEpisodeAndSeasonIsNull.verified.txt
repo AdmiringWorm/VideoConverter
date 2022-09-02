@@ -1,0 +1,30 @@
+﻿{
+  OldCriterias: [
+    {
+      Criterias: [
+        {
+          Id: 4,
+          NewName: Sherlock
+        }
+      ],
+      Id: 3,
+      Name: Sherlock (2010-2017)
+    }
+  ],
+  NewCriterias: [
+    {
+      Criterias: [
+        {
+          NewEpisode: 3,
+          NewSeason: 4,
+          OldEpisode: 34,
+          OldSeason: 1,
+          Id: 4,
+          NewName: Sherlock
+        }
+      ],
+      Id: 3,
+      Name: Sherlock (2010-2017)
+    }
+  ]
+}

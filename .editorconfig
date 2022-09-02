@@ -11,6 +11,13 @@ trim_trailing_whitespace = true
 [*.editorconfig]
 max_line_length = 160
 
+[*.verified.txt]
+indent_size = unset
+indent_style = unset
+end_of_line = unset
+insert_final_newline = unset
+trim_trailing_whitespace = unset
+
 [*.ps1]
 charset = utf-8-bom
 end_of_line = crlf
