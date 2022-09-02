@@ -193,7 +193,7 @@ namespace VideoConverter.Commands
 							mainTask.Description = string.Format(
 								CultureInfo.InvariantCulture,
 								"[green]Processing [aqua]{0}[/] [fuchsia]{1:0} / {2}[/]...[/]",
-								Path.GetFileNameWithoutExtension(queue.OutputPath),
+								Path.GetFileNameWithoutExtension(queue.OutputPath).EscapeMarkup(),
 								mainTask.Value + 1,
 								count
 								);
