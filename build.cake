@@ -16,7 +16,7 @@ public class BuildVersion
 	public string Metadata { get; set; }
 	public string PreReleaseLabel { get; set; }
 	public int Commits { get; set; }
-	public int Weight { get; set; }
+	public int? Weight { get; set; }
 }
 
 
@@ -57,6 +57,11 @@ Setup((context) =>
 	});
 
 	var buildData = DeserializeJsonFromFile<BuildData>(outputPath);
+
+	if (!buildData.Version.Weight.HasValue)
+	{
+		buildData.Version.Weight = 0;
+	}
 
 	context.Information("Building VideoConverter v{0}", buildData.Version.FullSemVer);
 
@@ -249,7 +254,7 @@ Task("Create-Tag")
 		args.Append("tag")
 			.Append(version.MajorMinorPatch)
 			.Append("-a")
-			.AppendSwitchQuoted("-m", string.Join("\n", plainTextNotes).Trim())
+			.AppendSwitchQuoted("-m", string.Join("\n", plainTextNotes).Replace("\"", string.Empty).Trim())
 	));
 });
 
