@@ -546,7 +546,7 @@ namespace VideoConverter.Commands
 											firstVideoStream = mediaInfo.VideoStreams.First();
 											parseTask.Increment(parseStep);
 
-											if (!queue.SkipThumbnails)
+											if (!settings.SkipThumbnails && !queue.SkipThumbnails)
 											{
 												var newThumbPath = Path
 													.ChangeExtension(
