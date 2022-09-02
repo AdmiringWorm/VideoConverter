@@ -239,6 +239,7 @@ namespace VideoConverter.Storage.Repositories
 			foundQueue.Streams = queue.Streams;
 			foundQueue.SubtitleCodec = queue.SubtitleCodec;
 			foundQueue.VideoCodec = queue.VideoCodec;
+			foundQueue.SkipThumbnails = queue.SkipThumbnails;
 
 			await col.UpdateAsync(foundQueue).ConfigureAwait(false);
 
