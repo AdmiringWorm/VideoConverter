@@ -68,6 +68,7 @@ namespace VideoConverter.Storage.Repositories
 			nextQueue.Streams = queueItem.Streams;
 			nextQueue.SubtitleCodec = queueItem.SubtitleCodec;
 			nextQueue.VideoCodec = queueItem.VideoCodec;
+			nextQueue.SkipThumbnails = queueItem.SkipThumbnails;
 
 			await queueCol.UpsertAsync(nextQueue).ConfigureAwait(false);
 			await dbFactory.CreateCheckpointAsync().ConfigureAwait(false);
