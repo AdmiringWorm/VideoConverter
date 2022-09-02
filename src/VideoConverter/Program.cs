@@ -2,7 +2,6 @@ namespace VideoConverter
 {
 	using System;
 	using System.IO;
-	using System.Linq;
 	using System.Text;
 	using System.Threading.Tasks;
 
@@ -48,14 +47,7 @@ namespace VideoConverter
 			container.Register<EpisodeCriteriaRepository>(Reuse.ScopedOrSingleton);
 			container.Register<QueueRepository>(Reuse.ScopedOrSingleton);
 
-			var optionTypes = typeof(Program).Assembly
-				.GetLoadedTypes()
-				.Where(t => t.IsClass && !t.IsAbstract && t.IsAssignableTo<CommandSettings>());
-
-			foreach (var optionType in optionTypes)
-			{
-				container.Register(optionType, Reuse.Singleton);
-			}
+			OptionsRegistrator.Register(container);
 
 			return container;
 		}

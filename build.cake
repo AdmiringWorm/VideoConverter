@@ -1,6 +1,7 @@
 #addin nuget:?package=Newtonsoft.Json&version=13.0.1
 #addin nuget:?package=Cake.Json&version=7.0.1
 #addin nuget:?package=Cake.FileHelpers&version=5.0.0
+#tool dotnet:?package=dotnet-t4&version=2.2.1
 
 public class BuildData
 {
@@ -79,8 +80,20 @@ Task("Clean")
 	CleanDirectories(directories);
 });
 
+Task("Transform-TextTemplates")
+	.Does(() =>
+{
+	var templates = GetFiles("src/**/*.tt");
+
+	foreach (var template in templates)
+	{
+		TransformTemplate(template);
+	}
+});
+
 Task("Build")
 	.IsDependentOn("Clean")
+	.IsDependentOn("Transform-TextTemplates")
 	.DoesForEach(GetFiles("src/**/*Tests.csproj"), (project) =>
 {
 	DotNetCoreBuild(project.FullPath, new DotNetCoreBuildSettings

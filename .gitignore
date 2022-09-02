@@ -375,3 +375,5 @@ FodyWeavers.xsd
 *.dll
 *.db
 .artifacts/
+
+*.g.cs
