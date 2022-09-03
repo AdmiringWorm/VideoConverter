@@ -24,3 +24,8 @@ jobs:
         with:
           script-path: build.cake
           cake-version: 2.2.0
+      - uses: actions/upload-artifact@v3.1.0
+        with:
+          path: |
+            .artifacts/installers/*.exe
+            .artifacts/packages/**/*.nupkg
