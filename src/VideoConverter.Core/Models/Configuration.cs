@@ -3,13 +3,15 @@ namespace VideoConverter.Core.Models
 	using System.Collections.Generic;
 	using System.IO;
 	using System.Linq;
+	using System.Xml.Serialization;
 
-	public class Configuration
+	[XmlRoot("Configuration")]
+	public class ConverterConfiguration
 	{
 		private readonly List<FansubberConfiguration> _ignoreVideosWithFansubbers;
 		private readonly List<PrefixConfiguration> _prefixes;
 
-		public Configuration()
+		public ConverterConfiguration()
 		{
 			WorkDirectory = Path.GetTempPath();
 			_prefixes = new List<PrefixConfiguration>();

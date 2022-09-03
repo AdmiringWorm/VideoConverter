@@ -49,7 +49,7 @@ namespace VideoConverter.Commands
 				if (string.Equals("Fansubber.Ignore", settings.Name, StringComparison.OrdinalIgnoreCase) ||
 					string.Equals("Fansubber.Include", settings.Name, StringComparison.OrdinalIgnoreCase))
 				{
-					propertyName = nameof(Configuration.Fansubbers);
+					propertyName = nameof(ConverterConfiguration.Fansubbers);
 				}
 
 				var property = GetProperty(propertyName);
@@ -169,13 +169,13 @@ namespace VideoConverter.Commands
 		private static PropertyInfo? GetProperty(string name)
 		{
 			return Array.Find(
-				typeof(Configuration).GetProperties(
+				typeof(ConverterConfiguration).GetProperties(
 					BindingFlags.Instance | BindingFlags.Public),
 					p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase)
 			);
 		}
 
-		private void ListConfigurations(Configuration config)
+		private void ListConfigurations(ConverterConfiguration config)
 		{
 			var table = new Table()
 				.BorderStyle(new Style(Color.Olive))

@@ -1,4 +1,4 @@
-﻿namespace VideoConverter.Core.Tests.Models
+namespace VideoConverter.Core.Tests.Models
 {
 	using System.Collections.Generic;
 	using System.Threading.Tasks;
@@ -14,7 +14,7 @@
 		[Test]
 		public async Task CanResetEntireClass()
 		{
-			var config = new Configuration
+			var config = new ConverterConfiguration
 			{
 				AudioCodec = "testing",
 				ExtraEncodingParameters = "Some Extra",
@@ -50,8 +50,8 @@
 		[Test]
 		public async Task NewInstanceAndResettingClassShouldBeTheSame()
 		{
-			var newConfig = new Configuration();
-			var resetConfig = new Configuration();
+			var newConfig = new ConverterConfiguration();
+			var resetConfig = new ConverterConfiguration();
 			resetConfig.Reset();
 
 			await Verify(new

@@ -12,7 +12,7 @@ namespace VideoConverter.Core.Services
 	{
 		private readonly string configPath;
 		private readonly FileSystemWatcher watcher;
-		private Configuration? config;
+		private ConverterConfiguration? config;
 
 		public XmlConfigurationService(string configPath)
 		{
@@ -35,14 +35,14 @@ namespace VideoConverter.Core.Services
 			watcher.Dispose();
 		}
 
-		public Configuration GetConfiguration()
+		public ConverterConfiguration GetConfiguration()
 		{
 			if (config is not null)
 			{
 				return config;
 			}
 
-			config = new Configuration();
+			config = new ConverterConfiguration();
 
 			if (!File.Exists(configPath))
 			{
@@ -57,7 +57,7 @@ namespace VideoConverter.Core.Services
 			return config;
 		}
 
-		public void SetConfiguration(Configuration config)
+		public void SetConfiguration(ConverterConfiguration config)
 		{
 			watcher.EnableRaisingEvents = false;
 
@@ -69,7 +69,7 @@ namespace VideoConverter.Core.Services
 
 			using var writer = new StreamWriter(configPath, false, Encoding.UTF8);
 
-			var serializer = new XmlSerializer(typeof(Configuration));
+			var serializer = new XmlSerializer(typeof(ConverterConfiguration));
 
 			serializer.Serialize(writer, config);
 
@@ -87,16 +87,16 @@ namespace VideoConverter.Core.Services
 			);
 		}
 
-		private static void UpdateConfiguration(Configuration config, string configPath)
+		private static void UpdateConfiguration(ConverterConfiguration config, string configPath)
 		{
 #pragma warning disable CA1031 // Do not catch general exception types
 			try
 			{
 				using var reader = new StreamReader(configPath, Encoding.UTF8);
 				using var xmlReader = XmlReader.Create(reader);
-				var serializer = new XmlSerializer(typeof(Configuration));
+				var serializer = new XmlSerializer(typeof(ConverterConfiguration));
 
-				var tempConfig = serializer.Deserialize(xmlReader) as Configuration ?? new Configuration();
+				var tempConfig = serializer.Deserialize(xmlReader) as ConverterConfiguration ?? new ConverterConfiguration();
 
 				config.AudioCodec = tempConfig.AudioCodec;
 				config.FileType = tempConfig.FileType;

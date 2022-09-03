@@ -16,10 +16,10 @@ namespace VideoConverter.Storage.Repositories
 	public class QueueRepository
 	{
 		public const string TABLE_NAME = "queue";
-		private readonly Configuration config;
+		private readonly ConverterConfiguration config;
 		private readonly DatabaseFactory dbFactory;
 
-		public QueueRepository(DatabaseFactory dbFactory, Configuration config)
+		public QueueRepository(DatabaseFactory dbFactory, ConverterConfiguration config)
 		{
 			this.config = config;
 			this.dbFactory = dbFactory;

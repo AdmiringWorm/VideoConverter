@@ -15,11 +15,11 @@ namespace VideoConverter.Storage.IntegrationTests.Repositories
 
 	public class QueueRepositoryTests : BaseRepositoryTests<QueueRepository>
 	{
-		private readonly Core.Models.Configuration configuration;
+		private readonly Core.Models.ConverterConfiguration configuration;
 
 		public QueueRepositoryTests()
 		{
-			configuration = new Core.Models.Configuration();
+			configuration = new Core.Models.ConverterConfiguration();
 		}
 
 		[Test]

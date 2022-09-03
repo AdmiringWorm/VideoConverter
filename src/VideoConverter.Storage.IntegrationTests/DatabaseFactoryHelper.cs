@@ -10,11 +10,11 @@ namespace VideoConverter.Storage.Tests
 	using VideoConverter.Storage.Models;
 	using VideoConverter.Storage.Repositories;
 
-	using Configuration = Core.Models.Configuration;
+	using ConverterConfiguration = Core.Models.ConverterConfiguration;
 
 	public static class DatabaseFactoryHelper
 	{
-		private static Configuration configuration;
+		private static ConverterConfiguration configuration;
 
 		public static async Task CleanTestFactory(DatabaseFactory factory)
 		{
@@ -36,7 +36,7 @@ namespace VideoConverter.Storage.Tests
 					Path.GetTempPath(),
 					Guid.NewGuid() + ".tmp-db");
 
-				configuration = new Configuration
+				configuration = new ConverterConfiguration
 				{
 					MapperDatabase = path
 				};
