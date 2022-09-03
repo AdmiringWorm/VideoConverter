@@ -20,7 +20,7 @@ namespace VideoConverter.Options
 			get => identifiers;
 			set
 			{
-				identifiers = value is null ? Array.Empty<int>() : value;
+				identifiers = value ?? Array.Empty<int>();
 			}
 		}
 
@@ -31,7 +31,7 @@ namespace VideoConverter.Options
 			get => queueStatuses;
 			set
 			{
-				queueStatuses = value is null ? Array.Empty<QueueStatus>() : value;
+				queueStatuses = value ?? Array.Empty<QueueStatus>();
 			}
 		}
 

@@ -185,21 +185,14 @@ namespace VideoConverter.Storage.Repositories
 			var col = dbFactory.GetCollection<FileQueue>(TABLE_NAME);
 			await dbFactory.EnsureTransactionAsync().ConfigureAwait(false);
 
-			int result;
-
-			if (status is null)
-			{
-				result = await col.DeleteManyAsync(c =>
+			var result = status is null
+				? await col.DeleteManyAsync(c =>
 					c.Status == QueueStatus.Completed ||
 					c.Status == QueueStatus.Failed ||
 					c.Status == QueueStatus.Pending)
-						.ConfigureAwait(false);
-			}
-			else
-			{
-				result = await col.DeleteManyAsync(c => c.Status == status)
+						.ConfigureAwait(false)
+				: await col.DeleteManyAsync(c => c.Status == status)
 					.ConfigureAwait(false);
-			}
 			await dbFactory.CreateCheckpointAsync().ConfigureAwait(false);
 
 			return result;

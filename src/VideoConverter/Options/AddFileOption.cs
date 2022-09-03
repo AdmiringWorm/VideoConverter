@@ -17,7 +17,7 @@ namespace VideoConverter.Options
 			get => files;
 			set
 			{
-				files = value is null ? Array.Empty<string>() : value;
+				files = value ?? Array.Empty<string>();
 			}
 		}
 
