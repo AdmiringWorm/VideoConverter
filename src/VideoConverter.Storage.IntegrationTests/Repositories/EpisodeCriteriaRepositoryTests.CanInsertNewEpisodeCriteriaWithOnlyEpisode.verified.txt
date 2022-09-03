@@ -1,0 +1,14 @@
+﻿[
+  {
+    Criterias: [
+      {
+        NewEpisode: 2,
+        OldEpisode: 43,
+        OldSeason: 1,
+        Id: 5
+      }
+    ],
+    Id: 4,
+    Name: Tate no Yuusha no Nariagari
+  }
+]

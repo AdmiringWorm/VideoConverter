@@ -139,6 +139,52 @@ namespace VideoConverter.Storage.IntegrationTests.Repositories
 		}
 
 		[Test]
+		public async Task CanInsertNewEpisodeCriteriaWithOnlyEpisode()
+		{
+			const string SERIES_NAME = "Tate no Yuusha no Nariagari";
+
+			await repository.AddOrUpdateCriteriaAsync(new Core.Models.EpisodeCriteria
+			{
+				SeriesName = SERIES_NAME,
+				Episode = 43,
+				Season = 1,
+				NewEpisode = 2
+			});
+			await repository.SaveChangesAsync();
+			await VerifyCriterias(SERIES_NAME);
+		}
+
+		[Test]
+		public async Task CanInsertNewEpisodeCriteriaWithOnlyName()
+		{
+			const string SERIES_NAME = "Tate no Yuusha no Nariagari";
+
+			await repository.AddOrUpdateCriteriaAsync(new Core.Models.EpisodeCriteria
+			{
+				SeriesName = SERIES_NAME,
+				NewSeries = "The Rising of the Shield Hero"
+			});
+			await repository.SaveChangesAsync();
+			await VerifyCriterias(SERIES_NAME);
+		}
+
+		[Test]
+		public async Task CanInsertNewEpisodeCriteriaWithOnlySeason()
+		{
+			const string SERIES_NAME = "One Piece";
+
+			await repository.AddOrUpdateCriteriaAsync(new Core.Models.EpisodeCriteria
+			{
+				SeriesName = SERIES_NAME,
+				Episode = 892,
+				Season = 1,
+				NewSeason = 21,
+			});
+			await repository.SaveChangesAsync();
+			await VerifyCriterias(SERIES_NAME);
+		}
+
+		[Test]
 		public async Task CanReplaceExistingWithSameOldEpisodeAndOldSeasonCriteria()
 		{
 			const string SERIES_NAME = "Mr. Robot";
