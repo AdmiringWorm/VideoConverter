@@ -1,0 +1,10 @@
+﻿{
+  AudioCodec: copy,
+  Id: 4,
+  OutputPath: my-temp/test-encoding.mp4,
+  Path: my-path/some-file.mkv,
+  SkipThumbnails: false,
+  Status: Encoding,
+  SubtitleCodec: copy,
+  VideoCodec: copy
+}

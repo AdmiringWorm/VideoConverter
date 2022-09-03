@@ -1,0 +1,15 @@
+﻿[
+  {
+    Criterias: [
+      {
+        NewEpisode: 5,
+        NewSeason: 45,
+        OldEpisode: 4543,
+        OldSeason: 1,
+        Id: 5
+      }
+    ],
+    Id: 4,
+    Name: Breaking Bad
+  }
+]

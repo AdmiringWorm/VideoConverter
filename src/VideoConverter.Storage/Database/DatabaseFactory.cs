@@ -8,16 +8,16 @@ namespace VideoConverter.Storage.Database
 
 	using VideoConverter.Storage.Models;
 
-	using Configuration = VideoConverter.Core.Models.Configuration;
+	using ConverterConfiguration = VideoConverter.Core.Models.ConverterConfiguration;
 
 	public sealed class DatabaseFactory : IDisposable
 	{
 		private readonly BsonMapper bsonMapper;
-		private readonly Configuration configuration;
+		private readonly ConverterConfiguration configuration;
 		private LiteDatabaseAsync? database;
 		private bool transactionStarted;
 
-		public DatabaseFactory(Configuration configuration)
+		public DatabaseFactory(ConverterConfiguration configuration)
 		{
 			this.configuration = configuration;
 			bsonMapper = new BsonMapper()

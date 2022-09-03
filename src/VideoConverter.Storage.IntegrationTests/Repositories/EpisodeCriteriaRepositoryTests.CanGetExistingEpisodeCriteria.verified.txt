@@ -1,0 +1,26 @@
+﻿{
+  RobotCriterias: [
+    {
+      Episode: 45,
+      NewEpisode: 2,
+      NewSeason: 2,
+      NewSeries: The absolutely best Robot,
+      Season: 1,
+      SeriesName: Mr. Robot
+    }
+  ],
+  OnePieceCriteries: [
+    {
+      Episode: 78,
+      NewSeason: 3,
+      Season: 1,
+      SeriesName: One Piece
+    },
+    {
+      Episode: 62,
+      NewSeason: 2,
+      Season: 1,
+      SeriesName: One Piece
+    }
+  ]
+}

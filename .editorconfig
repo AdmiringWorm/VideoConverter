@@ -7,9 +7,35 @@ indent_style = tab
 insert_final_newline = true
 max_line_length = 140
 trim_trailing_whitespace = true
+dotnet_style_operator_placement_when_wrapping = beginning_of_line
+tab_width = 4
+indent_size = 4
+dotnet_style_coalesce_expression = true:suggestion
+dotnet_style_null_propagation = true:suggestion
+dotnet_style_prefer_is_null_check_over_reference_equality_method = true:suggestion
+dotnet_style_prefer_auto_properties = true:silent
+dotnet_style_object_initializer = true:suggestion
+dotnet_style_collection_initializer = true:suggestion
+dotnet_style_prefer_simplified_boolean_expressions = true:suggestion
+dotnet_style_prefer_conditional_expression_over_assignment = true:warning
+dotnet_style_prefer_conditional_expression_over_return = false:warning
+dotnet_style_explicit_tuple_names = true:suggestion
+dotnet_style_prefer_inferred_tuple_names = true:suggestion
+dotnet_style_prefer_inferred_anonymous_type_member_names = true:suggestion
+dotnet_style_prefer_compound_assignment = true:suggestion
+dotnet_style_prefer_simplified_interpolation = true:warning
+dotnet_style_namespace_match_folder = true:suggestion
+dotnet_diagnostic.CA1707.severity = silent
 
 [*.editorconfig]
 max_line_length = 160
+
+[*.verified.txt]
+indent_size = unset
+indent_style = unset
+end_of_line = unset
+insert_final_newline = unset
+trim_trailing_whitespace = unset
 
 [*.ps1]
 charset = utf-8-bom
@@ -80,6 +106,10 @@ dotnet_naming_rule.interface_should_be_begins_with_i.severity = suggestion
 dotnet_naming_rule.interface_should_be_begins_with_i.symbols = interface
 dotnet_naming_rule.interface_should_be_begins_with_i.style = begins_with_i
 
+dotnet_naming_rule.constant_fields_should_be_upper_case_underscore.severity = suggestion
+dotnet_naming_rule.constant_fields_should_be_upper_case_underscore.symbols = constant_fields
+dotnet_naming_rule.constant_fields_should_be_upper_case_underscore.style = upper_case_underscore
+
 dotnet_naming_rule.types_should_be_pascal_case.severity = suggestion
 dotnet_naming_rule.types_should_be_pascal_case.symbols = types
 dotnet_naming_rule.types_should_be_pascal_case.style = pascal_case
@@ -102,38 +132,26 @@ dotnet_naming_symbols.non_field_members.applicable_kinds = property, event, meth
 dotnet_naming_symbols.non_field_members.applicable_accessibilities = public, internal, private, protected, protected_internal, private_protected
 dotnet_naming_symbols.non_field_members.required_modifiers =
 
+dotnet_naming_symbols.constant_fields.applicable_kinds = field
+dotnet_naming_symbols.constant_fields.applicable_accessibilities = *
+dotnet_naming_symbols.constant_fields.required_modifiers = const
+
 # Naming styles
+
+dotnet_naming_style.pascal_case.required_prefix =
+dotnet_naming_style.pascal_case.required_suffix =
+dotnet_naming_style.pascal_case.word_separator =
+dotnet_naming_style.pascal_case.capitalization = pascal_case
 
 dotnet_naming_style.begins_with_i.required_prefix = I
 dotnet_naming_style.begins_with_i.required_suffix =
 dotnet_naming_style.begins_with_i.word_separator =
 dotnet_naming_style.begins_with_i.capitalization = pascal_case
 
-dotnet_naming_style.pascal_case.required_prefix =
-dotnet_naming_style.pascal_case.required_suffix =
-dotnet_naming_style.pascal_case.word_separator =
-dotnet_naming_style.pascal_case.capitalization = pascal_case
-
-dotnet_naming_style.pascal_case.required_prefix =
-dotnet_naming_style.pascal_case.required_suffix =
-dotnet_naming_style.pascal_case.word_separator =
-dotnet_naming_style.pascal_case.capitalization = pascal_case
-dotnet_style_operator_placement_when_wrapping = beginning_of_line
-dotnet_style_coalesce_expression = true:suggestion
-dotnet_style_null_propagation = true:suggestion
-dotnet_style_prefer_is_null_check_over_reference_equality_method = true:suggestion
-dotnet_style_prefer_auto_properties = true:silent
-dotnet_style_object_initializer = true:suggestion
-dotnet_style_collection_initializer = true:suggestion
-dotnet_style_prefer_simplified_boolean_expressions = true:suggestion
-dotnet_style_prefer_conditional_expression_over_assignment = true:warning
-dotnet_style_prefer_conditional_expression_over_return = false:warning
-dotnet_style_explicit_tuple_names = true:suggestion
-dotnet_style_prefer_inferred_tuple_names = true:suggestion
-dotnet_style_prefer_inferred_anonymous_type_member_names = true:suggestion
-dotnet_style_prefer_compound_assignment = true:suggestion
-dotnet_style_prefer_simplified_interpolation = true:warning
-dotnet_style_namespace_match_folder = true:suggestion
+dotnet_naming_style.upper_case_underscore.required_prefix =
+dotnet_naming_style.upper_case_underscore.required_suffix =
+dotnet_naming_style.upper_case_underscore.word_separator = _
+dotnet_naming_style.upper_case_underscore.capitalization = all_upper
 
 # CS8965: The CallerArgumentExpressionAttribute applied to parameter will have no effect because it's self-refential.
 dotnet_diagnostic.CS8965.severity = silent
@@ -148,7 +166,7 @@ dotnet_diagnostic.CA1305.severity = error
 dotnet_diagnostic.CA1307.severity = error
 dotnet_diagnostic.CA1310.severity = error
 dotnet_diagnostic.CA2101.severity = error
-dotnet_diagnostic.CA1707.severity = warning
+dotnet_diagnostic.CA1707.severity = none
 dotnet_diagnostic.CA1708.severity = error
 dotnet_diagnostic.CA1716.severity = warning
 dotnet_style_readonly_field = true:suggestion

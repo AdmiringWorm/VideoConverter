@@ -28,12 +28,12 @@ namespace VideoConverter.Commands
 	public class EncodeCommand : AsyncCommand<EncodeOption>
 	{
 		private readonly CancellationToken cancellationToken;
-		private readonly Configuration config;
+		private readonly ConverterConfiguration config;
 		private readonly IAnsiConsole console;
 		private readonly QueueRepository queueRepo;
 		private readonly Random rand = new();
 
-		public EncodeCommand(QueueRepository queueRepo, Configuration config, IAnsiConsole console)
+		public EncodeCommand(QueueRepository queueRepo, ConverterConfiguration config, IAnsiConsole console)
 		{
 			this.queueRepo = queueRepo;
 			this.config = config;

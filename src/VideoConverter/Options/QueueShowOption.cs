@@ -16,7 +16,7 @@ namespace VideoConverter.Options
 			get => identifiers;
 			set
 			{
-				identifiers = value is null ? Array.Empty<int>() : value;
+				identifiers = value ?? Array.Empty<int>();
 			}
 		}
 	}

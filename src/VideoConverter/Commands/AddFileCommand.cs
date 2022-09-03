@@ -30,7 +30,7 @@ namespace VideoConverter.Commands
 
 	public sealed class AddFileCommand : AsyncCommand<AddFileOption>, IDisposable
 	{
-		private readonly Configuration config;
+		private readonly ConverterConfiguration config;
 		private readonly IAnsiConsole console;
 		private readonly AddCriteriaCommand criteriaCommand;
 		private readonly EpisodeCriteriaRepository criteriaRepo;
@@ -38,7 +38,7 @@ namespace VideoConverter.Commands
 		private readonly CancellationTokenSource tokenSource;
 
 		public AddFileCommand(
-			Configuration config,
+			ConverterConfiguration config,
 			IAnsiConsole console,
 			AddCriteriaCommand criteriaCommand,
 			EpisodeCriteriaRepository criteriaRepo,

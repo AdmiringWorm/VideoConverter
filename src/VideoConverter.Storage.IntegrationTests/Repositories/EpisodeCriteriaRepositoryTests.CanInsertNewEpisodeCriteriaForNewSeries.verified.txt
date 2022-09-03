@@ -1,0 +1,16 @@
+﻿[
+  {
+    Criterias: [
+      {
+        NewEpisode: 2,
+        NewSeason: 3,
+        OldEpisode: 45,
+        OldSeason: 1,
+        Id: 5,
+        NewName: New Test Series
+      }
+    ],
+    Id: 4,
+    Name: Test Series
+  }
+]

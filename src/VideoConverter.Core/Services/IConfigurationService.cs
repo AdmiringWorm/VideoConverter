@@ -4,8 +4,8 @@ namespace VideoConverter.Core.Services
 
 	public interface IConfigurationService
 	{
-		Configuration GetConfiguration();
+		ConverterConfiguration GetConfiguration();
 
-		void SetConfiguration(Configuration config);
+		void SetConfiguration(ConverterConfiguration config);
 	}
 }

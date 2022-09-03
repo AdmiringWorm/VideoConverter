@@ -12,7 +12,7 @@ namespace VideoConverter.Storage.Repositories
 
 	public class EpisodeCriteriaRepository
 	{
-		private const string TABLE_NAME = "criterias";
+		public const string TABLE_NAME = "criterias";
 		private readonly DatabaseFactory dbFactory;
 
 		public EpisodeCriteriaRepository(DatabaseFactory dbFactory)
@@ -45,12 +45,11 @@ namespace VideoConverter.Storage.Repositories
 				};
 				var epCriteria = new EpisodeCriteria
 				{
-					NewEpisode = criteria.NewEpisode,
-					NewName = criteria.NewSeries,
-					NewSeason = criteria.NewSeason,
-					OldEpisode = criteria.Episode,
-					OldSeason = criteria.Season,
+					NewName = criteria.NewSeries
 				};
+
+				SetOptionalCriterias(criteria, epCriteria);
+
 				await epCol.InsertAsync(epCriteria).ConfigureAwait(false);
 				await dbFactory.CreateCheckpointAsync().ConfigureAwait(false);
 
@@ -60,28 +59,33 @@ namespace VideoConverter.Storage.Repositories
 			else
 			{
 				var actualCriteria = existingCriteria.Criterias
-					.Find(c => c.NewSeason is null || (c.OldSeason is null && c.OldEpisode is null));
+					.Find(c => c.OldEpisode == criteria.Episode && c.OldSeason == criteria.Season);
+
+				if (actualCriteria is null)
+				{
+					actualCriteria = existingCriteria.Criterias
+						.Find(c => c.NewSeason is null || (c.OldSeason is null && c.OldEpisode is null));
+				}
+
 				if (actualCriteria is null)
 				{
 					actualCriteria = new EpisodeCriteria
 					{
-						NewEpisode = criteria.NewEpisode,
-						NewName = criteria.NewSeries,
-						NewSeason = criteria.NewSeason,
-						OldEpisode = criteria.Episode,
-						OldSeason = criteria.Season,
+						NewName = criteria.NewSeries
 					};
+
+					SetOptionalCriterias(criteria, actualCriteria);
+
 					await epCol.InsertAsync(actualCriteria).ConfigureAwait(false);
 					await dbFactory.CreateCheckpointAsync().ConfigureAwait(false);
 					existingCriteria.Criterias.Add(actualCriteria);
 				}
 				else
 				{
-					actualCriteria.NewEpisode = criteria.NewEpisode;
 					actualCriteria.NewName = criteria.NewSeries ?? actualCriteria.NewName;
-					actualCriteria.NewSeason = criteria.NewSeason;
-					actualCriteria.OldEpisode = criteria.Episode;
-					actualCriteria.OldSeason = criteria.Season;
+
+					SetOptionalCriterias(criteria, actualCriteria);
+
 					await epCol.UpdateAsync(actualCriteria).ConfigureAwait(false);
 					await dbFactory.CreateCheckpointAsync().ConfigureAwait(false);
 				}
@@ -91,6 +95,40 @@ namespace VideoConverter.Storage.Repositories
 			await collection.EnsureIndexAsync(c => c.Name).ConfigureAwait(false);
 
 			await dbFactory.CreateCheckpointAsync().ConfigureAwait(false);
+
+			static void SetOptionalCriterias(CoreEpisodeCriteria criteria, EpisodeCriteria epCriteria)
+			{
+				var seasonSet = false;
+
+				if (criteria.NewEpisode is not null && criteria.NewEpisode != criteria.Episode)
+				{
+					epCriteria.NewEpisode = criteria.NewEpisode;
+					epCriteria.OldEpisode = criteria.Episode;
+					epCriteria.OldSeason = criteria.Season;
+					seasonSet = true;
+				}
+				else
+				{
+					epCriteria.NewEpisode = null;
+					epCriteria.OldEpisode = null;
+				}
+
+				if (criteria.NewSeason is not null && criteria.NewSeason != criteria.Season)
+				{
+					epCriteria.NewSeason = criteria.NewSeason;
+					epCriteria.OldSeason = criteria.Season;
+					epCriteria.OldEpisode = criteria.Episode;
+				}
+				else
+				{
+					epCriteria.NewSeason = null;
+
+					if (!seasonSet)
+					{
+						epCriteria.OldSeason = null;
+					}
+				}
+			}
 		}
 
 		public async IAsyncEnumerable<CoreEpisodeCriteria> GetEpisodeCriteriasAsync(string seriesName)

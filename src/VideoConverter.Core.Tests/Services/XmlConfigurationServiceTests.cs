@@ -19,7 +19,7 @@ namespace VideoConverter.Core.Tests.Services
 		public void Should_Get_Default_Configuration_When_File_Do_Not_Exist()
 		{
 			var path = Path.Combine(Environment.CurrentDirectory, Guid.NewGuid() + ".xml");
-			var expected = new Configuration
+			var expected = new ConverterConfiguration
 			{
 				MapperDatabase = Path.Combine(
 					Environment.GetFolderPath(
@@ -40,7 +40,7 @@ namespace VideoConverter.Core.Tests.Services
 			var path = Path.Combine(Environment.CurrentDirectory, Guid.NewGuid() + ".xml");
 			var temp = Path.GetTempPath();
 			var storagePath = Path.Combine(temp, "storage.db");
-			var expected = new Configuration
+			var expected = new ConverterConfiguration
 			{
 				MapperDatabase = storagePath,
 				AudioCodec = "opus"
@@ -79,7 +79,7 @@ namespace VideoConverter.Core.Tests.Services
 			var path = Path.Combine(Environment.CurrentDirectory, Guid.NewGuid() + ".xml");
 
 			using var service = new XmlConfigurationService(path);
-			var config = new Configuration();
+			var config = new ConverterConfiguration();
 
 			service.SetConfiguration(config);
 
@@ -123,7 +123,7 @@ namespace VideoConverter.Core.Tests.Services
 
 			// editorconfig-checker-enable
 			using var service = new XmlConfigurationService(path);
-			var config = new Configuration();
+			var config = new ConverterConfiguration();
 
 			service.SetConfiguration(config);
 			var actual = File.ReadAllText(path, Encoding.UTF8);
@@ -146,7 +146,7 @@ namespace VideoConverter.Core.Tests.Services
 		public void Should_Update_Configuration_When_File_Is_Changed()
 		{
 			var path = Path.Combine(Environment.CurrentDirectory, Guid.NewGuid() + ".xml");
-			var expected = new Configuration
+			var expected = new ConverterConfiguration
 			{
 				VideoCodec = "libx264",
 				MapperDatabase = Path.Combine(
@@ -156,7 +156,7 @@ namespace VideoConverter.Core.Tests.Services
 					"storage.db"),
 			};
 			var temp = Path.GetTempPath();
-			var config = new Configuration();
+			var config = new ConverterConfiguration();
 			using var service = new XmlConfigurationService(path);
 			service.SetConfiguration(config);
 

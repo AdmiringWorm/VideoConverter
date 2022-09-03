@@ -127,7 +127,7 @@ namespace VideoConverter
 			}
 		}
 
-		private static Configuration RegisterConfiguration(IResolverContext context)
+		private static ConverterConfiguration RegisterConfiguration(IResolverContext context)
 		{
 			var repository = context.Resolve<IConfigurationService>();
 

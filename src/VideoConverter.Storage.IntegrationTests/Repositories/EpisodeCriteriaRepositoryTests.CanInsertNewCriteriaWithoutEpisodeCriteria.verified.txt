@@ -1,0 +1,11 @@
+﻿[
+  {
+    Criterias: [
+      {
+        Id: 5
+      }
+    ],
+    Id: 4,
+    Name: Rick and Morty
+  }
+]

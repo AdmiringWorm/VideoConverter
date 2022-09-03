@@ -1,0 +1,16 @@
+﻿[
+  {
+    Criterias: [
+      {
+        NewEpisode: 1,
+        NewSeason: 4,
+        OldEpisode: 45,
+        OldSeason: 1,
+        Id: 1,
+        NewName: The absolutely best Robot
+      }
+    ],
+    Id: 1,
+    Name: Mr. Robot
+  }
+]

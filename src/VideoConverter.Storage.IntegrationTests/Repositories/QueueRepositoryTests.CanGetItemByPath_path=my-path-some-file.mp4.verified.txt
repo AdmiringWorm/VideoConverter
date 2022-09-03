@@ -1,0 +1,9 @@
+﻿{
+  AudioCodec: libopus,
+  Id: 3,
+  OutputPath: my-temp/test-pending.mkv,
+  Path: my-path/some-file.mp4,
+  SkipThumbnails: false,
+  SubtitleCodec: copy,
+  VideoCodec: hevc
+}

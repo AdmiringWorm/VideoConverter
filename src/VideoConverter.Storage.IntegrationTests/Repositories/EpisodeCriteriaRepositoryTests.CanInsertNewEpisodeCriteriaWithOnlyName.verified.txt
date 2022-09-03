@@ -1,0 +1,12 @@
+﻿[
+  {
+    Criterias: [
+      {
+        Id: 5,
+        NewName: The Rising of the Shield Hero
+      }
+    ],
+    Id: 4,
+    Name: Tate no Yuusha no Nariagari
+  }
+]
