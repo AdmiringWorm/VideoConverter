@@ -24,9 +24,9 @@ jobs:
         with:
           script-path: build.cake
           cake-version: 2.2.0
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@81cd2dc8148241f03f5839d295e000b8f761e378 # tag=v3
         if: always()
-      - uses: actions/upload-artifact@v3.1.0
+      - uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8 # tag=v3.1.0
         with:
           path: |
             .artifacts/installers/*.exe
