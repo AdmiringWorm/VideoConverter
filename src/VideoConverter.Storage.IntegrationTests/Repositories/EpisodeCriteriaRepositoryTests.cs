@@ -138,7 +138,7 @@ namespace VideoConverter.Storage.IntegrationTests.Repositories
 			await VerifyCriterias(SERIES_NAME);
 		}
 
-		[Test, Ignore("This is currently not working as expected.")]
+		[Test]
 		public async Task CanReplaceExistingWithSameOldEpisodeAndOldSeasonCriteria()
 		{
 			const string SERIES_NAME = "Mr. Robot";

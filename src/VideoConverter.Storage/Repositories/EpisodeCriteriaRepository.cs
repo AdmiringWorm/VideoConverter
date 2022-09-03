@@ -60,7 +60,14 @@ namespace VideoConverter.Storage.Repositories
 			else
 			{
 				var actualCriteria = existingCriteria.Criterias
-					.Find(c => c.NewSeason is null || (c.OldSeason is null && c.OldEpisode is null));
+					.Find(c => c.OldEpisode == criteria.Episode && c.OldSeason == criteria.Season);
+
+				if (actualCriteria is null)
+				{
+					actualCriteria = existingCriteria.Criterias
+						.Find(c => c.NewSeason is null || (c.OldSeason is null && c.OldEpisode is null));
+				}
+
 				if (actualCriteria is null)
 				{
 					actualCriteria = new EpisodeCriteria
