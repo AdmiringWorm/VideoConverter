@@ -71,9 +71,68 @@ const
     ModpathName = 'modifypath';
     ModPathType = 'system';
 
+function GetUninstallString(): String;
+var
+  sUnInstPath: String;
+  sUnInstallString: String;
+begin
+  sUnInstPath := ExpandConstant('Software\Microsoft\Windows\CurrentVersion\Uninstall\{#emit SetupSetting("AppId")}_is1');
+  sUnInstallString := ''
+  if not RegQueryStringValue(HKLM, sUnInstPath, 'UninstallString', sUnInstallString) then
+    RegQueryStringValue(HKCU, sUnInstPath, 'UninstallString', sUninstallString);
+  Result := sUnInstallString;
+end;
+
+function IsUpgrade(): Boolean;
+begin
+  Result := (GetUnInstallString() <> '');
+end;
+
+function UnInstallOldVersion(): Integer;
+var
+  sUninstallString: String;
+  iResultCode: Integer;
+begin
+{ Return Values: }
+{ 1 - uninstall string is empty }
+{ 2 - error executing the UnInstallString }
+{ 3 - successfully executed the UnInstallString }
+
+  { default return value }
+  Result := 0;
+
+  { get the uninstall string of the old app }
+  sUnInstallString := GetUnInstallString();
+  if sUnInstallString <> '' then begin
+    sUnInstallString := RemoveQuotes(sUninstallString);
+    if Exec(sUnInstallString, '/VERYSILENT /NORESTART /SUPPRESSMSGBOXES', '', SW_HIDE, ewWaitUntilTerminated, iResultCode) then
+      Result := 3
+    else
+      Result := 2
+  end else
+    Result := 1
+end;
+
 function ModPathDir(): TArrayOfString;
 begin
     setArrayLength(Result, 1)
     Result[0] := ExpandConstant('{app}') + '\bin';
 end;
 #include "modpath.iss"
+
+procedure CurStepChanged(CurStep: TSetupStep);
+var
+	taskname:	String;
+begin
+	taskname := ModPathName;
+	if CurStep = ssPostInstall then begin
+		if WizardIsTaskSelected(taskname) then
+    begin
+			ModPath();
+    end;
+  end else begin
+    if CurStep = ssInstall then
+      if IsUpgrade() then
+        UnInstallOldVersion();
+  end;
+end;
