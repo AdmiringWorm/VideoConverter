@@ -49,9 +49,9 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
 Source: "..\.artifacts\output\{#MyAppExeName}"; DestDir: "{app}\bin"
-Source: "..\.artifacts\output\*.dll"; DestDir: "{app}\bin"; Flags: createallsubdirs recursesubdirs
-Source: "..\.artifacts\output\*.exe"; DestDir: "{app}\bin"; Excludes: "{#MyAppExeName}"
-Source: "..\.artifacts\output\*.json"; DestDir: "{app}\bin"; Flags: ignoreversion
+Source: "..\.artifacts\output\*.dll"; DestDir: "{app}\bin"; Flags: createallsubdirs recursesubdirs skipifsourcedoesntexist
+Source: "..\.artifacts\output\*.exe"; DestDir: "{app}\bin"; Excludes: "{#MyAppExeName}"; Flags: skipifsourcedoesntexist
+Source: "..\.artifacts\output\*.json"; DestDir: "{app}\bin"; Flags: ignoreversion skipifsourcedoesntexist
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 Source: "..\LICENSE.txt"; DestDir: "{app}"; Flags: ignoreversion
 
