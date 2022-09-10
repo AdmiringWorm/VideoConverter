@@ -1,6 +1,6 @@
 # Maintainer: Kim Nordmo <kim.nordmo@gmail.com>
 pkgname=videoconverter-git
-pkgver="0.4.1alpha.1.7+3a7f5958fda18f271517767586cd383d6e56bc6e"
+pkgver="0.7.0alpha.1.18+a75db62d076d37bd0f81f0ffe6d5776d5e56be00"
 pkgrel=1
 pkgdesc="Small utility for converting video files"
 arch=(x86_64)
@@ -8,7 +8,7 @@ url="https://github.com/AdmiringWorm/VideoConverter"
 license=('MIT')
 #groups=()
 depends=('ffmpeg')
-makedepends=('git' 'jq' "dotnet-runtime>=5.0" "dotnet-sdk>=5.0") # 'bzr', 'git', 'mercurial' or 'subversion'
+makedepends=('git' 'jq') # 'bzr', 'git', 'mercurial' or 'subversion'
 provides=("${pkgname%-git}")
 conflicts=("${pkgname%-git}")
 options=(!strip)
@@ -23,14 +23,15 @@ pkgver() {
 
 	# Git, no tags available
 	#printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
-	dotnet ccvarn parse >/dev/null
-	cat CCVARN.json | jq .version.fullSemVer | sed 's/-//g'
-	rm CCVARN.json >/dev/null
+        sh ./build.sh --target=Clean > /dev/null
+	cat .artifacts/data.json | jq .version.fullSemVer | sed 's/-//g'
+	rm .artifacts/data.json >/dev/null
 }
 
 build() {
 	cd "$srcdir/${pkgname%-git}"
-	sh ./build.sh --target=Publish --exclusive --single-file
+	sh ./build.sh --target=Build
+	sh ./build.sh --target=Publish-Binaries --exclusive --single-file
 }
 
 check() {
