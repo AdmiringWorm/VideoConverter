@@ -377,3 +377,4 @@ FodyWeavers.xsd
 .artifacts/
 
 *.g.cs
+.dotnet/
