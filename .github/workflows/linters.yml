@@ -15,7 +15,7 @@ jobs:
       - name: Lint Code Base
         uses: github/super-linter@bb2d833b08b6c288608686672b93a8a4589cdc49 # tag=v4.9.7
         env:
-          VALIDATE_ALL_CODEBASE: false
+          VALIDATE_ALL_CODEBASE: ${{ github.event_name != 'pull_request' }}
           VALIDATE_DOCKERFILE: false
           VALIDATE_DOCKERFILE_HADOLINT: false
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
