@@ -49,7 +49,7 @@
 			"automerge": true
 		},
 		{
-			"matchPackagePatterns": [".*Analyzers$"],
+			"matchPackagePatterns": [".*Analyzers$", ".*analyzers$"],
 			"addLabels": ["build"],
 			"automerge": true
 		}
