@@ -36,7 +36,6 @@ var mainProject = "./src/VideoConverter/VideoConverter.csproj";
 var target = Argument("target", "Default");
 var configuration = Argument("configuration", "Release");
 var runtime = Argument("runtime", GetRuntime(Context));
-var singleFile = HasArgument("single-file");
 var artifactsDir = Argument<DirectoryPath>("artifacts", "./.artifacts");
 var dotnetExec = Context.Tools.Resolve("dotnet") ?? Context.Tools.Resolve("dotnet.exe");
 var plainTextReleaseNotes = artifactsDir.CombineWithFilePath("release-notes.txt");
@@ -71,7 +70,6 @@ Setup((context) =>
 
 
 Task("Clean")
-	.WithCriteria(HasArgument("clean") || string.Compare(target, "clean", StringComparison.OrdinalIgnoreCase) == 0)
 	.Does(() =>
 {
 	var directories = GetDirectories("**/bin") + GetDirectories("**/obj")
@@ -176,12 +174,44 @@ Task("Publish-Binaries")
 		Configuration = configuration,
 		Runtime = runtime,
 		OutputDirectory = outputDirectory,
-		PublishSingleFile = singleFile,
+		PublishSingleFile = false,
 		SelfContained = true,
+		PublishTrimmed = true,
 		MSBuildSettings = new DotNetCoreMSBuildSettings()
 			.SetVersion(version.FullSemVer)
 			.WithProperty("PackageReleaseNotes", plainTextNotes)
 	});
+
+	outputDirectory = artifactsDir.Combine("executables");
+
+	DotNetCorePublish(mainProject, new DotNetCorePublishSettings
+	{
+		Configuration = configuration,
+		Runtime = runtime,
+		OutputDirectory = outputDirectory,
+		PublishSingleFile = true,
+		SelfContained = true,
+		EnableCompressionInSingleFile = true,
+		PublishTrimmed = true,
+		MSBuildSettings = new DotNetCoreMSBuildSettings()
+			.SetVersion(version.FullSemVer)
+			.WithProperty("PackageReleaseNotes", plainTextNotes)
+	});
+
+	if (FileExists(outputDirectory.CombineWithFilePath("VideoConverter.exe")))
+	{
+		MoveFile(
+			outputDirectory.CombineWithFilePath("VideoConverter.exe"),
+			outputDirectory.CombineWithFilePath($"videoconverter-{runtime}.exe")
+		);
+	}
+	else if (FileExists(outputDirectory.CombineWithFilePath("VideoConverter")))
+	{
+		MoveFile(
+			outputDirectory.CombineWithFilePath("VideoConverter"),
+			outputDirectory.CombineWithFilePath($"videoconverter-{runtime}")
+		);
+	}
 });
 
 Task("Create-Installer")
@@ -190,9 +220,7 @@ Task("Create-Installer")
 	.Does<BuildVersion>(version =>
 {
 	var script = File("./installer/install.iss");
-	var outputDirectory = artifactsDir.Combine("installers");;
-	if (DirectoryExists(outputDirectory))
-		CleanDirectory(outputDirectory);
+	var outputDirectory = artifactsDir.Combine("executables");;
 
 	var versionString = version.MajorMinorPatch;
 	if (!string.IsNullOrEmpty(version.PreReleaseTag)) {
@@ -233,11 +261,11 @@ Task("Pack-Choco")
 		);
 	}
 
-	var installerName = "VideoConverter-" + version.SemVer + ".exe";
+	var installerName = "VideoConverter-" + version.SemVer + "-install.exe";
 
 	ReplaceTextInFiles("./.artifacts/build/packages/choco/**/*.ps1", "{{FILE_NAME}}", installerName);
 	var license = MakeAbsolute(File("./LICENSE.txt"));
-	var installer = MakeAbsolute(artifactsDir.CombineWithFilePath("installers/" + installerName));
+	var installer = MakeAbsolute(artifactsDir.CombineWithFilePath("executables/" + installerName));
 	var markdownNotes = System.IO.File.ReadAllText(markdownReleaseNotes.ToString(), System.Text.Encoding.UTF8)
 		.Split('\n');
 
