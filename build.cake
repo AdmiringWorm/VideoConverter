@@ -94,7 +94,7 @@ Task("Build")
 	.IsDependentOn("Transform-TextTemplates")
 	.DoesForEach(GetFiles("src/**/*Tests.csproj"), (project) =>
 {
-	DotNetCoreBuild(project.FullPath, new DotNetCoreBuildSettings
+	DotNetBuild(project.FullPath, new DotNetBuildSettings
 	{
 		Configuration = configuration,
 		Runtime = runtime
@@ -103,11 +103,11 @@ Task("Build")
 	.Does<BuildVersion>((version) =>
 {
 	var plainTextNotes = System.IO.File.ReadAllText(plainTextReleaseNotes.ToString(), System.Text.Encoding.UTF8);
-	DotNetCoreBuild(mainProject, new DotNetCoreBuildSettings
+	DotNetBuild(mainProject, new DotNetBuildSettings
 	{
 		Configuration = configuration,
 		Runtime = runtime,
-		MSBuildSettings = new DotNetCoreMSBuildSettings()
+		MSBuildSettings = new DotNetMSBuildSettings()
 			.SetVersion(version.FullSemVer)
 			.WithProperty("PackageReleaseNotes", plainTextNotes)
 	});
@@ -117,7 +117,7 @@ Task("Test")
 	.IsDependentOn("Build")
 	.Does(() =>
 {
-	DotNetCoreTest(solution, new DotNetCoreTestSettings
+	DotNetTest(solution, new DotNetTestSettings
 	{
 		Configuration = configuration,
 		NoBuild = true,
@@ -169,7 +169,7 @@ Task("Publish-Binaries")
 
 	var plainTextNotes = System.IO.File.ReadAllText(plainTextReleaseNotes.ToString(), System.Text.Encoding.UTF8);
 
-	DotNetCorePublish(mainProject, new DotNetCorePublishSettings
+	DotNetPublish(mainProject, new DotNetPublishSettings
 	{
 		Configuration = configuration,
 		Runtime = runtime,
@@ -177,14 +177,14 @@ Task("Publish-Binaries")
 		PublishSingleFile = false,
 		SelfContained = true,
 		PublishTrimmed = true,
-		MSBuildSettings = new DotNetCoreMSBuildSettings()
+		MSBuildSettings = new DotNetMSBuildSettings()
 			.SetVersion(version.FullSemVer)
 			.WithProperty("PackageReleaseNotes", plainTextNotes)
 	});
 
 	outputDirectory = artifactsDir.Combine("executables");
 
-	DotNetCorePublish(mainProject, new DotNetCorePublishSettings
+	DotNetPublish(mainProject, new DotNetPublishSettings
 	{
 		Configuration = configuration,
 		Runtime = runtime,
@@ -193,7 +193,7 @@ Task("Publish-Binaries")
 		SelfContained = true,
 		EnableCompressionInSingleFile = true,
 		PublishTrimmed = true,
-		MSBuildSettings = new DotNetCoreMSBuildSettings()
+		MSBuildSettings = new DotNetMSBuildSettings()
 			.SetVersion(version.FullSemVer)
 			.WithProperty("PackageReleaseNotes", plainTextNotes)
 	});
