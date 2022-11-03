@@ -158,8 +158,8 @@ begin
 			Text := Copy(Text, Pos(Separator,Text) + Length(Separator), Length(Text));
 			i := i + 1;
 		end else begin
-			 Dest[i] := Text;
-			 Text := '';
+			Dest[i] := Text;
+			Text := '';
 		end;
 	until Length(Text)=0;
 end;

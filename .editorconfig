@@ -27,6 +27,9 @@ dotnet_style_prefer_simplified_interpolation = true:warning
 dotnet_style_namespace_match_folder = true:suggestion
 dotnet_diagnostic.CA1707.severity = silent
 
+[*.{sln,iss}]
+max_line_length = unset
+
 [*.editorconfig]
 max_line_length = 160
 
@@ -44,6 +47,7 @@ end_of_line = crlf
 [*.{yml,yaml}]
 indent_size = 2
 indent_style = space
+max_line_length = 140
 
 [*.cs]
 csharp_indent_labels = one_less_than_current

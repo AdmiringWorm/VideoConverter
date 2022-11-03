@@ -23,7 +23,7 @@ pkgver() {
 
 	# Git, no tags available
 	#printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
-        sh ./build.sh --target=Clean > /dev/null
+	sh ./build.sh --target=Clean > /dev/null
 	cat .artifacts/data.json | jq .version.fullSemVer | sed 's/-//g'
 	rm .artifacts/data.json >/dev/null
 }
