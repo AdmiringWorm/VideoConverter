@@ -37,6 +37,11 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="Spectre.Console" Version="0.45.0" />
+		<PackageReference Include="Spectre.Console.Analyzer" Version="0.45.0">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Spectre.Console.Cli" Version="0.45.0" />
 		<PackageReference Include="system.Linq.Async" Version="6.0.1" />
 		<PackageReference Include="Xabe.FFmpeg" Version="5.2.0" />
 	</ItemGroup>

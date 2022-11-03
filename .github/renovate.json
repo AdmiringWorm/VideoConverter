@@ -28,11 +28,20 @@
 				"DryIoc",
 				"Humanizer",
 				"Newtonsoft.Json",
-				"Spectre.Console",
 				"system.Linq.Async",
 				"Xabe.FFmpeg",
 				"Xabe.FFMpeg"
 			],
+			"semanticCommitType": "fix",
+			"addLabels": ["enhancement"]
+		},
+		{
+			"matchPackageNames":[
+				"Spectre.Console",
+				"Spectre.Console.Analyzers",
+				"Spectre.Console.Cli"
+			],
+			"groupName": "spectre console packages",
 			"semanticCommitType": "fix",
 			"addLabels": ["enhancement"]
 		},
