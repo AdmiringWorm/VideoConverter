@@ -609,8 +609,11 @@
       },
       "Spectre.Console": {
         "type": "Transitive",
-        "resolved": "0.44.0",
-        "contentHash": "QMpKtn5QV1j2nklqDwuRE/XwbDn5jxww+Mt5J6Jn3EeQIzaLcuLyUhCLh/mS8giN6uXbqOV1ep5HlUGxrV1ujQ=="
+        "resolved": "0.45.0",
+        "contentHash": "e//13o8/BCrWmwN26eJ4zCzD2iq7iUlqQd+nDI9nJUdnJ/rYAanYiNFZZ7YHwlv48IKuKtRYYP6/wPt1DG67ww==",
+        "dependencies": {
+          "System.Memory": "4.5.5"
+        }
       },
       "System.CodeDom": {
         "type": "Transitive",
@@ -654,6 +657,11 @@
           "Microsoft.Win32.Registry": "5.0.0",
           "System.CodeDom": "5.0.0"
         }
+      },
+      "System.Memory": {
+        "type": "Transitive",
+        "resolved": "4.5.5",
+        "contentHash": "XIWiDvKPXaTveaB7HVganDlOCRoj03l+jrwNvcge/t8vhGYKvqV+dMv6G4SAX2NoNmN0wZfVPTAlFwZcZvVOUw=="
       },
       "System.Reflection": {
         "type": "Transitive",
@@ -776,7 +784,7 @@
           "DryIoc": "[5.2.2, )",
           "Humanizer": "[2.14.1, )",
           "Newtonsoft.Json": "[13.0.1, )",
-          "Spectre.Console": "[0.44.0, )",
+          "Spectre.Console": "[0.45.0, )",
           "VideoConverter.Core": "[1.0.0, )",
           "VideoConverter.Storage": "[1.0.0, )",
           "Xabe.FFmpeg": "[5.2.0, )",
