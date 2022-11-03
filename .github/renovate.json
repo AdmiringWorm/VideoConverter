@@ -10,6 +10,7 @@
 	],
 	"semanticCommits": "enabled",
 	"labels": ["dependencies"],
+	"prConcurrentLimit": 3,
 	"packageRules": [
 		{
 			"major": {
