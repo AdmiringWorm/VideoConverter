@@ -93,9 +93,9 @@
       },
       "Roslynator.Formatting.Analyzers": {
         "type": "Direct",
-        "requested": "[4.1.1, )",
-        "resolved": "4.1.1",
-        "contentHash": "oa7CDqLQ36WqofShBHFyCTufE0BxoRwt5qjxsHUq0jj1uFIgdMidz5wewb7gPq8xZhWCaUO9It5CJo3njcDNkw=="
+        "requested": "[4.1.2, )",
+        "resolved": "4.1.2",
+        "contentHash": "0TsiZQgeO7w5K1awpZvj4qw0ZUX6xOpCY37xtkgxoZ+7aIpT7H9EvW2BJrJiRoxxtfKkA+LEHmAgl9r4e6rUFg=="
       },
       "Spectre.Console": {
         "type": "Direct",
