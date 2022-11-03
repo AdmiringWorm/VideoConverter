@@ -44,21 +44,26 @@
       },
       "Verify.NUnit": {
         "type": "Direct",
-        "requested": "[17.10.2, )",
-        "resolved": "17.10.2",
-        "contentHash": "WgGiBs+c3z+wvjMaojSAFI0mhuSeAXd6Ks9Su/Z8Xg3mdVE5+t2+noqHz5lNXpUqNcUw4SHB0oKye6tFXepXXg==",
+        "requested": "[18.3.0, )",
+        "resolved": "18.3.0",
+        "contentHash": "swF5GMtq/AUkSnftT9w4ZrHnrk/Re5mkN6ED3X9IF8IyYtILrb4OzhVYLiLWXfk5DKmtdK3mQe0TVfaPumCCnA==",
         "dependencies": {
-          "EmptyFiles": "2.8.0",
+          "EmptyFiles": "3.0.0",
           "NUnit": "3.13.3",
-          "Verify": "17.10.2"
+          "Verify": "18.3.0"
         }
+      },
+      "Argon": {
+        "type": "Transitive",
+        "resolved": "0.1.0",
+        "contentHash": "TYJwenjm6RTjs3hEphb4mL3h4jdSMWSvoRkuNRGXXD6ZcuMNWOR4UTzf6OGF+ReTYsE2c1Q3brLSD3cfIPjfdw=="
       },
       "DiffEngine": {
         "type": "Transitive",
-        "resolved": "10.0.0",
-        "contentHash": "H8F7V1zRHkWLP5AW9lCxZypanXlFRT8n7P9Ou8cxz189Yg8TEw5FwTqQCaXjVPRjfE8621lhblpQrghbGJgDZw==",
+        "resolved": "10.4.3",
+        "contentHash": "dAJ932cyhq0+oc+DytpX6poo9ZBHtPkfq8aROZ32NBP3VSreJs5iZd5rJkJLKLMH8ELfCckzbX8gKCdNkc3eYA==",
         "dependencies": {
-          "EmptyFiles": "2.8.0",
+          "EmptyFiles": "3.0.0",
           "System.Management": "5.0.0"
         }
       },
@@ -72,8 +77,8 @@
       },
       "EmptyFiles": {
         "type": "Transitive",
-        "resolved": "2.8.0",
-        "contentHash": "2N6IdrlSYT+FhX5hAbasJ7wpV/ONtIX+7fN+XXukwGAgHRNjiAoO0TScQsTZcgaXmbuvGu4ogKk0jPt2dVLgTQ=="
+        "resolved": "3.0.0",
+        "contentHash": "XIZe5CJHgUtRGhuHWuUTKeaX4ARzqEKRnthV8L13NkwB1z4CvsORpBT/RZeMuBW3Qhj3OmiGz7A6psn9CBZ/oQ=="
       },
       "Humanizer": {
         "type": "Transitive",
@@ -599,8 +604,8 @@
       },
       "SimpleInfoName": {
         "type": "Transitive",
-        "resolved": "1.1.1",
-        "contentHash": "btPTv2TaAx8AbVX/uokw+W/9Fd1y+pqgPR9tOzq7Lfu3HmXRnTCT5jgGMw/sq4QwocOj3TnVjZsPpjfwuhjcIw=="
+        "resolved": "1.2.0",
+        "contentHash": "1YOIG0XwIMK1XNYALMSximxjH2w1Z/y4a/WAAFkXMSfzDOYPeU/E9ba7TQLkJLcvfTpbTrVuB58MTSC1AuRv8g=="
       },
       "Spectre.Console": {
         "type": "Transitive",
@@ -748,13 +753,13 @@
       },
       "Verify": {
         "type": "Transitive",
-        "resolved": "17.10.2",
-        "contentHash": "3eMRGukcJOpwjdYqrBOewONaqOC577+aWgbuW/t2LTpmCP9t07vXuB+13GzUFTCidQdj18u1rT6ShuOg+4Jucw==",
+        "resolved": "18.3.0",
+        "contentHash": "qVx++gFCcBVV0A/npMB2EZJJHA6Ggm3FEKoRrpWpgs9ueV/DGfWYYYndKrmvu93GLdWZJyfGXa2QKgWEf/Q2uQ==",
         "dependencies": {
-          "DiffEngine": "10.0.0",
-          "EmptyFiles": "2.8.0",
-          "Newtonsoft.Json": "13.0.1",
-          "SimpleInfoName": "1.1.1"
+          "Argon": "0.1.0",
+          "DiffEngine": "10.4.3",
+          "EmptyFiles": "3.0.0",
+          "SimpleInfoName": "1.2.0"
         }
       },
       "Xabe.FFmpeg": {
