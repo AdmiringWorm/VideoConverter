@@ -42,7 +42,7 @@ namespace VideoConverter.Commands
 
 			Console.CancelKeyPress += (sender, e) =>
 				{
-					Console.WriteLine("Cancelling!!!");
+					console.WriteLine("Cancelling!!!");
 
 					if (e.SpecialKey != ConsoleSpecialKey.ControlC)
 					{
