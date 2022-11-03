@@ -245,6 +245,21 @@ namespace VideoConverter.Commands
 
 								var conversion = FFmpeg.Conversions.New();
 
+								if (settings.AudioCodec is not null)
+								{
+									queue.AudioCodec = settings.AudioCodec;
+								}
+
+								if (settings.VideoCodec is not null)
+								{
+									queue.VideoCodec = settings.VideoCodec;
+								}
+
+								if (settings.SubtitleCodec is not null)
+								{
+									queue.SubtitleCodec = settings.SubtitleCodec;
+								}
+
 								foreach (var stream in streams)
 								{
 									if (stream is IVideoStream videoStream)

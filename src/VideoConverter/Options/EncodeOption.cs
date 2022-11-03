@@ -9,6 +9,10 @@ namespace VideoConverter.Options
 	{
 		private int[] indexes = Array.Empty<int>();
 
+		[CommandOption("--acodec <CODEC>")]
+		[Description("The audio codec to use for the added files, useful to override global configuration.")]
+		public string? AudioCodec { get; set; }
+
 		[CommandOption("--ignore-duplicates|--skip-duplicates")]
 		[Description("Ignore any duplicate entries found after encoding")]
 		public bool IgnoreDuplicates { get; set; }
@@ -44,8 +48,16 @@ namespace VideoConverter.Options
 		[Description("After conversion, do not create any thumbnails together with the video")]
 		public bool SkipThumbnails { get; set; }
 
+		[CommandOption("--scodec <CODEC>")]
+		[Description("The subtitle codec to use for the added files, useful to override global configuration.")]
+		public string? SubtitleCodec { get; set; }
+
 		[CommandOption("--use-copy|--allow-copy")]
 		[Description("Use encoding copy when target and source uses same codec")]
 		public bool UseEncodingCopy { get; set; }
+
+		[CommandOption("--vcodec <CODEC>")]
+		[Description("The video codec to use for the added files, useful to override global configuration.")]
+		public string? VideoCodec { get; set; }
 	}
 }
