@@ -282,10 +282,27 @@ Task("Pack-Choco")
 	});
 });
 
+Task("Upload-Dev-Packages")
+	.IsDependentOn("Pack-Choco")
+	.WithCriteria(IsRunningOnWindows())
+	.WithCriteria(() => HasEnvironmentVariable("DEVELOPMENT_CHOCO_ARTIFACTS_URL") && HasEnvironmentVariable("DEVELOPMENT_CHOCO_ARTIFACTS_API_KEY"))
+	.Does(() =>
+{
+	var packages = GetFiles("./.artifacts/packages/choco/*.nupkg");
+	var source = EnvironmentVariable("DEVELOPMENT_CHOCO_ARTIFACTS_URL");
+
+	Information("Pushing " + packages.Count + " package(s) to " + source);
+
+	ChocolateyPush(packages, new ChocolateyPushSettings
+	{
+		Source = EnvironmentVariable("DEVELOPMENT_CHOCO_ARTIFACTS_URL"),
+		ApiKey = EnvironmentVariable("DEVELOPMENT_CHOCO_ARTIFACTS_API_KEY")
+	});
+});
+
 Task("Publish")
 	.IsDependentOn("Publish-Binaries")
-	.IsDependentOn("Create-Installer")
-	.IsDependentOn("Pack-Choco");
+	.IsDependentOn("Upload-Dev-Packages");
 
 Task("Create-Tag")
 	.Does<BuildVersion>((version) =>
