@@ -724,10 +724,7 @@ namespace VideoConverter.Commands
 				}
 			}
 
-			if (episodeData.SeasonNumber is null)
-			{
-				episodeData.SeasonNumber = 1;
-			}
+			episodeData.SeasonNumber ??= 1;
 
 			if (!config.IncludeFansubber)
 			{

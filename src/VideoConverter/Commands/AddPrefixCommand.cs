@@ -26,10 +26,7 @@ namespace VideoConverter.Commands
 		public override int Execute([NotNull] CommandContext context, [NotNull] AddPrefixOption settings)
 		{
 			var config = configService.GetConfiguration();
-			if (config.Prefixes is null)
-			{
-				config.Prefixes = new List<PrefixConfiguration>();
-			}
+			config.Prefixes ??= new List<PrefixConfiguration>();
 
 			var prefixConfig = config.Prefixes.Find(
 				p => string.Equals(p.Prefix, settings.Prefix, StringComparison.OrdinalIgnoreCase)
