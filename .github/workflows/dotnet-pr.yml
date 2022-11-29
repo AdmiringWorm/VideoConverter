@@ -1,14 +1,13 @@
-name: .NET (Main Build)
+name: .NET (Non-Main)
 
 on:
   push:
+    branches-ignore:
+      - master
+  pull_request:
     branches:
       - master
   workflow_dispatch:
-
-env:
-  DEVELOPMENT_CHOCO_ARTIFACTS_URL: https://f.feedz.io/wormiecorp/choco-tests/nuget
-  DEVELOPMENT_CHOCO_ARTIFACTS_API_KEY: '${{ secrets.DEVELOPMENT_CHOCO_ARTIFACTS_API_KEY }}'
 
 jobs:
   build:
