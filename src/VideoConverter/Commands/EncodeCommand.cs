@@ -626,6 +626,23 @@ namespace VideoConverter.Commands
 
 											File.Move(tempWorkPath, queue.OutputPath);
 
+											var confirmedHash = await GetSHA1Async(queue.OutputPath, cancellationToken);
+
+											var tries = 1;
+
+											while (confirmedHash != queue.NewHash && tries <= 5)
+											{
+												console.MarkupLine("[yellow]WRN:[/] Failed to verify moved file ({0}/5)", tries);
+												Thread.Sleep(TimeSpan.FromSeconds(5));
+												tries++;
+												confirmedHash = await GetSHA1Async(queue.OutputPath, cancellationToken);
+											}
+
+											if (confirmedHash != queue.NewHash)
+											{
+												throw new ApplicationException("Failed to move encoded file to new location!");
+											}
+
 											moveTask.Increment(moveStep);
 										}
 										else
@@ -732,7 +749,7 @@ namespace VideoConverter.Commands
 #pragma warning disable CA5350
 			using var algo = SHA1.Create();
 #pragma warning restore CA5350
-			using var stream = File.OpenRead(file);
+			using var stream = File.Open(file, FileMode.Open, FileAccess.Read, FileShare.Read);
 			var sb = new StringBuilder();
 
 			var hashBytes = await algo.ComputeHashAsync(stream, cancellationToken).ConfigureAwait(false);
