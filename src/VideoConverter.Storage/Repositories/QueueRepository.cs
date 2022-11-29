@@ -76,21 +76,25 @@ namespace VideoConverter.Storage.Repositories
 			return true;
 		}
 
-		public Task<bool> FileExistsAsync(string path, string? hash)
+		public async Task<bool> FileExistsAsync(string path, string? hash)
 		{
 			var col = dbFactory.GetCollection<FileQueue>(TABLE_NAME);
 			var prefixedPath = ReplaceWithPrefix(path);
 
-			if (hash is null)
+			if (hash is not null)
 			{
-				return col.ExistsAsync(c => c.Status != QueueStatus.Pending && c.Status != QueueStatus.Failed && c.Path == prefixedPath);
-			}
-			else
-			{
-				return col.ExistsAsync(c =>
+				var foundWithhash = await col.ExistsAsync(c =>
 				c.Status != QueueStatus.Pending && c.Status != QueueStatus.Failed &&
-				((c.Path != prefixedPath && c.OldHash == hash) || c.NewHash == hash));
+				((c.Path != prefixedPath && c.OldHash == hash) || c.NewHash == hash))
+					.ConfigureAwait(false);
+
+				if (foundWithhash)
+				{
+					return true;
+				}
 			}
+
+			return await col.ExistsAsync(c => c.Status != QueueStatus.Pending && c.Status != QueueStatus.Failed && c.Path == prefixedPath).ConfigureAwait(false);
 		}
 
 		public async Task<FileQueue?> GetNextQueueItemAsync()
