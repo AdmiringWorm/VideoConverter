@@ -83,8 +83,7 @@ namespace VideoConverter.Commands
 						return 1;
 					}
 
-					//var hash = await EncodeCommand.GetSHA1Async(file, tokenSource.Token).ConfigureAwait(false);
-					var hash = string.Empty;
+					var hash = await EncodeCommand.GetSHA1Async(file, tokenSource.Token).ConfigureAwait(false);
 
 					var existingFile = await queueRepository.GetQueueItemAsync(file).ConfigureAwait(false);
 
