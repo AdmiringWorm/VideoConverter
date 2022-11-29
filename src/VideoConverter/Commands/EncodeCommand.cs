@@ -4,8 +4,6 @@ namespace VideoConverter.Commands
 	using System.Globalization;
 	using System.IO;
 	using System.Linq;
-	using System.Security.Cryptography;
-	using System.Text;
 	using System.Text.RegularExpressions;
 	using System.Threading;
 	using System.Threading.Tasks;
@@ -17,6 +15,7 @@ namespace VideoConverter.Commands
 
 	using VideoConverter.Core.Assertions;
 	using VideoConverter.Core.Models;
+	using VideoConverter.Core.Services;
 	using VideoConverter.Extensions;
 	using VideoConverter.Options;
 	using VideoConverter.Storage.Models;
@@ -30,11 +29,13 @@ namespace VideoConverter.Commands
 		private readonly CancellationToken cancellationToken;
 		private readonly ConverterConfiguration config;
 		private readonly IAnsiConsole console;
+		private readonly IHashProvider hashProvider;
 		private readonly QueueRepository queueRepo;
 		private readonly Random rand = new();
 
-		public EncodeCommand(QueueRepository queueRepo, ConverterConfiguration config, IAnsiConsole console)
+		public EncodeCommand(QueueRepository queueRepo, ConverterConfiguration config, IAnsiConsole console, IHashProvider hashProvider)
 		{
+			this.hashProvider = hashProvider;
 			this.queueRepo = queueRepo;
 			this.config = config;
 			var tokenSource = new CancellationTokenSource();
@@ -209,7 +210,7 @@ namespace VideoConverter.Commands
 								hashTask.StartTask();
 								if (queue.OldHash is not string oldHash || oldHash is null)
 								{
-									oldHash = oldHash = await GetSHA1Async(queue.Path, cancellationToken).ConfigureAwait(false);
+									queue.OldHash = oldHash = hashProvider.ComputeHash(queue.Path);
 								}
 								hashTask.Increment(hashStep);
 								parseTask.Increment(parseStep);
@@ -512,7 +513,7 @@ namespace VideoConverter.Commands
 									else
 									{
 										hashTask.StartTask();
-										var newHash = await GetSHA1Async(tempWorkPath, CancellationToken.None).ConfigureAwait(false);
+										var newHash = hashProvider.ComputeHash(tempWorkPath);
 										hashTask.Increment(hashStep);
 										queue.NewHash = newHash;
 										//hashTask.StopTask();
@@ -626,7 +627,7 @@ namespace VideoConverter.Commands
 
 											File.Move(tempWorkPath, queue.OutputPath);
 
-											var confirmedHash = await GetSHA1Async(queue.OutputPath, cancellationToken);
+											var confirmedHash = hashProvider.ComputeHash(queue.OutputPath);
 
 											var tries = 1;
 
@@ -635,7 +636,7 @@ namespace VideoConverter.Commands
 												console.MarkupLine("[yellow]WRN:[/] Failed to verify moved file ({0}/5)", tries);
 												Thread.Sleep(TimeSpan.FromSeconds(5));
 												tries++;
-												confirmedHash = await GetSHA1Async(queue.OutputPath, cancellationToken);
+												hashProvider.ComputeHash(queue.OutputPath);
 											}
 
 											if (confirmedHash != queue.NewHash)
@@ -742,24 +743,6 @@ namespace VideoConverter.Commands
 			}
 
 			return exitCode = failed ? 1 : 0;
-		}
-
-		internal static async Task<string> GetSHA1Async(string file, CancellationToken cancellationToken)
-		{
-#pragma warning disable CA5350
-			using var algo = SHA1.Create();
-#pragma warning restore CA5350
-			using var stream = File.Open(file, FileMode.Open, FileAccess.Read, FileShare.Read);
-			var sb = new StringBuilder();
-
-			var hashBytes = await algo.ComputeHashAsync(stream, cancellationToken).ConfigureAwait(false);
-
-			foreach (var b in hashBytes)
-			{
-				sb.AppendFormat(CultureInfo.InvariantCulture, "{0:x2}", b);
-			}
-
-			return sb.ToString();
 		}
 
 		private async Task<(FileQueue? queue, int count)> GetNextQueueItemAsync(int[] indexes, int indexCount)

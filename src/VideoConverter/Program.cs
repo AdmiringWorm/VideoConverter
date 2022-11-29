@@ -46,6 +46,7 @@ namespace VideoConverter
 			container.Register<DatabaseFactory>(Reuse.Singleton);
 			container.Register<EpisodeCriteriaRepository>(Reuse.ScopedOrSingleton);
 			container.Register<QueueRepository>(Reuse.ScopedOrSingleton);
+			container.Register<IHashProvider, ChecksumHashProvider>(Reuse.Singleton);
 
 			OptionsRegistrator.Register(container);
 

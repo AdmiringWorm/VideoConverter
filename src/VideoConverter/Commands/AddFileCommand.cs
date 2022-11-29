@@ -19,6 +19,7 @@ namespace VideoConverter.Commands
 	using VideoConverter.Core.Extensions;
 	using VideoConverter.Core.Models;
 	using VideoConverter.Core.Parsers;
+	using VideoConverter.Core.Services;
 	using VideoConverter.Extensions;
 	using VideoConverter.Options;
 	using VideoConverter.Prompts;
@@ -34,6 +35,7 @@ namespace VideoConverter.Commands
 		private readonly IAnsiConsole console;
 		private readonly AddCriteriaCommand criteriaCommand;
 		private readonly EpisodeCriteriaRepository criteriaRepo;
+		private readonly IHashProvider hashProvider;
 		private readonly QueueRepository queueRepository;
 		private readonly CancellationTokenSource tokenSource;
 
@@ -42,13 +44,15 @@ namespace VideoConverter.Commands
 			IAnsiConsole console,
 			AddCriteriaCommand criteriaCommand,
 			EpisodeCriteriaRepository criteriaRepo,
-			QueueRepository queueRepository)
+			QueueRepository queueRepository,
+			IHashProvider hashProvider)
 		{
 			this.config = config;
 			this.console = console;
 			this.criteriaCommand = criteriaCommand;
 			this.criteriaRepo = criteriaRepo;
 			this.queueRepository = queueRepository;
+			this.hashProvider = hashProvider;
 			tokenSource = new CancellationTokenSource();
 		}
 
@@ -83,7 +87,7 @@ namespace VideoConverter.Commands
 						return 1;
 					}
 
-					var hash = await EncodeCommand.GetSHA1Async(file, tokenSource.Token).ConfigureAwait(false);
+					var hash = hashProvider.ComputeHash(file);
 
 					var existingFile = await queueRepository.GetQueueItemAsync(file).ConfigureAwait(false);
 
