@@ -1,6 +1,7 @@
 namespace VideoConverter.DependencyInjection
 {
 	using System;
+	using System.Diagnostics.CodeAnalysis;
 
 	using DryIoc;
 
@@ -21,7 +22,7 @@ namespace VideoConverter.DependencyInjection
 			return new TypeResolver(container);
 		}
 
-		public void Register(Type service, Type implementation)
+		public void Register(Type service, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type implementation)
 		{
 			container.Register(service, implementation, Reuse.ScopedOrSingleton);
 		}

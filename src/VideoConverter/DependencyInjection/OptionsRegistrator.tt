@@ -18,6 +18,7 @@
 namespace VideoConverter.DependencyInjection
 {
 	using DryIoc;
+	using VideoConverter.Extensions;
 	using VideoConverter.Options;
 
 	public static class OptionsRegistrator
@@ -29,7 +30,7 @@ namespace VideoConverter.DependencyInjection
 			{
 				var className = Path.GetFileNameWithoutExtension(file);
 #>
-				container.Register<<#= className #>>(Reuse.Singleton);
+				container.RegisterSingleton<<#= className #>>();
 <#
 			}
 #>

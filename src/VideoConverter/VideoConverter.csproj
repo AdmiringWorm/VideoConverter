@@ -2,12 +2,12 @@
 
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
-		<TargetFramework>net6.0</TargetFramework>
+		<TargetFramework>net7.0</TargetFramework>
 		<langVersion>9.0</langVersion>
 		<nullable>enable</nullable>
 		<PublishTrimmed>true</PublishTrimmed>
 		<PublishSingleFile Condition="'$(PublishSingleFile)'==''">false</PublishSingleFile>
-		<TrimMode>copyused</TrimMode>
+		<TrimMode>partial</TrimMode>
 		<IsTrimmable>false</IsTrimmable>
 		<NoWarn>CA9998;CA1031;CA1819;$(NoWarn)</NoWarn>
 		<DebugType>embedded</DebugType>

@@ -14,6 +14,7 @@ namespace VideoConverter
 	using VideoConverter.Core.Models;
 	using VideoConverter.Core.Services;
 	using VideoConverter.DependencyInjection;
+	using VideoConverter.Extensions;
 	using VideoConverter.Storage.Database;
 	using VideoConverter.Storage.Repositories;
 
@@ -43,10 +44,10 @@ namespace VideoConverter
 			);
 			container.RegisterDelegate(RegisterConfigurationRepository, Reuse.Singleton);
 			container.RegisterDelegate(RegisterConfiguration, Reuse.Singleton);
-			container.Register<DatabaseFactory>(Reuse.Singleton);
-			container.Register<EpisodeCriteriaRepository>(Reuse.ScopedOrSingleton);
-			container.Register<QueueRepository>(Reuse.ScopedOrSingleton);
-			container.Register<IHashProvider, ChecksumHashProvider>(Reuse.Singleton);
+			container.RegisterSingleton<DatabaseFactory>();
+			container.RegisterScoped<EpisodeCriteriaRepository>();
+			container.RegisterScoped<QueueRepository>();
+			container.RegisterSingleton<IHashProvider, ChecksumHashProvider>();
 
 			OptionsRegistrator.Register(container);
 

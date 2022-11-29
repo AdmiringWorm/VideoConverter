@@ -1,10 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net6.0</TargetFramework>
+		<TargetFramework>net7.0</TargetFramework>
 		<LangVersion>9.0</LangVersion>
 		<nullable>enable</nullable>
-		<IsTrimmable>true</IsTrimmable>
+		<IsTrimmable>false</IsTrimmable>
 		<TrimMode>link</TrimMode>
 		<DebugType>embedded</DebugType>
 	</PropertyGroup>
@@ -13,6 +13,11 @@
 		<AssemblyAttribute Include="System.CLSCompliantAttribute">
 			<_Parameter1>false</_Parameter1>
 		</AssemblyAttribute>
+	</ItemGroup>
+
+	<ItemGroup>
+		<TrimmerRootAssembly Include="LiteDB.Async" />
+		<TrimmerRootAssembly Include="LiteDB" />
 	</ItemGroup>
 
 	<ItemGroup>
