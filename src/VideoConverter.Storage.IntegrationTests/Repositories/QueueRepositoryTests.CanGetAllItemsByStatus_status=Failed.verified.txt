@@ -2,6 +2,8 @@
   {
     AudioCodec: libopus,
     Id: 2,
+    NewHash: 14ab1abf0a5400077ab014c3480778dbbbae61ca,
+    OldHash: 4e7b7e44ca6229e12303a752e5ce11598b81ebd4,
     OutputPath: my-temp/,
     Path: my-path/test-file.webm,
     SkipThumbnails: false,

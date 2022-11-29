@@ -42,15 +42,26 @@
         "resolved": "4.3.0",
         "contentHash": "oXlDbkGW01VPPgI8P/XQ+PZHqaJoWtV90WuAkR0yN8HC3hiPivy2AaBZP3lqOql4RFqdxvF5qYSuaeWI+7/wGg=="
       },
+      "Verify.ClipboardAccept": {
+        "type": "Direct",
+        "requested": "[19.3.0, )",
+        "resolved": "19.3.0",
+        "contentHash": "/Zway6P7Hlf9foJHk99/yx2+8+r05MA5g8Y+tBR0iaissbNz55b3gXEm1MDaeS2gyCcOwg61Oez1tmvaAUyAwQ==",
+        "dependencies": {
+          "DiffEngine": "11.0.0",
+          "TextCopy": "6.2.0",
+          "Verify": "19.3.0"
+        }
+      },
       "Verify.NUnit": {
         "type": "Direct",
-        "requested": "[18.3.0, )",
-        "resolved": "18.3.0",
-        "contentHash": "swF5GMtq/AUkSnftT9w4ZrHnrk/Re5mkN6ED3X9IF8IyYtILrb4OzhVYLiLWXfk5DKmtdK3mQe0TVfaPumCCnA==",
+        "requested": "[19.3.0, )",
+        "resolved": "19.3.0",
+        "contentHash": "ocXCfaPPT31Mx1ZHyQrklK/qx4ITIzeIrSsbggnFOeVriYu5OxiuczjU15GTgmqnNxccFK4Yr3qTxV4ZGFdJLA==",
         "dependencies": {
-          "EmptyFiles": "3.0.0",
+          "EmptyFiles": "4.1.0",
           "NUnit": "3.13.3",
-          "Verify": "18.3.0"
+          "Verify": "19.3.0"
         }
       },
       "Argon": {
@@ -60,17 +71,17 @@
       },
       "DiffEngine": {
         "type": "Transitive",
-        "resolved": "10.4.3",
-        "contentHash": "dAJ932cyhq0+oc+DytpX6poo9ZBHtPkfq8aROZ32NBP3VSreJs5iZd5rJkJLKLMH8ELfCckzbX8gKCdNkc3eYA==",
+        "resolved": "11.0.0",
+        "contentHash": "FKhanyE6mYmPe/MWWKKHc7Ol6WECHsE+WN6tK1L5FksrZd+DG4UMsc2luunnuUkVZ6bXi0XO6nyuy6HSXDmkiw==",
         "dependencies": {
-          "EmptyFiles": "3.0.0",
+          "EmptyFiles": "4.0.0",
           "System.Management": "5.0.0"
         }
       },
       "EmptyFiles": {
         "type": "Transitive",
-        "resolved": "3.0.0",
-        "contentHash": "XIZe5CJHgUtRGhuHWuUTKeaX4ARzqEKRnthV8L13NkwB1z4CvsORpBT/RZeMuBW3Qhj3OmiGz7A6psn9CBZ/oQ=="
+        "resolved": "4.1.0",
+        "contentHash": "mwnB0PowYoKVD0t/ImcAbwBNNHRpmRrbiuCSosy6m5YoGJ/29k45RTU/8arLrhcPWH1JVCwPfmMsW06/IdDaZA=="
       },
       "LiteDB": {
         "type": "Transitive",
@@ -112,6 +123,11 @@
           "System.Runtime.InteropServices": "4.1.0",
           "System.Threading": "4.0.11"
         }
+      },
+      "Microsoft.Extensions.DependencyInjection.Abstractions": {
+        "type": "Transitive",
+        "resolved": "7.0.0",
+        "contentHash": "h3j/QfmFN4S0w4C2A6X7arXij/M/OVw3uQHSOFxnND4DyAzO1F9eMX7Eti7lU/OkSthEE0WzRsfT/Dmx86jzCw=="
       },
       "Microsoft.NETCore.Platforms": {
         "type": "Transitive",
@@ -194,8 +210,8 @@
       },
       "SimpleInfoName": {
         "type": "Transitive",
-        "resolved": "1.2.0",
-        "contentHash": "1YOIG0XwIMK1XNYALMSximxjH2w1Z/y4a/WAAFkXMSfzDOYPeU/E9ba7TQLkJLcvfTpbTrVuB58MTSC1AuRv8g=="
+        "resolved": "2.0.0",
+        "contentHash": "sXzz3+zns3HWmv+8wzhF1f4up8NjXHeD1X7w9zBjmnpwMk08zuCw5PPmZUAv8ou6F0AgG/8QpvZQr4hC82Wwqg=="
       },
       "System.CodeDom": {
         "type": "Transitive",
@@ -631,15 +647,23 @@
           "System.Xml.ReaderWriter": "4.0.11"
         }
       },
+      "TextCopy": {
+        "type": "Transitive",
+        "resolved": "6.2.0",
+        "contentHash": "mpl+ssTDgROzmSkAoivi8HJdrEh5QCpXScP/vW2qIugfbaPI9eDNxbxxWDosVmKJSh4dfsALsSKqD6EJbE9awQ==",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "7.0.0"
+        }
+      },
       "Verify": {
         "type": "Transitive",
-        "resolved": "18.3.0",
-        "contentHash": "qVx++gFCcBVV0A/npMB2EZJJHA6Ggm3FEKoRrpWpgs9ueV/DGfWYYYndKrmvu93GLdWZJyfGXa2QKgWEf/Q2uQ==",
+        "resolved": "19.3.0",
+        "contentHash": "7CqN/1KXfSCYArTmJlgrCg3vqHafVjoZK23sqTNanvFa/TZELMrptQ/+frybBPdAtEFv4YDAmBOy/v9lJj9ZDg==",
         "dependencies": {
           "Argon": "0.1.0",
-          "DiffEngine": "10.4.3",
-          "EmptyFiles": "3.0.0",
-          "SimpleInfoName": "1.2.0"
+          "DiffEngine": "11.0.0",
+          "EmptyFiles": "4.1.0",
+          "SimpleInfoName": "2.0.0"
         }
       },
       "Xabe.FFmpeg": {

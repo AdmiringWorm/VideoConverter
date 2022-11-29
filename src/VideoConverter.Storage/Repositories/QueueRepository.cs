@@ -83,18 +83,25 @@ namespace VideoConverter.Storage.Repositories
 
 			if (hash is not null)
 			{
-				var foundWithhash = await col.ExistsAsync(c =>
-				c.Status != QueueStatus.Pending && c.Status != QueueStatus.Failed &&
-				((c.Path != prefixedPath && c.OldHash == hash) || c.NewHash == hash))
-					.ConfigureAwait(false);
+				// We are unable to match the hash directly. Most likely a bug in LiteDB
+				var queueItems = await col
+					.Query()
+					.Where(c => c.Status == QueueStatus.Completed)
+					.ToEnumerableAsync();
 
-				if (foundWithhash)
+				foreach (var item in queueItems)
 				{
-					return true;
+					if (string.Equals(item.OldHash, hash, StringComparison.OrdinalIgnoreCase) ||
+						string.Equals(item.NewHash, hash, StringComparison.OrdinalIgnoreCase))
+					{
+						return true;
+					}
 				}
+
+				return false;
 			}
 
-			return await col.ExistsAsync(c => c.Status != QueueStatus.Pending && c.Status != QueueStatus.Failed && c.Path == prefixedPath).ConfigureAwait(false);
+			return await col.ExistsAsync(c => c.Status == QueueStatus.Completed && c.Path == prefixedPath).ConfigureAwait(false);
 		}
 
 		public async Task<FileQueue?> GetNextQueueItemAsync()

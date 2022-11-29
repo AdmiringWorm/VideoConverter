@@ -2,8 +2,10 @@
   {
     AudioCodec: libopus,
     Id: 3,
+    NewHash: 7947A63C055BC10CE00BE1A024EE278D387A5668,
+    OldHash: 5C2FAE6CE00BC4FD62B89A5DB4E71635F0EF6E6D,
     OutputPath: my-temp/test-pending.mkv,
-    Path: my-path/some-file.mp4,
+    Path: my-path/some-file2.mp4,
     SkipThumbnails: false,
     SubtitleCodec: copy,
     VideoCodec: hevc

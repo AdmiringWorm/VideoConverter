@@ -21,6 +21,8 @@
   {
     AudioCodec: libopus,
     Id: 2,
+    NewHash: 14ab1abf0a5400077ab014c3480778dbbbae61ca,
+    OldHash: 4e7b7e44ca6229e12303a752e5ce11598b81ebd4,
     OutputPath: my-temp/,
     Path: my-path/test-file.webm,
     SkipThumbnails: false,
@@ -31,8 +33,10 @@
   {
     AudioCodec: libopus,
     Id: 3,
+    NewHash: 7947A63C055BC10CE00BE1A024EE278D387A5668,
+    OldHash: 5C2FAE6CE00BC4FD62B89A5DB4E71635F0EF6E6D,
     OutputPath: my-temp/test-pending.mkv,
-    Path: my-path/some-file.mp4,
+    Path: my-path/some-file2.mp4,
     SkipThumbnails: false,
     SubtitleCodec: copy,
     VideoCodec: hevc
@@ -40,6 +44,8 @@
   {
     AudioCodec: copy,
     Id: 4,
+    NewHash: 1D34CBD648CA9E250578640ACFA0D11D9687CD73,
+    OldHash: 78A02226D06B7DF94565700876C171214FF73252,
     OutputPath: my-temp/test-encoding.mp4,
     Path: my-path/some-file.mkv,
     SkipThumbnails: false,

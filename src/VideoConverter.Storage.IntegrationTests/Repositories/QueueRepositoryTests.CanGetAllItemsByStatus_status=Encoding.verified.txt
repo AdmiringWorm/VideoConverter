@@ -2,6 +2,8 @@
   {
     AudioCodec: copy,
     Id: 4,
+    NewHash: 1D34CBD648CA9E250578640ACFA0D11D9687CD73,
+    OldHash: 78A02226D06B7DF94565700876C171214FF73252,
     OutputPath: my-temp/test-encoding.mp4,
     Path: my-path/some-file.mkv,
     SkipThumbnails: false,

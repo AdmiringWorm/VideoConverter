@@ -140,16 +140,20 @@ namespace VideoConverter.Storage.Tests
 					Status = QueueStatus.Failed,
 					AudioCodec = "libopus",
 					OutputPath = "{tmp}/",
-					Path = "{current}/test-file.webm"
+					Path = "{current}/test-file.webm",
+					OldHash = "4e7b7e44ca6229e12303a752e5ce11598b81ebd4",
+					NewHash = "14ab1abf0a5400077ab014c3480778dbbbae61ca"
 				},
 				new FileQueue
 				{
 					AudioCodec = "libopus",
 					OutputPath = "{tmp}/test-pending.mkv",
-					Path = "{current}/some-file.mp4",
+					Path = "{current}/some-file2.mp4",
 					Status = QueueStatus.Pending,
 					SubtitleCodec = "copy",
-					VideoCodec = "hevc"
+					VideoCodec = "hevc",
+					NewHash = "7947A63C055BC10CE00BE1A024EE278D387A5668",
+					OldHash = "5C2FAE6CE00BC4FD62B89A5DB4E71635F0EF6E6D"
 				},
 				new FileQueue
 				{
@@ -158,7 +162,9 @@ namespace VideoConverter.Storage.Tests
 					Path = "{current}/some-file.mkv",
 					Status = QueueStatus.Encoding,
 					SubtitleCodec = "copy",
-					VideoCodec = "copy"
+					VideoCodec = "copy",
+					NewHash = "1D34CBD648CA9E250578640ACFA0D11D9687CD73",
+					OldHash = "78A02226D06B7DF94565700876C171214FF73252"
 				}
 			};
 
