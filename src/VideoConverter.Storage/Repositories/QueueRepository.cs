@@ -83,11 +83,13 @@ namespace VideoConverter.Storage.Repositories
 
 			if (hash is null)
 			{
-				return col.ExistsAsync(c => c.Path == prefixedPath);
+				return col.ExistsAsync(c => c.Status != QueueStatus.Pending && c.Status != QueueStatus.Failed && c.Path == prefixedPath);
 			}
 			else
 			{
-				return col.ExistsAsync(c => (c.Path != prefixedPath && c.OldHash == hash) || c.NewHash == hash);
+				return col.ExistsAsync(c =>
+				c.Status != QueueStatus.Pending && c.Status != QueueStatus.Failed &&
+				((c.Path != prefixedPath && c.OldHash == hash) || c.NewHash == hash));
 			}
 		}
 
