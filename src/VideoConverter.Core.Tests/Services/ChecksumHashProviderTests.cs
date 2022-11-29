@@ -14,7 +14,7 @@ namespace VideoConverter.Core.Tests.Services
 		[Test]
 		public void Should_Calculate_Expected_Sha1_Checksum()
 		{
-			const string expected = "F6189B28D40CF0471EAE4062620571630871FE1C";
+			const string expected = "0B790A39EFC7200A4C9F49421A489FCC02925F15";
 
 			var input = @"
 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
