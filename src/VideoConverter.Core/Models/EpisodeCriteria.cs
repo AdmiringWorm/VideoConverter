@@ -17,10 +17,7 @@ namespace VideoConverter.Core.Models
 		public static bool operator !=(EpisodeData data, EpisodeCriteria criteria)
 			=> !(data == criteria);
 
-#pragma warning disable CA2225 // Operator overloads have named alternates
-
 		public static bool operator <(EpisodeData data, EpisodeCriteria criteria)
-#pragma warning restore CA2225 // Operator overloads have named alternates
 		{
 			criteria.AssertNotNull();
 			data.AssertNotNull();
@@ -35,10 +32,7 @@ namespace VideoConverter.Core.Models
 				(criteria.Episode is null || data.EpisodeNumber < criteria.Episode);
 		}
 
-#pragma warning disable CA2225 // Operator overloads have named alternates
-
 		public static bool operator <=(EpisodeData data, EpisodeCriteria criteria)
-#pragma warning restore CA2225 // Operator overloads have named alternates
 		{
 			return data < criteria || data == criteria;
 		}
@@ -68,8 +62,6 @@ namespace VideoConverter.Core.Models
 				(criteria.Episode is null || criteria.Episode == data.EpisodeNumber);
 		}
 
-#pragma warning disable CA2225
-
 		public static bool operator >(EpisodeData data, EpisodeCriteria criteria)
 		{
 			criteria.AssertNotNull();
@@ -89,8 +81,6 @@ namespace VideoConverter.Core.Models
 		{
 			return data > criteria || data == criteria;
 		}
-
-#pragma warning restore CA2225
 
 		public override bool Equals(object? obj)
 		{

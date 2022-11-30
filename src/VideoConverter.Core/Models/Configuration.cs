@@ -21,12 +21,7 @@ namespace VideoConverter.Core.Models
 		public string AudioCodec { get; set; } = "libopus";
 		public string ExtraEncodingParameters { get; set; } = string.Empty;
 
-#pragma warning disable CA2227 // Collection properties should be read only
-#pragma warning disable CA1002 // Do not expose generic lists
-
 		public List<FansubberConfiguration> Fansubbers
-#pragma warning restore CA1002 // Do not expose generic lists
-#pragma warning restore CA2227 // Collection properties should be read only
 		{
 			get => _ignoreVideosWithFansubbers;
 			set
@@ -42,12 +37,7 @@ namespace VideoConverter.Core.Models
 
 		public string? MapperDatabase { get; set; }
 
-#pragma warning disable CA2227 // Collection properties should be read only
-#pragma warning disable CA1002 // Do not expose generic lists
-
 		public List<PrefixConfiguration> Prefixes
-#pragma warning restore CA1002 // Do not expose generic lists
-#pragma warning restore CA2227 // Collection properties should be read only
 		{
 			get => _prefixes;
 			set

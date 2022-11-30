@@ -183,3 +183,6 @@ dotnet_style_parentheses_in_arithmetic_binary_operators = always_for_clarity:war
 dotnet_style_parentheses_in_other_binary_operators = always_for_clarity:warning
 dotnet_style_parentheses_in_relational_binary_operators = always_for_clarity:warning
 dotnet_style_parentheses_in_other_operators = never_if_unnecessary:warning
+csharp_style_prefer_top_level_statements = false:error
+dotnet_diagnostic.RS0030.severity = error
+dotnet_diagnostic.RS0031.severity = error
