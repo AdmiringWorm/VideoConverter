@@ -14,6 +14,7 @@ namespace VideoConverter.Commands
 	using Spectre.Console.Cli;
 
 	using VideoConverter.Core.Assertions;
+	using VideoConverter.Core.IO;
 	using VideoConverter.Core.Models;
 	using VideoConverter.Core.Services;
 	using VideoConverter.Extensions;
@@ -30,10 +31,16 @@ namespace VideoConverter.Commands
 		private readonly ConverterConfiguration config;
 		private readonly IAnsiConsole console;
 		private readonly IHashProvider hashProvider;
+		private readonly IIOHelpers ioHelpers;
 		private readonly QueueRepository queueRepo;
 		private readonly Random rand = new();
 
-		public EncodeCommand(QueueRepository queueRepo, ConverterConfiguration config, IAnsiConsole console, IHashProvider hashProvider)
+		public EncodeCommand(
+			QueueRepository queueRepo,
+			ConverterConfiguration config,
+			IAnsiConsole console,
+			IHashProvider hashProvider,
+			IIOHelpers ioHelpers)
 		{
 			this.hashProvider = hashProvider;
 			this.queueRepo = queueRepo;
@@ -55,6 +62,7 @@ namespace VideoConverter.Commands
 				}
 ;
 			this.console = console;
+			this.ioHelpers = ioHelpers;
 		}
 
 		public override async Task<int> ExecuteAsync(CommandContext context, EncodeOption settings)
@@ -237,10 +245,8 @@ namespace VideoConverter.Commands
 								parseTask.Increment(parseStep);
 
 								var directory = Path.GetDirectoryName(queue.OutputPath) ?? Environment.CurrentDirectory;
-								if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-								{
-									Directory.CreateDirectory(directory);
-								}
+
+								ioHelpers.EnsureDirectory(directory);
 
 								var streams = mediaInfo.Streams.Where(s => queue.Streams.Contains(s.Index));
 
@@ -317,10 +323,7 @@ namespace VideoConverter.Commands
 
 								parseTask.Increment(parseStep);
 
-								if (!Directory.Exists(config.WorkDirectory))
-								{
-									Directory.CreateDirectory(config.WorkDirectory);
-								}
+								ioHelpers.EnsureDirectory(config.WorkDirectory);
 
 								var tempWorkPath = Path.Combine(
 									config.WorkDirectory,
@@ -505,10 +508,7 @@ namespace VideoConverter.Commands
 											"Progress was cancelled by user"
 										).ConfigureAwait(false);
 										encodeTask.Description = "[grey]Encoding cancelled...[/]";
-										if (File.Exists(tempWorkPath))
-										{
-											File.Delete(tempWorkPath);
-										}
+										ioHelpers.FileRemove(tempWorkPath);
 									}
 									else
 									{
@@ -529,7 +529,7 @@ namespace VideoConverter.Commands
 											queue.StatusMessage = "Duplicate file...";
 											if (settings.IgnoreDuplicates)
 											{
-												File.Delete(tempWorkPath);
+												ioHelpers.FileRemove(tempWorkPath);
 											}
 										}
 
@@ -581,15 +581,8 @@ namespace VideoConverter.Commands
 														"-fanart",
 														StringComparison.Ordinal);
 
-												if (File.Exists(newThumbPath))
-												{
-													File.Delete(newThumbPath);
-												}
-
-												if (File.Exists(newFanArtPath))
-												{
-													File.Delete(newFanArtPath);
-												}
+												ioHelpers.FileRemove(newThumbPath);
+												ioHelpers.FileRemove(newFanArtPath);
 
 												var thumbnailAt = rand.Next((int)firstVideoStream.Duration.TotalMilliseconds + 1);
 												var fanArtAt = rand.Next((int)firstVideoStream.Duration.TotalMilliseconds + 1);
@@ -620,12 +613,9 @@ namespace VideoConverter.Commands
 
 											moveTask.Increment(moveStep);
 
-											if (File.Exists(queue.OutputPath))
-											{
-												File.Delete(queue.OutputPath);
-											}
+											ioHelpers.FileRemove(queue.OutputPath);
 
-											File.Move(tempWorkPath, queue.OutputPath);
+											ioHelpers.FileMove(tempWorkPath, queue.OutputPath);
 
 											var confirmedHash = hashProvider.ComputeHash(queue.OutputPath);
 
@@ -654,9 +644,9 @@ namespace VideoConverter.Commands
 
 										if (settings.RemoveOldFiles)
 										{
-											if (queue.Path != queue.OutputPath && File.Exists(queue.Path))
+											if (queue.Path != queue.OutputPath)
 											{
-												File.Delete(queue.Path);
+												ioHelpers.FileRemove(queue.Path);
 											}
 										}
 										moveTask.Increment(moveStep);
@@ -680,10 +670,7 @@ namespace VideoConverter.Commands
 										await queueRepo.UpdateQueueStatusAsync(queue.Id, QueueStatus.Failed, ex).ConfigureAwait(false);
 									}
 
-									if (File.Exists(tempWorkPath))
-									{
-										File.Delete(tempWorkPath);
-									}
+									ioHelpers.FileRemove(tempWorkPath);
 								}
 							}
 							catch (Exception ex)

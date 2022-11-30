@@ -11,6 +11,7 @@ namespace VideoConverter
 	using Spectre.Console.Cli;
 
 	using VideoConverter.Commands;
+	using VideoConverter.Core.IO;
 	using VideoConverter.Core.Models;
 	using VideoConverter.Core.Services;
 	using VideoConverter.DependencyInjection;
@@ -48,6 +49,7 @@ namespace VideoConverter
 			container.RegisterScoped<EpisodeCriteriaRepository>();
 			container.RegisterScoped<QueueRepository>();
 			container.RegisterSingleton<IHashProvider, ChecksumHashProvider>();
+			container.RegisterSingleton<IIOHelpers, IOHelpers>();
 
 			OptionsRegistrator.Register(container);
 

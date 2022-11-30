@@ -17,6 +17,7 @@ namespace VideoConverter.Commands
 
 	using VideoConverter.Core.Assertions;
 	using VideoConverter.Core.Extensions;
+	using VideoConverter.Core.IO;
 	using VideoConverter.Core.Models;
 	using VideoConverter.Core.Parsers;
 	using VideoConverter.Core.Services;
@@ -36,6 +37,7 @@ namespace VideoConverter.Commands
 		private readonly AddCriteriaCommand criteriaCommand;
 		private readonly EpisodeCriteriaRepository criteriaRepo;
 		private readonly IHashProvider hashProvider;
+		private readonly IIOHelpers ioHelpers;
 		private readonly QueueRepository queueRepository;
 		private readonly CancellationTokenSource tokenSource;
 
@@ -45,7 +47,8 @@ namespace VideoConverter.Commands
 			AddCriteriaCommand criteriaCommand,
 			EpisodeCriteriaRepository criteriaRepo,
 			QueueRepository queueRepository,
-			IHashProvider hashProvider)
+			IHashProvider hashProvider,
+			IIOHelpers ioHelpers)
 		{
 			this.config = config;
 			this.console = console;
@@ -54,6 +57,7 @@ namespace VideoConverter.Commands
 			this.queueRepository = queueRepository;
 			this.hashProvider = hashProvider;
 			tokenSource = new CancellationTokenSource();
+			this.ioHelpers = ioHelpers;
 		}
 
 		public void Dispose()
@@ -81,7 +85,7 @@ namespace VideoConverter.Commands
 						break;
 					}
 
-					if (!File.Exists(file))
+					if (!ioHelpers.FileExists(file))
 					{
 						console.MarkupLine("[red on black] ERROR: The file '[fuchsia]{0}[/]' do not exist.[/]", file.EscapeMarkup());
 						return 1;
@@ -262,7 +266,7 @@ namespace VideoConverter.Commands
 								$"The file '{file}' is a duplicate of an existing file. Removing...",
 								new Style(Color.Green)
 							);
-							File.Delete(file);
+							ioHelpers.FileRemove(file);
 							continue;
 						}
 						else if (settings.IgnoreDuplicates)
@@ -292,10 +296,7 @@ namespace VideoConverter.Commands
 					else if (!string.IsNullOrEmpty(settings.OutputDir))
 					{
 						var rootDir = Path.GetFullPath(settings.OutputDir!);
-						if (!Directory.Exists(rootDir))
-						{
-							Directory.CreateDirectory(rootDir);
-						}
+						ioHelpers.EnsureDirectory(rootDir);
 
 						var directory = rootDir;
 
@@ -479,56 +480,6 @@ namespace VideoConverter.Commands
 			}
 
 			return tokenSource.Token.IsCancellationRequested ? 1 : 0;
-		}
-
-		private static EpisodeData? GetMatchingEpisodeData(EpisodeData episodeData, string outputDir)
-		{
-			if (!Directory.Exists(outputDir))
-			{
-				return null;
-			}
-
-			var trimmedName = RemoveInvalidChars(episodeData.Series);
-
-			foreach (var file in AddDirectoryCommand.FindVideoFiles(outputDir, false)
-				.Select(f => FileParser.ParseEpisode(f)).Where(ed => ed is not null))
-			{
-				var fileTrimmed = RemoveInvalidChars(file!.Series);
-				if (!string.Equals(trimmedName, fileTrimmed, StringComparison.OrdinalIgnoreCase))
-				{
-					continue;
-				}
-				else if (file.EpisodeNumber == episodeData.EpisodeNumber && file.SeasonNumber == episodeData.SeasonNumber)
-				{
-					return file;
-				}
-			}
-
-			return null;
-		}
-
-		private static string GetOutputDir(EpisodeData episodeData, string relativeParentDir)
-		{
-			var newDirectory = relativeParentDir;
-			var seriesName = RemoveInvalidChars(episodeData.Series);
-			newDirectory = Path.Combine(newDirectory, seriesName);
-			if (!Directory.Exists(newDirectory))
-			{
-				var yearDir = Directory.EnumerateDirectories(relativeParentDir, seriesName + " (*)").FirstOrDefault();
-				if (yearDir is not null)
-				{
-					newDirectory = yearDir;
-				}
-			}
-
-			if (episodeData.SeasonNumber is not null)
-			{
-				newDirectory = episodeData.SeasonNumber == 0
-					? Path.Combine(newDirectory, "Specials")
-					: Path.Combine(newDirectory, "Season " + episodeData.SeasonNumber);
-			}
-
-			return newDirectory;
 		}
 
 		private static string RemoveInvalidChars(string text)
@@ -716,6 +667,56 @@ namespace VideoConverter.Commands
 			var panel = new Panel(grid)
 				.Header("New Episode Data", Justify.Center);
 			console.Write(panel);
+		}
+
+		private EpisodeData? GetMatchingEpisodeData(EpisodeData episodeData, string outputDir)
+		{
+			if (!ioHelpers.DirectoryExists(outputDir))
+			{
+				return null;
+			}
+
+			var trimmedName = RemoveInvalidChars(episodeData.Series);
+
+			foreach (var file in ioHelpers.EnumerateMovieFiles(outputDir, false)
+				.Select(f => FileParser.ParseEpisode(f)).Where(ed => ed is not null))
+			{
+				var fileTrimmed = RemoveInvalidChars(file!.Series);
+				if (!string.Equals(trimmedName, fileTrimmed, StringComparison.OrdinalIgnoreCase))
+				{
+					continue;
+				}
+				else if (file.EpisodeNumber == episodeData.EpisodeNumber && file.SeasonNumber == episodeData.SeasonNumber)
+				{
+					return file;
+				}
+			}
+
+			return null;
+		}
+
+		private string GetOutputDir(EpisodeData episodeData, string relativeParentDir)
+		{
+			var newDirectory = relativeParentDir;
+			var seriesName = RemoveInvalidChars(episodeData.Series);
+			newDirectory = Path.Combine(newDirectory, seriesName);
+			if (!ioHelpers.DirectoryExists(newDirectory))
+			{
+				var yearDir = ioHelpers.EnumerateDirectories(relativeParentDir, seriesName + " (*)").FirstOrDefault();
+				if (yearDir is not null)
+				{
+					newDirectory = yearDir;
+				}
+			}
+
+			if (episodeData.SeasonNumber is not null)
+			{
+				newDirectory = episodeData.SeasonNumber == 0
+					? Path.Combine(newDirectory, "Specials")
+					: Path.Combine(newDirectory, "Season " + episodeData.SeasonNumber);
+			}
+
+			return newDirectory;
 		}
 
 		private async Task<bool> UpdateEpisodeDataAsync(Core.Models.EpisodeData episodeData, string relativeParentDir)

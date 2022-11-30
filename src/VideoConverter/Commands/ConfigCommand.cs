@@ -13,6 +13,7 @@ namespace VideoConverter.Commands
 	using Spectre.Console.Cli;
 
 	using VideoConverter.Core.Assertions;
+	using VideoConverter.Core.IO;
 	using VideoConverter.Core.Models;
 	using VideoConverter.Core.Services;
 	using VideoConverter.Options;
@@ -20,12 +21,14 @@ namespace VideoConverter.Commands
 	public class ConfigCommand : Command<ConfigOption>
 	{
 		private readonly IAnsiConsole console;
+		private readonly IIOHelpers ioHelpers;
 		private readonly IConfigurationService service;
 
-		public ConfigCommand(IConfigurationService service, IAnsiConsole console)
+		public ConfigCommand(IConfigurationService service, IAnsiConsole console, IIOHelpers ioHelpers)
 		{
 			this.service = service.AssertAndReturnNotNull();
 			this.console = console.AssertAndReturnNotNull();
+			this.ioHelpers = ioHelpers;
 		}
 
 		public override int Execute([NotNull] CommandContext context, [NotNull] ConfigOption settings)
@@ -125,7 +128,7 @@ namespace VideoConverter.Commands
 							"MapperDatabase",
 							StringComparison.OrdinalIgnoreCase) &&
 						!string.IsNullOrEmpty(config.MapperDatabase) &&
-						File.Exists(config.MapperDatabase)
+						ioHelpers.FileExists(config.MapperDatabase)
 				)
 				{
 					console.Markup(
@@ -137,12 +140,9 @@ namespace VideoConverter.Commands
 					if (key.KeyChar == 'Y' || key.KeyChar == 'y')
 					{
 						var directory = Path.GetDirectoryName(settings.Value) ?? Environment.CurrentDirectory;
-						if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-						{
-							Directory.CreateDirectory(directory);
-						}
+						ioHelpers.EnsureDirectory(directory);
 
-						File.Move(config.MapperDatabase, settings.Value);
+						ioHelpers.FileMove(config.MapperDatabase, settings.Value);
 					}
 					console.WriteLine();
 
