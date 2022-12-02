@@ -8,11 +8,14 @@ namespace VideoConverter.IntegrationTests.Services
 	using NUnit.Framework;
 
 	using VideoConverter.Core.Services;
+	using VideoConverter.Tests;
 
-	[Parallelizable(ParallelScope.Children)]
-	public class ChecksumHashProviderTests
+	public class ChecksumHashProviderTests : TestBase<IHashProvider>
 	{
-		private static readonly IHashProvider provider = new ChecksumHashProvider();
+		public ChecksumHashProviderTests()
+			: base(Program.CreateContainer())
+		{
+		}
 
 		[Test]
 		public void Should_Calculate_Expected_Checksum_From_Blank_File_Path()
@@ -22,7 +25,7 @@ namespace VideoConverter.IntegrationTests.Services
 
 			try
 			{
-				var actual = provider.ComputeHash(testFile);
+				var actual = Service.ComputeHash(testFile);
 				actual.Should().Be(expected);
 			}
 			finally
@@ -39,7 +42,7 @@ namespace VideoConverter.IntegrationTests.Services
 
 			try
 			{
-				var actual = provider.ComputeHash(testFile);
+				var actual = Service.ComputeHash(testFile);
 
 				actual.Should().Be(expected);
 			}
@@ -57,7 +60,7 @@ namespace VideoConverter.IntegrationTests.Services
 
 			try
 			{
-				var actual = provider.ComputeHash(testFile);
+				var actual = Service.ComputeHash(testFile);
 
 				actual.Should().Be(expected);
 			}
@@ -75,7 +78,7 @@ namespace VideoConverter.IntegrationTests.Services
 
 			try
 			{
-				var actual = provider.ComputeHash(testFile);
+				var actual = Service.ComputeHash(testFile);
 
 				actual.Should().Be(expected);
 			}

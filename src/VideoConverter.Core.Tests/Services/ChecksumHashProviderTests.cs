@@ -8,9 +8,15 @@ namespace VideoConverter.Core.Tests.Services
 	using NUnit.Framework;
 
 	using VideoConverter.Core.Services;
+	using VideoConverter.Tests;
 
-	public class ChecksumHashProviderTests
+	public class ChecksumHashProviderTests : TestBase
 	{
+		public ChecksumHashProviderTests()
+		{
+			Register<ChecksumHashProvider>();
+		}
+
 		[Test]
 		public void Should_Calculate_Expected_Sha1_Checksum()
 		{
@@ -67,7 +73,7 @@ Morbi tristique senectus et netus et malesuada.
 ".ReplaceLineEndings("\n");
 			using var stream = input.ToStream();
 
-			var provider = new ChecksumHashProvider();
+			var provider = Resolve<ChecksumHashProvider>();
 
 			var actual = provider.ComputeHash(stream);
 
@@ -80,7 +86,7 @@ Morbi tristique senectus et netus et malesuada.
 			const string expected = "DA39A3EE5E6B4B0D3255BFEF95601890AFD80709";
 			using var stream = string.Empty.ToStream();
 
-			var provider = new ChecksumHashProvider();
+			var provider = Resolve<ChecksumHashProvider>();
 
 			var actual = provider.ComputeHash(stream);
 
@@ -90,7 +96,7 @@ Morbi tristique senectus et netus et malesuada.
 		[Test]
 		public void Throws_Argument_Null_Exception_On_Null_Path()
 		{
-			var provider = new ChecksumHashProvider();
+			var provider = Resolve<ChecksumHashProvider>();
 			var act = () => provider.ComputeHash((string)null);
 
 			act.Should().Throw<ArgumentNullException>()
@@ -101,7 +107,7 @@ Morbi tristique senectus et netus et malesuada.
 		[Test]
 		public void Throws_Argument_Null_Exception_On_Null_Stream()
 		{
-			var provider = new ChecksumHashProvider();
+			var provider = Resolve<ChecksumHashProvider>();
 			var act = () => provider.ComputeHash((Stream)null);
 
 			act.Should().Throw<ArgumentNullException>()
