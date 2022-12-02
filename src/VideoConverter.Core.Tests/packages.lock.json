@@ -8,6 +8,12 @@
         "resolved": "3.2.0",
         "contentHash": "xjY8xBigSeWIYs4I7DgUHqSNoGqnHi7Fv7/7RZD02rvZyG3hlsjnQKiVKVWKgr9kRKgmV+dEfu8KScvysiC0Wg=="
       },
+      "DryIoc.dll": {
+        "type": "Direct",
+        "requested": "[5.3.1, )",
+        "resolved": "5.3.1",
+        "contentHash": "E3zclUh2CIBks1t2uBD1k18pyGFJ1YSKCrbCDbB7qCdl2RAB+k68AyDpjeplhF1ot2XPV82AgyCWBXMf0ggL1g=="
+      },
       "FluentAssertions": {
         "type": "Direct",
         "requested": "[6.8.0, )",
@@ -25,6 +31,15 @@
         "dependencies": {
           "Microsoft.CodeCoverage": "17.3.2",
           "Microsoft.TestPlatform.TestHost": "17.3.2"
+        }
+      },
+      "Moq": {
+        "type": "Direct",
+        "requested": "[4.18.2, )",
+        "resolved": "4.18.2",
+        "contentHash": "SjxKYS5nX6prcaT8ZjbkONh3vnh0Rxru09+gQ1a07v4TM530Oe/jq3Q4dOZPfo1wq0LYmTgLOZKrqRfEx4auPw==",
+        "dependencies": {
+          "Castle.Core": "5.1.0"
         }
       },
       "NUnit": {
@@ -57,6 +72,14 @@
         "type": "Transitive",
         "resolved": "0.1.0",
         "contentHash": "TYJwenjm6RTjs3hEphb4mL3h4jdSMWSvoRkuNRGXXD6ZcuMNWOR4UTzf6OGF+ReTYsE2c1Q3brLSD3cfIPjfdw=="
+      },
+      "Castle.Core": {
+        "type": "Transitive",
+        "resolved": "5.1.0",
+        "contentHash": "31UJpTHOiWq95CDOHazE3Ub/hE/PydNWsJMwnEVTqFFP4WhAugwpaVGxzOxKgNeSUUeqS2W6lxV+q7u1pAOfXg==",
+        "dependencies": {
+          "System.Diagnostics.EventLog": "6.0.0"
+        }
       },
       "DiffEngine": {
         "type": "Transitive",
@@ -216,6 +239,11 @@
           "Microsoft.NETCore.Targets": "1.0.1",
           "System.Runtime": "4.1.0"
         }
+      },
+      "System.Diagnostics.EventLog": {
+        "type": "Transitive",
+        "resolved": "6.0.0",
+        "contentHash": "lcyUiXTsETK2ALsZrX+nWuHSIQeazhqPphLfaRxzdGaG93+0kELqpgEHtwWOlQe7+jSFnKwaCAgL4kjeZCQJnw=="
       },
       "System.Diagnostics.Tools": {
         "type": "Transitive",

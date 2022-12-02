@@ -1,4 +1,4 @@
-namespace VideoConverter.Core.Tests
+namespace VideoConverter.Tests
 {
 	using System.IO;
 	using System.Text;

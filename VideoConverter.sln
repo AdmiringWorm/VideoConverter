@@ -22,11 +22,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VideoConverter.Core.Tests",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VideoConverter.Storage.Tests", "src\VideoConverter.Storage.Tests\VideoConverter.Storage.Tests.csproj", "{77AA7900-BF11-4DB4-851C-B46A10B59506}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VideoConverter.Storage.IntegrationTests", "src\VideoConverter.Storage.IntegrationTests\VideoConverter.Storage.IntegrationTests.csproj", "{D2AE6B5F-844F-412F-B65D-31A651850D7D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VideoConverter.Storage.IntegrationTests", "src\VideoConverter.Storage.IntegrationTests\VideoConverter.Storage.IntegrationTests.csproj", "{D2AE6B5F-844F-412F-B65D-31A651850D7D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VideoConverter.Tests", "src\VideoConverter.Tests\VideoConverter.Tests.csproj", "{35A32F5C-1CA3-4513-851E-00D61E3A6550}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VideoConverter.Tests", "src\VideoConverter.Tests\VideoConverter.Tests.csproj", "{35A32F5C-1CA3-4513-851E-00D61E3A6550}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VideoConverter.IntegrationTests", "src\VideoConverter.IntegrationTests\VideoConverter.IntegrationTests.csproj", "{DB9310E0-7060-4264-B983-2621D954FA62}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VideoConverter.IntegrationTests", "src\VideoConverter.IntegrationTests\VideoConverter.IntegrationTests.csproj", "{DB9310E0-7060-4264-B983-2621D954FA62}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "CommonTestHelpers", "src\CommonTestHelpers\CommonTestHelpers.shproj", "{9415AC5E-1E25-422C-8270-C0BFFD262E09}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -79,8 +81,17 @@ Global
 		{D2AE6B5F-844F-412F-B65D-31A651850D7D} = {A41D2599-94C2-4E7C-B1F2-8613DB813292}
 		{35A32F5C-1CA3-4513-851E-00D61E3A6550} = {A41D2599-94C2-4E7C-B1F2-8613DB813292}
 		{DB9310E0-7060-4264-B983-2621D954FA62} = {A41D2599-94C2-4E7C-B1F2-8613DB813292}
+		{9415AC5E-1E25-422C-8270-C0BFFD262E09} = {A41D2599-94C2-4E7C-B1F2-8613DB813292}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4C26B6E8-CEEF-429B-B63D-CE455FD4DFC9}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		src\CommonTestHelpers\CommonTestHelpers.projitems*{223be85f-1f3e-4880-931a-2be70ea2af5e}*SharedItemsImports = 5
+		src\CommonTestHelpers\CommonTestHelpers.projitems*{35a32f5c-1ca3-4513-851e-00d61e3a6550}*SharedItemsImports = 5
+		src\CommonTestHelpers\CommonTestHelpers.projitems*{77aa7900-bf11-4db4-851c-b46a10b59506}*SharedItemsImports = 5
+		src\CommonTestHelpers\CommonTestHelpers.projitems*{9415ac5e-1e25-422c-8270-c0bffd262e09}*SharedItemsImports = 13
+		src\CommonTestHelpers\CommonTestHelpers.projitems*{d2ae6b5f-844f-412f-b65d-31a651850d7d}*SharedItemsImports = 5
+		src\CommonTestHelpers\CommonTestHelpers.projitems*{db9310e0-7060-4264-b983-2621d954fa62}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal
