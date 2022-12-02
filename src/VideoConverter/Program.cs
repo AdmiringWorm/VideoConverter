@@ -21,9 +21,9 @@ namespace VideoConverter
 
 	using AnsiSupport = Spectre.Console.AnsiSupport;
 
-	internal static class Program
+	public static class Program
 	{
-		private static IContainer CreateContainer()
+		public static IContainer CreateContainer()
 		{
 			var container = new Container(
 				rules => rules
@@ -43,6 +43,8 @@ namespace VideoConverter
 				),
 				Reuse.Singleton
 			);
+
+			container.Register<XmlConfigurationService>();
 			container.RegisterDelegate(RegisterConfigurationRepository, Reuse.Singleton);
 			container.RegisterDelegate(RegisterConfiguration, Reuse.Singleton);
 			container.RegisterSingleton<DatabaseFactory>();
@@ -56,7 +58,7 @@ namespace VideoConverter
 			return container;
 		}
 
-		private static async Task<int> Main(string[] args)
+		public static async Task<int> Main(string[] args)
 		{
 			Console.OutputEncoding = Encoding.UTF8;
 			Console.InputEncoding = Encoding.UTF8;
@@ -159,7 +161,7 @@ namespace VideoConverter
 				"VideoConverter",
 				"config.xml");
 
-			return new XmlConfigurationService(configPath);
+			return arg.Resolve<XmlConfigurationService>(new[] { configPath });
 		}
 	}
 }
