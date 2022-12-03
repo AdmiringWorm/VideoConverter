@@ -720,7 +720,6 @@
       "videoconverter": {
         "type": "Project",
         "dependencies": {
-          "DryIoc.dll": "[5.3.1, )",
           "Humanizer": "[2.14.1, )",
           "Newtonsoft.Json": "[13.0.1, )",
           "Spectre.Console": "[0.45.0, )",
