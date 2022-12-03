@@ -11,12 +11,20 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <AdditionalFiles Include="BannedSymbols.txt" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<AssemblyAttribute Include="System.CLSCompliantAttribute">
 			<_Parameter1>true</_Parameter1>
 		</AssemblyAttribute>
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.3">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
 		<PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0">
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 			<PrivateAssets>all</PrivateAssets>
