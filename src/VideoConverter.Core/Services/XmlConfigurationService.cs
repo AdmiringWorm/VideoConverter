@@ -6,28 +6,30 @@ namespace VideoConverter.Core.Services
 	using System.Xml;
 	using System.Xml.Serialization;
 
+	using VideoConverter.Core.IO;
 	using VideoConverter.Core.Models;
 
 	public sealed class XmlConfigurationService : IConfigurationService, IDisposable
 	{
+		private static readonly Encoding configEncoding = new UTF8Encoding(false, true);
+
 		private readonly string configPath;
+		private readonly IIOHelpers ioHelpers;
 		private readonly FileSystemWatcher watcher;
 		private ConverterConfiguration? config;
 
-		public XmlConfigurationService(string configPath)
+		public XmlConfigurationService(string configPath, IIOHelpers ioHelpers)
 		{
 			this.configPath = configPath;
 
 			var dir = Path.GetDirectoryName(configPath) ?? Environment.CurrentDirectory;
 			var name = Path.GetFileName(configPath);
-			if (!Directory.Exists(dir))
-			{
-				Directory.CreateDirectory(dir);
-			}
+			ioHelpers.EnsureDirectory(dir);
 
 			watcher = new FileSystemWatcher(dir, name);
 			watcher.Changed += OnFileChanged;
 			watcher.NotifyFilter = NotifyFilters.LastWrite;
+			this.ioHelpers = ioHelpers;
 		}
 
 		public void Dispose()
@@ -44,13 +46,13 @@ namespace VideoConverter.Core.Services
 
 			config = new ConverterConfiguration();
 
-			if (!File.Exists(configPath))
+			if (!ioHelpers.FileExists(configPath))
 			{
 				config.MapperDatabase = GetMapperDatabase();
 			}
 			else
 			{
-				UpdateConfiguration(config, configPath);
+				UpdateConfiguration(config);
 			}
 			watcher.EnableRaisingEvents = true;
 
@@ -62,15 +64,13 @@ namespace VideoConverter.Core.Services
 			watcher.EnableRaisingEvents = false;
 
 			var directory = Path.GetDirectoryName(configPath);
-			if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-			{
-				Directory.CreateDirectory(directory);
-			}
+			ioHelpers.EnsureDirectory(directory);
 
-			using var writer = new StreamWriter(configPath, false, Encoding.UTF8);
+			using var writer = ioHelpers.FileOpenWrite(configPath);
 			using var xmlWriter = XmlWriter.Create(writer, new XmlWriterSettings
 			{
-				Indent = true
+				Indent = true,
+				Encoding = configEncoding
 			});
 
 			var serializer = new XmlSerializer(typeof(ConverterConfiguration));
@@ -91,12 +91,21 @@ namespace VideoConverter.Core.Services
 			);
 		}
 
-		private static void UpdateConfiguration(ConverterConfiguration config, string configPath)
+		private void OnFileChanged(object sender, FileSystemEventArgs e)
 		{
-#pragma warning disable CA1031 // Do not catch general exception types
+			if (e.ChangeType != WatcherChangeTypes.Changed || config is null)
+			{
+				return;
+			}
+
+			UpdateConfiguration(config);
+		}
+
+		private void UpdateConfiguration(ConverterConfiguration config)
+		{
 			try
 			{
-				using var reader = new StreamReader(configPath, Encoding.UTF8);
+				using var reader = ioHelpers.FileOpenRead(configPath);
 				using var xmlReader = XmlReader.Create(reader);
 				var serializer = new XmlSerializer(typeof(ConverterConfiguration));
 
@@ -115,17 +124,6 @@ namespace VideoConverter.Core.Services
 			catch
 			{
 			}
-#pragma warning restore CA1031 // Do not catch general exception types
-		}
-
-		private void OnFileChanged(object sender, FileSystemEventArgs e)
-		{
-			if (e.ChangeType != WatcherChangeTypes.Changed || config is null)
-			{
-				return;
-			}
-
-			UpdateConfiguration(config, configPath);
 		}
 	}
 }

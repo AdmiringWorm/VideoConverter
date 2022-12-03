@@ -21,6 +21,10 @@ namespace VideoConverter.Core.IO
 
 		void FileMove(string sourcePath, string destinationPath);
 
+		FileStream FileOpenRead(string filePath);
+
+		FileStream FileOpenWrite(string filePath);
+
 		void FileRemove(string? filePath);
 	}
 }

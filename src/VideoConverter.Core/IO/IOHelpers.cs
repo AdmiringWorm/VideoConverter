@@ -5,6 +5,8 @@ namespace VideoConverter.Core.IO
 	using System.IO;
 	using System.Linq;
 
+#pragma warning disable RS0030 // Do not used banned APIs
+
 	public class IOHelpers : IIOHelpers
 	{
 		private static readonly string[] Extensions =
@@ -99,6 +101,12 @@ namespace VideoConverter.Core.IO
 			File.Move(sourcePath, destinationPath, overwrite: true);
 		}
 
+		public FileStream FileOpenRead(string filePath)
+			=> File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+
+		public FileStream FileOpenWrite(string filePath)
+			=> File.Open(filePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+
 		public void FileRemove(string? filePath)
 		{
 			if (string.IsNullOrWhiteSpace(filePath) || !FileExists(filePath))
@@ -110,3 +118,5 @@ namespace VideoConverter.Core.IO
 		}
 	}
 }
+
+#pragma warning restore RS0030 // Do not used banned APIs
