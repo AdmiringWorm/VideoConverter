@@ -2,6 +2,7 @@ namespace VideoConverter.Storage.Repositories
 {
 	using System;
 	using System.Collections.Generic;
+	using System.Diagnostics.CodeAnalysis;
 	using System.Linq;
 	using System.Threading.Tasks;
 
@@ -57,8 +58,8 @@ namespace VideoConverter.Storage.Repositories
 
 			nextQueue.AudioCodec = queueItem.AudioCodec;
 			nextQueue.InputParameters = queueItem.InputParameters;
-			nextQueue.NewHash = queueItem.NewHash;
-			nextQueue.OldHash = queueItem.OldHash;
+			nextQueue.NewHash = queueItem.NewHash?.ToUpperInvariant();
+			nextQueue.OldHash = queueItem.OldHash?.ToUpperInvariant();
 			nextQueue.OutputPath = ReplaceWithPrefix(queueItem.OutputPath);
 			nextQueue.Parameters = queueItem.Parameters;
 			nextQueue.Path = path;
@@ -241,8 +242,8 @@ namespace VideoConverter.Storage.Repositories
 
 			foundQueue.AudioCodec = queue.AudioCodec;
 			foundQueue.InputParameters = queue.InputParameters;
-			foundQueue.NewHash = queue.NewHash;
-			foundQueue.OldHash = queue.OldHash;
+			foundQueue.NewHash = queue.NewHash?.ToUpperInvariant();
+			foundQueue.OldHash = queue.OldHash?.ToUpperInvariant();
 			foundQueue.OutputPath = ReplaceWithPrefix(foundQueue.OutputPath);
 			foundQueue.Parameters = queue.Parameters;
 			foundQueue.Path = ReplaceWithPrefix(foundQueue.Path);
@@ -320,6 +321,7 @@ namespace VideoConverter.Storage.Repositories
 				.FirstOrDefaultAsync();
 		}
 
+		[return: NotNullIfNotNull("fileQueue")]
 		private FileQueue? ReplacePrefixes(FileQueue? fileQueue)
 		{
 			if (fileQueue is null)
