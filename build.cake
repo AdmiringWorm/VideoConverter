@@ -1,4 +1,4 @@
-#addin nuget:?package=Newtonsoft.Json&version=13.0.1
+#addin nuget:?package=Newtonsoft.Json&version=13.0.2
 #addin nuget:?package=Cake.Json&version=7.0.1
 #addin nuget:?package=Cake.FileHelpers&version=5.0.0
 #tool dotnet:?package=dotnet-t4&version=2.3.1
