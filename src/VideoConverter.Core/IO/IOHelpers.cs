@@ -67,7 +67,7 @@ namespace VideoConverter.Core.IO
 		}
 
 		public IEnumerable<string> EnumerateFiles(string directoryPath, string searchPattern, EnumerationOptions options)
-			=> Directory.EnumerateDirectories(directoryPath, searchPattern, options);
+			=> Directory.EnumerateFiles(directoryPath, searchPattern, options);
 
 		public IEnumerable<string> EnumerateMovieFiles(string directoryPath, bool recursive = false)
 		{
