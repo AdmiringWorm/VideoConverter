@@ -33,7 +33,10 @@ max_line_length = unset
 [*.editorconfig]
 max_line_length = 160
 
-[*.{verified.txt,lock.json}]
+[GlobalSuppressions.cs]
+max_line_length = unset
+
+[*.{verified.txt,lock.json,verified.xml}]
 indent_size = unset
 indent_style = unset
 end_of_line = unset

@@ -64,17 +64,7 @@ namespace VideoConverter.Core.Models
 
 		public static bool operator >(EpisodeData data, EpisodeCriteria criteria)
 		{
-			criteria.AssertNotNull();
-			data.AssertNotNull();
-
-			if (criteria.Season is null && criteria.Episode is null)
-			{
-				return false;
-			}
-
-			return
-				(criteria.Season is null || data.SeasonNumber > criteria.Season) &&
-				(criteria.Episode is null || data.EpisodeNumber > criteria.Episode);
+			return data != criteria && !(data < criteria);
 		}
 
 		public static bool operator >=(EpisodeData data, EpisodeCriteria criteria)

@@ -285,7 +285,8 @@ Task("Pack-Choco")
 Task("Upload-Dev-Packages")
 	.IsDependentOn("Pack-Choco")
 	.WithCriteria(IsRunningOnWindows())
-	.WithCriteria(() => HasEnvironmentVariable("DEVELOPMENT_CHOCO_ARTIFACTS_URL") && HasEnvironmentVariable("DEVELOPMENT_CHOCO_ARTIFACTS_API_KEY"))
+	.WithCriteria(() => HasEnvironmentVariable("DEVELOPMENT_CHOCO_ARTIFACTS_URL")
+		&& HasEnvironmentVariable("DEVELOPMENT_CHOCO_ARTIFACTS_API_KEY"))
 	.ContinueOnError()
 	.Does(() =>
 {

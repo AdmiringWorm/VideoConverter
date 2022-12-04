@@ -1,0 +1,14 @@
+{
+	"throshold": "0.5",
+	"reporters": [
+		"consoleFull"
+	],
+	"ignore": [
+		"**/__snapshots__/**",
+		"**/project.lock.json",
+		"**/*.verified.txt",
+		"**/*.verified.xml"
+	],
+	"absolute": true,
+	"gitignore": true
+}
