@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
 		<TargetFramework>net7.0</TargetFramework>
-		<langVersion>9.0</langVersion>
+		<langVersion>11.0</langVersion>
 		<nullable>enable</nullable>
 		<PublishTrimmed>true</PublishTrimmed>
 		<PublishSingleFile Condition="'$(PublishSingleFile)'==''">false</PublishSingleFile>

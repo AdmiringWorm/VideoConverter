@@ -30,7 +30,7 @@ namespace VideoConverter.Commands
 
 	using Xabe.FFmpeg;
 
-	public sealed class AddFileCommand : AsyncCommand<AddFileOption>, IDisposable
+	public sealed partial class AddFileCommand : AsyncCommand<AddFileOption>, IDisposable
 	{
 		private readonly ConverterConfiguration config;
 		private readonly IAnsiConsole console;
@@ -499,7 +499,7 @@ namespace VideoConverter.Commands
 				}
 			}
 
-			return Regex.Replace(sb.ToString(), @"\s{2,}", " ", RegexOptions.Compiled).Trim();
+			return WhiteSpaceRegex().Replace(sb.ToString(), " ").Trim();
 		}
 
 		private static Task<TType> TextPromptAsync<TType>(
@@ -524,6 +524,9 @@ namespace VideoConverter.Commands
 
 			return textPrompt.ShowAsync(console, cancellationToken);
 		}
+
+		[GeneratedRegex("\\s{2,}", RegexOptions.Compiled)]
+		private static partial Regex WhiteSpaceRegex();
 
 		private async Task<bool> AddStreamsAsync<T>(
 			List<IStream> addedStreams,

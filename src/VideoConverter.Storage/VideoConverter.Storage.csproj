@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<TargetFramework>net7.0</TargetFramework>
-		<LangVersion>9.0</LangVersion>
+		<LangVersion>11.0</LangVersion>
 		<nullable>enable</nullable>
 		<IsTrimmable>false</IsTrimmable>
 		<TrimMode>link</TrimMode>
