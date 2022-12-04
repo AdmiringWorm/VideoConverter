@@ -10,6 +10,9 @@ namespace VideoConverter.Core.Tests.Services
 	using VideoConverter.Core.Services;
 	using VideoConverter.Tests;
 
+	// We mark this as non-parallelizable as one or more tests have problems running under GH Action
+	// in parallel.
+	[NonParallelizable]
 	public class ChecksumHashProviderTests : TestBase
 	{
 		public ChecksumHashProviderTests()
