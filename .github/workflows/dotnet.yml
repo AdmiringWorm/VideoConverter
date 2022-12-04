@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  DEVELOPMENT_CHOCO_ARTIFACTS_URL: https://f.feedz.io/wormiecorp/choco-tests/nuget
+  DEVELOPMENT_CHOCO_ARTIFACTS_URL: https://f.feedz.io/wormiecorp/choco-packages/nuget
   DEVELOPMENT_CHOCO_ARTIFACTS_API_KEY: '${{ secrets.DEVELOPMENT_CHOCO_ARTIFACTS_API_KEY }}'
 
 jobs:
