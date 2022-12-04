@@ -16,7 +16,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <AdditionalFiles Include="..\VideoConverter.Core\BannedSymbols.txt" Link="BannedSymbols.txt" />
+		<AdditionalFiles Include="..\VideoConverter.Core\BannedSymbols.txt" Link="BannedSymbols.txt" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -5,7 +5,7 @@
 	],
 	"ignore": [
 		"**/__snapshots__/**",
-		"**/project.lock.json",
+		"**/packages.lock.json",
 		"**/*.verified.txt",
 		"**/*.verified.xml"
 	],

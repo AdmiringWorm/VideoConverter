@@ -33,7 +33,7 @@ max_line_length = unset
 [*.editorconfig]
 max_line_length = 160
 
-[GlobalSuppressions.cs]
+[{GlobalSuppressions.cs,*.csproj,*.projitems,*.shproj}]
 max_line_length = unset
 
 [*.{verified.txt,lock.json,verified.xml}]

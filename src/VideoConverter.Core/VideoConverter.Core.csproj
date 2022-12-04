@@ -11,7 +11,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <AdditionalFiles Include="BannedSymbols.txt" />
+		<AdditionalFiles Include="BannedSymbols.txt" />
 	</ItemGroup>
 
 	<ItemGroup>
