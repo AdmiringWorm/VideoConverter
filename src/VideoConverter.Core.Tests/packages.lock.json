@@ -59,13 +59,13 @@
       },
       "Verify.NUnit": {
         "type": "Direct",
-        "requested": "[18.4.0, )",
-        "resolved": "18.4.0",
-        "contentHash": "ZZ/lBIXtrRKOI9DIIlA1+fE7JVuDrKqQ/pBT4vNd51RkBtCPs/tZVy/E76f2jQWbPhjQoA6xVZhIkzHmWNePSg==",
+        "requested": "[19.3.0, )",
+        "resolved": "19.3.0",
+        "contentHash": "ocXCfaPPT31Mx1ZHyQrklK/qx4ITIzeIrSsbggnFOeVriYu5OxiuczjU15GTgmqnNxccFK4Yr3qTxV4ZGFdJLA==",
         "dependencies": {
-          "EmptyFiles": "3.0.0",
+          "EmptyFiles": "4.1.0",
           "NUnit": "3.13.3",
-          "Verify": "18.4.0"
+          "Verify": "19.3.0"
         }
       },
       "Argon": {
@@ -83,17 +83,17 @@
       },
       "DiffEngine": {
         "type": "Transitive",
-        "resolved": "10.4.3",
-        "contentHash": "dAJ932cyhq0+oc+DytpX6poo9ZBHtPkfq8aROZ32NBP3VSreJs5iZd5rJkJLKLMH8ELfCckzbX8gKCdNkc3eYA==",
+        "resolved": "11.0.0",
+        "contentHash": "FKhanyE6mYmPe/MWWKKHc7Ol6WECHsE+WN6tK1L5FksrZd+DG4UMsc2luunnuUkVZ6bXi0XO6nyuy6HSXDmkiw==",
         "dependencies": {
-          "EmptyFiles": "3.0.0",
+          "EmptyFiles": "4.0.0",
           "System.Management": "5.0.0"
         }
       },
       "EmptyFiles": {
         "type": "Transitive",
-        "resolved": "3.0.0",
-        "contentHash": "XIZe5CJHgUtRGhuHWuUTKeaX4ARzqEKRnthV8L13NkwB1z4CvsORpBT/RZeMuBW3Qhj3OmiGz7A6psn9CBZ/oQ=="
+        "resolved": "4.1.0",
+        "contentHash": "mwnB0PowYoKVD0t/ImcAbwBNNHRpmRrbiuCSosy6m5YoGJ/29k45RTU/8arLrhcPWH1JVCwPfmMsW06/IdDaZA=="
       },
       "Microsoft.CodeCoverage": {
         "type": "Transitive",
@@ -152,8 +152,8 @@
       },
       "SimpleInfoName": {
         "type": "Transitive",
-        "resolved": "1.2.0",
-        "contentHash": "1YOIG0XwIMK1XNYALMSximxjH2w1Z/y4a/WAAFkXMSfzDOYPeU/E9ba7TQLkJLcvfTpbTrVuB58MTSC1AuRv8g=="
+        "resolved": "2.0.0",
+        "contentHash": "sXzz3+zns3HWmv+8wzhF1f4up8NjXHeD1X7w9zBjmnpwMk08zuCw5PPmZUAv8ou6F0AgG/8QpvZQr4hC82Wwqg=="
       },
       "System.CodeDom": {
         "type": "Transitive",
@@ -209,13 +209,13 @@
       },
       "Verify": {
         "type": "Transitive",
-        "resolved": "18.4.0",
-        "contentHash": "JVU+LPjqsdITPr7cvg9t4BR1abfCt4LEBphw5lhtrOB2DQZFnfaFjjg+rC5o5wFI3By8G1neAuEwljBk2+HjsQ==",
+        "resolved": "19.3.0",
+        "contentHash": "7CqN/1KXfSCYArTmJlgrCg3vqHafVjoZK23sqTNanvFa/TZELMrptQ/+frybBPdAtEFv4YDAmBOy/v9lJj9ZDg==",
         "dependencies": {
           "Argon": "0.1.0",
-          "DiffEngine": "10.4.3",
-          "EmptyFiles": "3.0.0",
-          "SimpleInfoName": "1.2.0"
+          "DiffEngine": "11.0.0",
+          "EmptyFiles": "4.1.0",
+          "SimpleInfoName": "2.0.0"
         }
       },
       "Xabe.FFmpeg": {
