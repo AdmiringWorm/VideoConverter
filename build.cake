@@ -2,6 +2,7 @@
 #addin nuget:?package=Cake.Json&version=7.0.1
 #addin nuget:?package=Cake.FileHelpers&version=5.0.0
 #tool dotnet:?package=dotnet-t4&version=2.3.1
+#tool dotnet:?package=gitreleasemanager.tool&version=0.13.0
 
 public class BuildData
 {
@@ -319,8 +320,59 @@ Task("Create-Tag")
 	));
 });
 
+Task("Draft-ReleaseNotes")
+	.WithCriteria(() => HasEnvironmentVariable("RELEASE_TOKEN"))
+	.WithCriteria(() => !string.IsNullOrEmpty(EnvironmentVariable("RELEASE_TOKEN")))
+	.Does<BuildVersion>((version) =>
+{
+	var token = EnvironmentVariable("RELEASE_TOKEN");
+
+	GitReleaseManagerCreate(token, "AdmiringWorm", "VideoConverter", new GitReleaseManagerCreateSettings
+	{
+		Name = version.SemVer,
+		InputFilePath = markdownReleaseNotes,
+		TargetCommitish = "master",
+		Prerelease = false
+	});
+});
+
+Task("Upload-GitHubArtifacts")
+	.IsDependentOn("Publish-Binaries")
+	.IsDependentOn("Create-Installer")
+	.WithCriteria(() => HasEnvironmentVariable("RELEASE_TOKEN"))
+	.WithCriteria(() => !string.IsNullOrEmpty(EnvironmentVariable("RELEASE_TOKEN")))
+	.Does<BuildVersion>((version) =>
+{
+	var token = EnvironmentVariable("RELEASE_TOKEN");
+
+	var files = GetFiles(artifactsDir + "/executables/*").Select(f => f.FullPath);
+	var joinedFiles = string.Join(',', files);
+
+	GitReleaseManagerAddAssets(token, "AdmiringWorm", "VideoConverter", version.SemVer, joinedFiles);
+});
+
+Task("Publish-GitHubRelease")
+	.IsDependentOn("Upload-GitHubArtifacts")
+	.WithCriteria(() => HasEnvironmentVariable("RELEASE_TOKEN"))
+	.WithCriteria(() => !string.IsNullOrEmpty(EnvironmentVariable("RELEASE_TOKEN")))
+	.Does<BuildVersion>((version) =>
+{
+	var token = EnvironmentVariable("RELEASE_TOKEN");
+
+	if (version.MajorMinorPatch == version.SemVer)
+	{
+		GitReleaseManagerClose(token, "AdmiringWorm", "VideoConverter", version.MajorMinorPatch);
+	}
+
+	GitReleaseManagerPublish(token, "AdmiringWorm", "VideoConverter", version.SemVer);
+});
+
 Task("Default")
 	.IsDependentOn("Coverage")
 	.IsDependentOn("Publish");
+
+Task("Release")
+	.IsDependentOn("Default")
+	.IsDependentOn("Publish-GitHubRelease");
 
 RunTarget(target);
