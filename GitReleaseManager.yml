@@ -2,7 +2,6 @@
 #templates-dir: .templates
 ## Configuration values used when creating new releases
 #create:
-## Enable generation of footer content in the release notes. Extract the recommended templates by running 'init --templates' and edit the footer.sbn file to provide the wanted footer content.
 #  include-footer: true
 #  include-sha-section: false
 #  sha-section-heading: SHA256 Hashes of the release artifacts
