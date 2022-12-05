@@ -34,7 +34,7 @@ public static string GetRuntime(ICakeContext context)
 
 var solution = "./VideoConverter.sln";
 var mainProject = "./src/VideoConverter/VideoConverter.csproj";
-var target = Argument("target", "Default");
+var targets = Arguments<string>("target", new[] { "Default" });
 var configuration = Argument("configuration", "Release");
 var runtime = Argument("runtime", GetRuntime(Context));
 var artifactsDir = Argument<DirectoryPath>("artifacts", "./.artifacts");
@@ -375,4 +375,4 @@ Task("Release")
 	.IsDependentOn("Default")
 	.IsDependentOn("Publish-GitHubRelease");
 
-RunTarget(target);
+RunTargets(targets);
