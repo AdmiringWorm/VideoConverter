@@ -9,8 +9,6 @@ namespace VideoConverter.Prompts
 
 	using Spectre.Console;
 
-	using VideoConverter.Core.Assertions;
-
 	internal sealed class YesNoPrompt : IPrompt<PromptResponse>
 	{
 		private readonly string _prompt;
@@ -29,10 +27,7 @@ namespace VideoConverter.Prompts
 
 		public async Task<PromptResponse> ShowAsync(IAnsiConsole console, CancellationToken cancellationToken)
 		{
-			if (console is null)
-			{
-				throw new ArgumentNullException(nameof(console));
-			}
+			ArgumentNullException.ThrowIfNull(console);
 
 			var promptStyle = Style.Plain;
 
@@ -79,10 +74,7 @@ namespace VideoConverter.Prompts
 
 		private void WritePrompt(IAnsiConsole console)
 		{
-			if (console is null)
-			{
-				throw new ArgumentNullException(nameof(console));
-			}
+			ArgumentNullException.ThrowIfNull(console);
 
 			var builder = new StringBuilder();
 			builder.Append(_prompt.TrimEnd());
