@@ -98,7 +98,8 @@ Task("Build")
 	DotNetBuild(project.FullPath, new DotNetBuildSettings
 	{
 		Configuration = configuration,
-		Runtime = runtime
+		Runtime = runtime,
+		ArgumentCustomization = (args) => args.Append("--no-self-contained")
 	});
 })
 	.Does<BuildVersion>((version) =>
@@ -108,6 +109,7 @@ Task("Build")
 	{
 		Configuration = configuration,
 		Runtime = runtime,
+		ArgumentCustomization = (args) => args.Append("--no-self-contained"),
 		MSBuildSettings = new DotNetMSBuildSettings()
 			.SetVersion(version.FullSemVer)
 			.WithProperty("PackageReleaseNotes", plainTextNotes)
@@ -355,6 +357,7 @@ Task("Publish-GitHubRelease")
 	.IsDependentOn("Upload-GitHubArtifacts")
 	.WithCriteria(() => HasEnvironmentVariable("RELEASE_TOKEN"))
 	.WithCriteria(() => !string.IsNullOrEmpty(EnvironmentVariable("RELEASE_TOKEN")))
+	.WithCriteria(() => IsRunningOnWindows())
 	.Does<BuildVersion>((version) =>
 {
 	var token = EnvironmentVariable("RELEASE_TOKEN");
