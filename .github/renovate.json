@@ -26,7 +26,8 @@
 				"Newtonsoft.Json",
 				"system.Linq.Async",
 				"Xabe.FFmpeg",
-				"Xabe.FFMpeg"
+				"Xabe.FFMpeg",
+				"dotnet-sdk"
 			],
 			"semanticCommitType": "fix",
 			"addLabels": ["enhancement"]
