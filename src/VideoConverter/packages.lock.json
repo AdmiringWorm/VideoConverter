@@ -533,15 +533,15 @@
       },
       "LiteDB": {
         "type": "Transitive",
-        "resolved": "5.0.12",
-        "contentHash": "HaOjSIGS9BRm7dw42qcHd5NGYl5wdjsFB31pImt3QQNLKUNEmRAr7ADos5VsujwBc9c4otJgb+G6NA4MlzKyAw=="
+        "resolved": "5.0.14",
+        "contentHash": "8Hz319BBCDm6KQHiDUAc6LWCdC12Nr+N6pCTO+0d4nBtzsILqOK6j2rVe++2+PnBV/aqDOBVBWBkZyDiB88n/g=="
       },
       "LiteDB.Async": {
         "type": "Transitive",
-        "resolved": "0.0.11",
-        "contentHash": "j66SC1GhKgVCXFBdJj6q7XELF8AK4M9m7zvUEwVu9Pt7IyuBOeEeOXQp6yNAeql9knXF37p8v29fm66/7+6MXQ==",
+        "resolved": "0.1.1",
+        "contentHash": "YXi4pjFOMnHAExxppYptCWdjsZ9wkewMm0gWexkedRDW6QJ2U3d2gBscA8Q/7xHQEWh7ugo4h7clbbGzfLtqmg==",
         "dependencies": {
-          "LiteDB": "5.0.11"
+          "LiteDB": "5.0.12"
         }
       },
       "Microsoft.Bcl.AsyncInterfaces": {
@@ -563,8 +563,8 @@
       "videoconverter.storage": {
         "type": "Project",
         "dependencies": {
-          "LiteDB": "[5.0.12, )",
-          "LiteDB.Async": "[0.0.11, )",
+          "LiteDB": "[5.0.14, )",
+          "LiteDB.Async": "[0.1.1, )",
           "VideoConverter.Core": "[1.0.0, )"
         }
       }
