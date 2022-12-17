@@ -97,20 +97,45 @@ namespace VideoConverter.Commands
 
 					if (existingFile is not null && settings.IgnoreStatuses.Contains(existingFile.Status))
 					{
-						console.MarkupLine(
-							"[yellow]WARNING: [fuchsia]'{0}'[/] exists with status [aqua]{1}[/]. Ignoring...[/]",
-							file.EscapeMarkup(), existingFile.Status
-						);
-						continue;
+						if (ioHelpers.FileExists(existingFile.OutputPath))
+						{
+							if (settings.RemoveDuplicates)
+							{
+								console.MarkupLine(
+									"[yellow]WARNING: [fuchsia]'{0}'[/] exists with status [aqua]{1}[/]. Removing duplicate...[/]",
+									file.EscapeMarkup(),
+									existingFile.Status);
+								ioHelpers.FileRemove(file);
+							}
+							else
+							{
+								console.MarkupLine(
+									"[yellow]WARNING: [fuchsia]'{0}'[/] exists with status [aqua]{1}[/]. Ignoring duplicate...[/]",
+									file.EscapeMarkup(),
+									existingFile.Status);
+							}
+
+							continue;
+						}
 					}
 					else if (settings.IgnoreDuplicates || settings.RemoveDuplicates)
 					{
 						var fileExists = await queueRepository.FileExistsAsync(file, hash).ConfigureAwait(false);
 						if (fileExists)
 						{
-							console.MarkupLine(
-								"[yellow]WARNING: [fuchsia]'{0}'[/] exists already exists. Ignoring...[/]",
-								file.EscapeMarkup());
+							if (settings.RemoveDuplicates)
+							{
+								console.MarkupLine(
+									"[yellow]WARNING: [fuchsia]'{0}'[/] already exists. Removing duplication...[/]",
+									file.EscapeMarkup());
+								ioHelpers.FileRemove(file);
+							}
+							else
+							{
+								console.MarkupLine(
+									"[yellow]WARNING: [fuchsia]'{0}'[/] already exists. Ignoring duplicate...[/]",
+									file.EscapeMarkup());
+							}
 							continue;
 						}
 					}
