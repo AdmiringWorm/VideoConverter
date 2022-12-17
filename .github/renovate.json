@@ -18,13 +18,9 @@
 			}
 		},
 		{
-			"matchPackagePrefixes": ["LiteDB"],
-			"groupName": "litedb packages",
-			"semanticCommitType": "fix",
-			"addLabels": ["enhancement"]
-		},
-		{
 			"matchPackageNames": [
+				"LiteDB",
+				"LiteDB.Async",
 				"DryIoc",
 				"Humanizer",
 				"Newtonsoft.Json",
