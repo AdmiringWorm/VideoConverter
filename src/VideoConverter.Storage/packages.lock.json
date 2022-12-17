@@ -10,11 +10,11 @@
       },
       "LiteDB.Async": {
         "type": "Direct",
-        "requested": "[0.0.11, )",
-        "resolved": "0.0.11",
-        "contentHash": "j66SC1GhKgVCXFBdJj6q7XELF8AK4M9m7zvUEwVu9Pt7IyuBOeEeOXQp6yNAeql9knXF37p8v29fm66/7+6MXQ==",
+        "requested": "[0.1.1, )",
+        "resolved": "0.1.1",
+        "contentHash": "YXi4pjFOMnHAExxppYptCWdjsZ9wkewMm0gWexkedRDW6QJ2U3d2gBscA8Q/7xHQEWh7ugo4h7clbbGzfLtqmg==",
         "dependencies": {
-          "LiteDB": "5.0.11"
+          "LiteDB": "5.0.12"
         }
       },
       "Microsoft.CodeAnalysis.BannedApiAnalyzers": {
