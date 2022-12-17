@@ -91,7 +91,7 @@ namespace VideoConverter.Commands
 						return 1;
 					}
 
-					var hash = hashProvider.ComputeHash(file);
+					string? hash = null;
 
 					var existingFile = await queueRepository.GetQueueItemAsync(file).ConfigureAwait(false);
 
@@ -120,6 +120,8 @@ namespace VideoConverter.Commands
 					}
 					else if (settings.IgnoreDuplicates || settings.RemoveDuplicates)
 					{
+						hash = hashProvider.ComputeHash(file);
+
 						var fileExists = await queueRepository.FileExistsAsync(file, hash).ConfigureAwait(false);
 						if (fileExists)
 						{
@@ -365,6 +367,11 @@ namespace VideoConverter.Commands
 						);
 						await queueRepository.AbortChangesAsync().ConfigureAwait(false);
 						return 1;
+					}
+
+					if (string.IsNullOrEmpty(hash))
+					{
+						hash = hashProvider.ComputeHash(file);
 					}
 
 					var queueItem = existingFile ?? new FileQueue
