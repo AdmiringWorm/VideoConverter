@@ -541,8 +541,8 @@
       },
       "LiteDB": {
         "type": "Transitive",
-        "resolved": "5.0.12",
-        "contentHash": "HaOjSIGS9BRm7dw42qcHd5NGYl5wdjsFB31pImt3QQNLKUNEmRAr7ADos5VsujwBc9c4otJgb+G6NA4MlzKyAw=="
+        "resolved": "5.0.14",
+        "contentHash": "8Hz319BBCDm6KQHiDUAc6LWCdC12Nr+N6pCTO+0d4nBtzsILqOK6j2rVe++2+PnBV/aqDOBVBWBkZyDiB88n/g=="
       },
       "LiteDB.Async": {
         "type": "Transitive",
@@ -740,7 +740,7 @@
       "videoconverter.storage": {
         "type": "Project",
         "dependencies": {
-          "LiteDB": "[5.0.12, )",
+          "LiteDB": "[5.0.14, )",
           "LiteDB.Async": "[0.0.11, )",
           "VideoConverter.Core": "[1.0.0, )"
         }
