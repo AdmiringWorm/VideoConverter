@@ -230,7 +230,7 @@ namespace VideoConverter.Commands
 					}
 
 					if ((episodeData is null && string.IsNullOrEmpty(outputPath) && !settings.ReEncode) ||
-						(episodeData is not null && episodeData.Series == "SKIP"))
+						(episodeData?.Series == "SKIP"))
 					{
 						continue;
 					}
