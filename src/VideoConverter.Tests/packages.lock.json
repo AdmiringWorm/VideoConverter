@@ -711,8 +711,8 @@
       },
       "Xabe.FFmpeg": {
         "type": "Transitive",
-        "resolved": "5.2.0",
-        "contentHash": "y2fjj959KReVEYsr6ya0Ci7NiH1GTVMEE4w5wpaE1ATbxnpOpWFrtOtpH6gMlqMEdFaevg2tJJTSFLk+Vf6Eeg==",
+        "resolved": "5.2.1",
+        "contentHash": "yYSfdVI5GhMkRBqoHCVyIjoqNkXj1mXM7cVxmsgzIAhqZvrGMqxbkzNFUKRW86PtvmOOzQvbsVEMItZevHId/w==",
         "dependencies": {
           "Newtonsoft.Json": "9.0.1"
         }
@@ -727,14 +727,14 @@
           "Spectre.Console.Cli": "[0.45.0, )",
           "VideoConverter.Core": "[1.0.0, )",
           "VideoConverter.Storage": "[1.0.0, )",
-          "Xabe.FFmpeg": "[5.2.0, )",
+          "Xabe.FFmpeg": "[5.2.1, )",
           "system.Linq.Async": "[6.0.1, )"
         }
       },
       "videoconverter.core": {
         "type": "Project",
         "dependencies": {
-          "Xabe.FFMpeg": "[5.2.0, )"
+          "Xabe.FFMpeg": "[5.2.1, )"
         }
       },
       "videoconverter.storage": {

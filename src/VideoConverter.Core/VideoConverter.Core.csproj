@@ -42,6 +42,6 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="Xabe.FFMpeg" Version="5.2.0" />
+		<PackageReference Include="Xabe.FFMpeg" Version="5.2.1" />
 	</ItemGroup>
 </Project>

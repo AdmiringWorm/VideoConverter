@@ -40,9 +40,9 @@
       },
       "Xabe.FFmpeg": {
         "type": "Direct",
-        "requested": "[5.2.0, )",
-        "resolved": "5.2.0",
-        "contentHash": "y2fjj959KReVEYsr6ya0Ci7NiH1GTVMEE4w5wpaE1ATbxnpOpWFrtOtpH6gMlqMEdFaevg2tJJTSFLk+Vf6Eeg==",
+        "requested": "[5.2.1, )",
+        "resolved": "5.2.1",
+        "contentHash": "yYSfdVI5GhMkRBqoHCVyIjoqNkXj1mXM7cVxmsgzIAhqZvrGMqxbkzNFUKRW86PtvmOOzQvbsVEMItZevHId/w==",
         "dependencies": {
           "Newtonsoft.Json": "9.0.1"
         }
