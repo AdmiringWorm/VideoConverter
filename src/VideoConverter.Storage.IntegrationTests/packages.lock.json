@@ -59,13 +59,13 @@
       },
       "Verify.ClipboardAccept": {
         "type": "Direct",
-        "requested": "[19.3.0, )",
-        "resolved": "19.3.0",
-        "contentHash": "/Zway6P7Hlf9foJHk99/yx2+8+r05MA5g8Y+tBR0iaissbNz55b3gXEm1MDaeS2gyCcOwg61Oez1tmvaAUyAwQ==",
+        "requested": "[19.4.1, )",
+        "resolved": "19.4.1",
+        "contentHash": "Cb10AND00yJgKH3snpSS4gx6aQOHYGIQ6c3DQpN6pepRUxgFtcTKBgpkxZL0NS+9+200Pc2epSefu7CQ/6uqjg==",
         "dependencies": {
           "DiffEngine": "11.0.0",
           "TextCopy": "6.2.0",
-          "Verify": "19.3.0"
+          "Verify": "19.4.1"
         }
       },
       "Verify.NUnit": {
@@ -246,8 +246,8 @@
       },
       "Verify": {
         "type": "Transitive",
-        "resolved": "19.3.0",
-        "contentHash": "7CqN/1KXfSCYArTmJlgrCg3vqHafVjoZK23sqTNanvFa/TZELMrptQ/+frybBPdAtEFv4YDAmBOy/v9lJj9ZDg==",
+        "resolved": "19.4.1",
+        "contentHash": "qoMU4xiL5xRwRMGqJyup7hG8DRudg5fLgEMv6RIVv5+rbj0nohItTVZe7LqmYNZv+ITtjrpicx0Toz4R7Z0bYQ==",
         "dependencies": {
           "Argon": "0.1.0",
           "DiffEngine": "11.0.0",
