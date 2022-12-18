@@ -51,7 +51,20 @@
 			"groupName": "nunit packages"
 		},
 		{
-			"matchPaths": ["*.Tests.csproj", "*.IntegrationTests.csproj", "dotnet-tools.json", "*.cake", "*.yml"],
+			"matchSourceUrlPrefixes": [
+				"https://github.com/VerifyTests/"
+			],
+			"semanticCommitType": "build",
+			"addLabels": ["build"],
+			"groupName": "verify packages"
+		},
+		{
+			"matchPaths": [
+				"**/*.Tests.csproj",
+				"**/*.IntegrationTests.csproj",
+				"dotnet-tools.json",
+				"**/*.cake",
+				"**/*.yml"],
 			"addLabels": ["build"],
 			"automerge": true
 		},
