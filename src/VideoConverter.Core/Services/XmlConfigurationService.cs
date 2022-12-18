@@ -66,6 +66,7 @@ namespace VideoConverter.Core.Services
 			var directory = Path.GetDirectoryName(configPath);
 			ioHelpers.EnsureDirectory(directory);
 
+			ioHelpers.FileRemove(configPath);
 			using var writer = ioHelpers.FileOpenWrite(configPath);
 			using var xmlWriter = XmlWriter.Create(writer, new XmlWriterSettings
 			{
