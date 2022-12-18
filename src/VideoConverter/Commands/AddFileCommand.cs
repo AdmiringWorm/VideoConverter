@@ -283,6 +283,16 @@ namespace VideoConverter.Commands
 						break;
 					}
 
+					var extraEncodingAdded = false;
+
+					if (string.IsNullOrEmpty(config.ExtraEncodingParameters)
+						&& string.Equals(config.VideoCodec, "hevc", StringComparison.OrdinalIgnoreCase)
+						&& mediaInfo.VideoStreams.Any(v => v.Width % 2 != 0 || v.Height % 2 != 0))
+					{
+						config.ExtraEncodingParameters = "-vf crop='iw-mod(iw,2)':'ih-mod(ih,2)'";
+						extraEncodingAdded = true;
+					}
+
 					var fileExist = await queueRepository.FileExistsAsync(file.Normalize(), null).ConfigureAwait(false);
 
 					if (fileExist)
@@ -502,6 +512,11 @@ namespace VideoConverter.Commands
 							$"WARNING: Unable to update '{file.EscapeMarkup()}'. Encoding have already started on the file!",
 							new Style(Color.Yellow, Color.Black)
 						);
+					}
+
+					if (extraEncodingAdded)
+					{
+						config.ExtraEncodingParameters = string.Empty;
 					}
 				}
 			}
