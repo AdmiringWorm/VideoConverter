@@ -59,24 +59,24 @@
       },
       "Verify.ClipboardAccept": {
         "type": "Direct",
-        "requested": "[19.3.0, )",
-        "resolved": "19.3.0",
-        "contentHash": "/Zway6P7Hlf9foJHk99/yx2+8+r05MA5g8Y+tBR0iaissbNz55b3gXEm1MDaeS2gyCcOwg61Oez1tmvaAUyAwQ==",
+        "requested": "[19.4.2, )",
+        "resolved": "19.4.2",
+        "contentHash": "lrrrv0ZPlusOCtgMJ/49IWemA9kjKlYqjD5Uuwb0ShkxcVPBJCrpRPz6tDB9wGOSNAGakntCUQbVwkXKBZqYWA==",
         "dependencies": {
           "DiffEngine": "11.0.0",
-          "TextCopy": "6.2.0",
-          "Verify": "19.3.0"
+          "TextCopy": "6.2.1",
+          "Verify": "19.4.2"
         }
       },
       "Verify.NUnit": {
         "type": "Direct",
-        "requested": "[19.3.0, )",
-        "resolved": "19.3.0",
-        "contentHash": "ocXCfaPPT31Mx1ZHyQrklK/qx4ITIzeIrSsbggnFOeVriYu5OxiuczjU15GTgmqnNxccFK4Yr3qTxV4ZGFdJLA==",
+        "requested": "[19.4.2, )",
+        "resolved": "19.4.2",
+        "contentHash": "Ylx6sp+GYy5mBOJ9xrZdzRS6xl0aBhdRTHsJCAcc/lp5hXnjmYOx7punZVZmnRn+weW/2H3S91TAKiuQel/f3g==",
         "dependencies": {
           "EmptyFiles": "4.1.0",
           "NUnit": "3.13.3",
-          "Verify": "19.3.0"
+          "Verify": "19.4.2"
         }
       },
       "Argon": {
@@ -238,16 +238,16 @@
       },
       "TextCopy": {
         "type": "Transitive",
-        "resolved": "6.2.0",
-        "contentHash": "mpl+ssTDgROzmSkAoivi8HJdrEh5QCpXScP/vW2qIugfbaPI9eDNxbxxWDosVmKJSh4dfsALsSKqD6EJbE9awQ==",
+        "resolved": "6.2.1",
+        "contentHash": "ryejViUBmHQ2XMie2AiRBn7KVKu2Gh/hqrctGSAUf1BufwfPjr+MWuACNBaiG+40TMbWRDJZgV73Tpl9hggeRw==",
         "dependencies": {
           "Microsoft.Extensions.DependencyInjection.Abstractions": "7.0.0"
         }
       },
       "Verify": {
         "type": "Transitive",
-        "resolved": "19.3.0",
-        "contentHash": "7CqN/1KXfSCYArTmJlgrCg3vqHafVjoZK23sqTNanvFa/TZELMrptQ/+frybBPdAtEFv4YDAmBOy/v9lJj9ZDg==",
+        "resolved": "19.4.2",
+        "contentHash": "9YO+xEGCTQ71OBhEdkQgMA5NVFd/DMDhds5gbIaHmBfZr+qugfz5FF+UhpDtjRlP3bQN7H70CySgbh2FPKbPdQ==",
         "dependencies": {
           "Argon": "0.1.0",
           "DiffEngine": "11.0.0",
