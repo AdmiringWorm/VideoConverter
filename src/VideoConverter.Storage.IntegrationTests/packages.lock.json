@@ -257,8 +257,8 @@
       },
       "Xabe.FFmpeg": {
         "type": "Transitive",
-        "resolved": "5.2.1",
-        "contentHash": "yYSfdVI5GhMkRBqoHCVyIjoqNkXj1mXM7cVxmsgzIAhqZvrGMqxbkzNFUKRW86PtvmOOzQvbsVEMItZevHId/w==",
+        "resolved": "5.2.3",
+        "contentHash": "a6G46XIN5PrzlXmCqg3iNuztzygBE5P+3rFIKzvOLZk2ekheIko/XR24AT8qtX0aXXkx870DfMQnzTDa/Pl10A==",
         "dependencies": {
           "Newtonsoft.Json": "9.0.1"
         }
@@ -266,7 +266,7 @@
       "videoconverter.core": {
         "type": "Project",
         "dependencies": {
-          "Xabe.FFMpeg": "[5.2.1, )"
+          "Xabe.FFMpeg": "[5.2.3, )"
         }
       },
       "videoconverter.storage": {

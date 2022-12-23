@@ -51,7 +51,7 @@
 		</PackageReference>
 		<PackageReference Include="Spectre.Console.Cli" Version="0.45.0" />
 		<PackageReference Include="system.Linq.Async" Version="6.0.1" />
-		<PackageReference Include="Xabe.FFmpeg" Version="5.2.1" />
+		<PackageReference Include="Xabe.FFmpeg" Version="5.2.3" />
 	</ItemGroup>
 
 	<ItemGroup>
