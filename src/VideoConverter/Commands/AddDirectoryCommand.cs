@@ -1,5 +1,6 @@
 namespace VideoConverter.Commands
 {
+	using System;
 	using System.Linq;
 	using System.Threading.Tasks;
 
@@ -24,7 +25,7 @@ namespace VideoConverter.Commands
 		{
 			settings.AssertNotNull();
 
-			var files = settings.Directories.SelectMany(d => ioHelpers.EnumerateMovieFiles(d, settings.RecursiveSearch));
+			var files = settings.Directories.SelectMany(d => ioHelpers.EnumerateMovieFiles(d, settings.RecursiveSearch)).Order(StringComparer.OrdinalIgnoreCase);
 
 			var fileSettings = AddFileOption.FromDirectoryOptions(settings, files.ToArray());
 
