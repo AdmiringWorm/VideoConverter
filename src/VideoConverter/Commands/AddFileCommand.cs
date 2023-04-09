@@ -395,7 +395,7 @@ namespace VideoConverter.Commands
 					var videoCodec = settings.VideoCodec ?? config.VideoCodec;
 					var subtitleCodec = settings.SubtitleCodec ?? config.SubtitleCodec;
 
-					if (settings.UseEncodingCopy)
+					if (settings.UseEncodingCopy && !extraEncodingAdded)
 					{
 						if (!string.Equals(audioCodec, "copy", StringComparison.OrdinalIgnoreCase) &&
 							mediaInfo.AudioStreams
@@ -410,7 +410,7 @@ namespace VideoConverter.Commands
 							audioCodec = "copy";
 						}
 
-						if (!string.Equals(videoCodec, "copy", StringComparison.OrdinalIgnoreCase) &&
+						if (!extraEncodingAdded && !string.Equals(videoCodec, "copy", StringComparison.OrdinalIgnoreCase) &&
 							mediaInfo.VideoStreams
 								.Where(v => streams.Any(s => s.Index == v.Index))
 								.All(v =>
@@ -423,7 +423,7 @@ namespace VideoConverter.Commands
 							videoCodec = "copy";
 						}
 
-						if (!string.Equals(subtitleCodec, "copy", StringComparison.OrdinalIgnoreCase) &&
+						if (!extraEncodingAdded && !string.Equals(subtitleCodec, "copy", StringComparison.OrdinalIgnoreCase) &&
 							mediaInfo.SubtitleStreams
 								.Where(ss => streams.Any(s => s.Index == ss.Index))
 								.All(s =>
