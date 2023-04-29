@@ -2,12 +2,6 @@
   "version": 1,
   "dependencies": {
     "net7.0": {
-      "LiteDB": {
-        "type": "Direct",
-        "requested": "[5.0.14, )",
-        "resolved": "5.0.14",
-        "contentHash": "8Hz319BBCDm6KQHiDUAc6LWCdC12Nr+N6pCTO+0d4nBtzsILqOK6j2rVe++2+PnBV/aqDOBVBWBkZyDiB88n/g=="
-      },
       "LiteDB.Async": {
         "type": "Direct",
         "requested": "[0.0.11, )",
@@ -52,6 +46,11 @@
         "requested": "[0.45.0, )",
         "resolved": "0.45.0",
         "contentHash": "0OiLWW4sSUB3p/eAufk8AV998LxKR1ztquxzGfPKq1EBO1dS44M40kIaQXdwux+vWiVqfHnfDYdo9Lt5OjPshg=="
+      },
+      "LiteDB": {
+        "type": "Transitive",
+        "resolved": "5.0.11",
+        "contentHash": "6cL4bOmVCUB0gIK+6qIr68HeqjjHZicPDGQjvJ87mIOvkFsEsJWkIps3yoKNeLpHhJQur++yoQ9Q8gxsdos0xQ=="
       },
       "Microsoft.CSharp": {
         "type": "Transitive",
