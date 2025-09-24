@@ -271,18 +271,14 @@ namespace VideoConverter.Commands
 								{
 									if (stream is IVideoStream videoStream)
 									{
-										if (settings.UseEncodingCopy &&
-											string.Equals(
-												videoStream.Codec,
-												queue.VideoCodec ?? config.VideoCodec,
-												StringComparison.OrdinalIgnoreCase)
+										if (settings.UseEncodingCopy && HasAcceptedEncoding(stream, AddFileCommand.CreateArray(queue.VideoCodec, config.VideoCodecs))
 										)
 										{
 											videoStream.SetCodec(VideoCodec.copy);
 										}
 										else
 										{
-											videoStream.SetCodec(queue.VideoCodec ?? config.VideoCodec);
+											videoStream.SetCodec(queue.VideoCodec ?? config.VideoCodecs[0]);
 										}
 									}
 									else if (stream is IAudioStream audioStream)
@@ -730,6 +726,32 @@ namespace VideoConverter.Commands
 			}
 
 			return exitCode = failed ? 1 : 0;
+		}
+
+		public static bool HasAcceptedEncoding(IStream stream, params string[] codecs)
+		{
+			if (string.Equals(codecs[0], "copy", StringComparison.OrdinalIgnoreCase))
+			{
+				return true;
+			}
+
+			foreach (var codec in codecs)
+			{
+				if (string.Equals(codec, stream.Codec, StringComparison.OrdinalIgnoreCase))
+				{
+					return true;
+				}
+				else if (string.Equals("lib" + codec, stream.Codec, StringComparison.OrdinalIgnoreCase))
+				{
+					return true;
+				}
+				else if (string.Equals(codec, "lib" + stream.Codec, StringComparison.OrdinalIgnoreCase))
+				{
+					return true;
+				}
+			}
+
+			return false;
 		}
 
 		private async Task<(FileQueue? queue, int count)> GetNextQueueItemAsync(int[] indexes, int indexCount)

@@ -1,0 +1,24 @@
+﻿{
+  newConfig: {
+    AudioCodec: libopus,
+    ExtraEncodingParameters: ,
+    FileType: Matroska,
+    IncludeFansubber: true,
+    SubtitleCodec: copy,
+    WorkDirectory: {TempPath},
+    VideoCodecs: [
+      hevc
+    ]
+  },
+  resetConfig: {
+    AudioCodec: libopus,
+    ExtraEncodingParameters: ,
+    FileType: Matroska,
+    IncludeFansubber: true,
+    SubtitleCodec: copy,
+    WorkDirectory: {TempPath},
+    VideoCodecs: [
+      hevc
+    ]
+  }
+}

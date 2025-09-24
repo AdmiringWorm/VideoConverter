@@ -2,6 +2,7 @@ namespace VideoConverter.Commands
 {
 	using System;
 	using System.Collections;
+	using System.Collections.Generic;
 	using System.Diagnostics.CodeAnalysis;
 	using System.IO;
 	using System.Linq;
@@ -190,7 +191,13 @@ namespace VideoConverter.Commands
 					.Where(p => p.Name != "Prefixes")
 			)
 			{
-				if (property.PropertyType.IsArray ||
+				var combineList = false;
+
+				if (property.Name == "VideoCodecs")
+				{
+					combineList = true;
+				}
+				else if (property.PropertyType.IsArray ||
 					(property.PropertyType != typeof(string) && property.PropertyType.IsAssignableTo(typeof(IEnumerable))))
 				{
 					// For now we will ignore any lists
@@ -200,10 +207,20 @@ namespace VideoConverter.Commands
 				var name = property.Name;
 				var value = property.GetValue(config);
 
-				table.AddRow(
-					$"[fuchsia]{name.Humanize()}[/]",
-					$"[aqua]{value}[/]"
-				);
+				if (value is not null && combineList)
+				{
+					var stringValue = string.Join(", ", (List<string>)value);
+					table.AddRow(
+						$"[fuchsia]{name.Humanize()}[/]",
+						$"[aqua]{stringValue}[/]");
+				}
+				else
+				{
+					table.AddRow(
+						$"[fuchsia]{name.Humanize()}[/]",
+						$"[aqua]{value}[/]"
+					);
+				}
 			}
 
 			var panel = new Panel(table)
