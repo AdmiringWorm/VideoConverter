@@ -1,5 +1,6 @@
 namespace VideoConverter.Core.Models
 {
+	using System;
 	using System.Collections.Generic;
 	using System.IO;
 	using System.Linq;
@@ -10,6 +11,7 @@ namespace VideoConverter.Core.Models
 	{
 		private readonly List<FansubberConfiguration> _ignoreVideosWithFansubbers;
 		private readonly List<PrefixConfiguration> _prefixes;
+		private List<string>? _videoCodecs;
 
 		public ConverterConfiguration()
 		{
@@ -49,9 +51,40 @@ namespace VideoConverter.Core.Models
 
 		public string SubtitleCodec { get; set; } = "copy";
 
-		public string VideoCodec { get; set; } = "hevc";
+		[Obsolete("The property is obsolete, and will be removed in the future.")]
+		public string VideoCodec
+		{
+			get
+			{
+				return VideoCodecs[0];
+			}
+			set
+			{
+				VideoCodecs.Insert(0, value);
+			}
+		}
 
 		public string WorkDirectory { get; set; }
+
+		public List<string> VideoCodecs
+		{
+			get
+			{
+				if (_videoCodecs is null || _videoCodecs.Count == 0)
+				{
+					_videoCodecs = new List<string>
+					{
+						"hevc"
+					};
+				}
+
+				return _videoCodecs;
+			}
+			set
+			{
+				_videoCodecs = value;
+			}
+		}
 
 		public void Reset()
 		{
@@ -63,8 +96,8 @@ namespace VideoConverter.Core.Models
 			MapperDatabase = null;
 			Prefixes.Clear();
 			SubtitleCodec = "copy";
-			VideoCodec = "hevc";
 			WorkDirectory = Path.GetTempPath();
+			VideoCodecs.Clear();
 		}
 	}
 }

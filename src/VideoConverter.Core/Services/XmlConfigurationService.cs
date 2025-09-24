@@ -118,7 +118,7 @@ namespace VideoConverter.Core.Services
 				config.MapperDatabase = tempConfig.MapperDatabase ?? GetMapperDatabase();
 				config.Prefixes = tempConfig.Prefixes;
 				config.SubtitleCodec = tempConfig.SubtitleCodec;
-				config.VideoCodec = tempConfig.VideoCodec;
+				config.VideoCodecs = tempConfig.VideoCodecs;
 				config.WorkDirectory = tempConfig.WorkDirectory;
 				config.Fansubbers = tempConfig.Fansubbers;
 			}

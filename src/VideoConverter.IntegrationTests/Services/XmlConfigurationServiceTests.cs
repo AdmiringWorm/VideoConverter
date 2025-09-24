@@ -76,7 +76,7 @@ namespace VideoConverter.IntegrationTests.Services
 
 			try
 			{
-				FileAssert.Exists(path);
+				Assert.That(path, Does.Exist);
 				await Verifier.VerifyFile(path);
 			}
 			finally

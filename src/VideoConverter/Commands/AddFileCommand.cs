@@ -283,10 +283,11 @@ namespace VideoConverter.Commands
 						break;
 					}
 
-					var extraEncodingAdded = false;
+					var extraEncodingAdded = !string.IsNullOrEmpty(config.ExtraEncodingParameters);
+					var videoCodec = settings.VideoCodec ?? config.VideoCodecs[0];
 
-					if (string.IsNullOrEmpty(config.ExtraEncodingParameters)
-						&& string.Equals(config.VideoCodec, "hevc", StringComparison.OrdinalIgnoreCase)
+					if (!extraEncodingAdded
+						&& string.Equals(videoCodec, "hevc", StringComparison.OrdinalIgnoreCase)
 						&& mediaInfo.VideoStreams.Any(v => v.Width % 2 != 0 || v.Height % 2 != 0))
 					{
 						config.ExtraEncodingParameters = "-vf crop='iw-mod(iw,2)':'ih-mod(ih,2)'";
@@ -392,46 +393,21 @@ namespace VideoConverter.Commands
 					queueItem.SkipThumbnails = settings.SkipThumbnails;
 
 					var audioCodec = settings.AudioCodec ?? config.AudioCodec;
-					var videoCodec = settings.VideoCodec ?? config.VideoCodec;
 					var subtitleCodec = settings.SubtitleCodec ?? config.SubtitleCodec;
 
 					if (settings.UseEncodingCopy && !extraEncodingAdded)
 					{
-						if (!string.Equals(audioCodec, "copy", StringComparison.OrdinalIgnoreCase) &&
-							mediaInfo.AudioStreams
-								.Where(a => streams.Any(s => s.Index == a.Index))
-								.All(a =>
-									string.Equals(a.Codec, audioCodec, StringComparison.OrdinalIgnoreCase) ||
-									string.Equals("lib" + a.Codec, audioCodec, StringComparison.OrdinalIgnoreCase) ||
-									string.Equals(a.Codec, "lib" + audioCodec, StringComparison.OrdinalIgnoreCase)
-								)
-						)
+						if (HasAcceptedEncoding(mediaInfo.AudioStreams, audioCodec))
 						{
 							audioCodec = "copy";
 						}
 
-						if (!extraEncodingAdded && !string.Equals(videoCodec, "copy", StringComparison.OrdinalIgnoreCase) &&
-							mediaInfo.VideoStreams
-								.Where(v => streams.Any(s => s.Index == v.Index))
-								.All(v =>
-									string.Equals(v.Codec, videoCodec, StringComparison.OrdinalIgnoreCase) ||
-									string.Equals("lib" + v.Codec, videoCodec, StringComparison.OrdinalIgnoreCase) ||
-									string.Equals(v.Codec, "lib" + videoCodec, StringComparison.OrdinalIgnoreCase)
-								)
-						)
+						if (!extraEncodingAdded && HasAcceptedEncoding(mediaInfo.VideoStreams, CreateArray(videoCodec, config.VideoCodecs)))
 						{
 							videoCodec = "copy";
 						}
 
-						if (!extraEncodingAdded && !string.Equals(subtitleCodec, "copy", StringComparison.OrdinalIgnoreCase) &&
-							mediaInfo.SubtitleStreams
-								.Where(ss => streams.Any(s => s.Index == ss.Index))
-								.All(s =>
-									string.Equals(s.Codec, subtitleCodec, StringComparison.OrdinalIgnoreCase) ||
-									string.Equals("lib" + s.Codec, subtitleCodec, StringComparison.OrdinalIgnoreCase) ||
-									string.Equals(s.Codec, "lib" + subtitleCodec, StringComparison.OrdinalIgnoreCase)
-								)
-						)
+						if (HasAcceptedEncoding(mediaInfo.SubtitleStreams, subtitleCodec))
 						{
 							subtitleCodec = "copy";
 						}
@@ -527,6 +503,42 @@ namespace VideoConverter.Commands
 			}
 
 			return tokenSource.Token.IsCancellationRequested ? 1 : 0;
+		}
+
+		public static string[] CreateArray(string? videoCodec, List<string> videoCodecs)
+		{
+			if (string.IsNullOrEmpty(videoCodec))
+			{
+				return videoCodecs.ToArray();
+			}
+
+			var arr = new string[videoCodecs.Count + 1];
+			arr[0] = videoCodec;
+
+			for (var i = 0; i < videoCodecs.Count; i++)
+			{
+				arr[i + 1] = videoCodecs[i];
+			}
+
+			return arr;
+		}
+
+		private static bool HasAcceptedEncoding(IEnumerable<IStream> streams, params string[] codecs)
+		{
+			if (string.Equals(codecs[0], "copy", StringComparison.OrdinalIgnoreCase))
+			{
+				return true;
+			}
+
+			foreach (var stream in streams)
+			{
+				if (EncodeCommand.HasAcceptedEncoding(stream, codecs))
+				{
+					return true;
+				}
+			}
+
+			return false;
 		}
 
 		private static string RemoveInvalidChars(string text)
